@@ -69,9 +69,10 @@ export default defineComponent({
 
   methods: {
     async login(){
-      console.log("### login", this.username, this.password)
       try {
-        await saas.login(this.username, this.password)
+        const {data} = await saas.login(this.username, this.password)
+        // ##### BAD PRACTICE, FOR TESTING ONLY #####
+        localStorage.setItem('token', data.access_token);
 
         this.$q.notify({
             message: 'Welcome back!',
@@ -79,7 +80,6 @@ export default defineComponent({
           })
       } catch (error) {
         console.log("### error", error)
-        console.log("### this.$q.", this.$q)
         this.$q.notify({
             message: 'Failed to login!',
             color: 'negative',

@@ -1,9 +1,10 @@
 <template>
   <q-page class="q-pa-sm">
     <table-dark-mode
+    v-if="data"
       :data="data"
       :columns="columns"
-      header="XXXX"
+      header="LNbits Instances"
       class="q-mt-lg"
     ></table-dark-mode>
   </q-page>
@@ -21,21 +22,13 @@ export default defineComponent({
       import("components/tables/TableDarkMode.vue")
     ),
   },
-  setup() {
+  data() {
     return {
-      data: [
-        {
-          name: "Pratik Patel",
-          Crated_Date: "15/3/2020",
-          Project: "Quasar Admin",
-          avatar:
-            "https://avatars3.githubusercontent.com/u/34883558?s=400&u=09455019882ac53dc69b23df570629fd84d37dd1&v=4",
-          progress: 80,
-          des: "Solutions Developer",
-        },
-      ],
+      data: null,
       columns: [
-        { name: "ID", label: "ID", field: "ID", sortable: true, align: "left" },
+        { name: "ID", label: "Instance ID", field: "id", sortable: true, align: "left" },
+        { name: "enabled", label: "Enabled", field: "enabled", sortable: true, align: "left" },
+        { name: "active", label: "Active", field: "active", sortable: true, align: "left" },
         {
           name: "Name",
           label: "Name",
@@ -77,16 +70,20 @@ export default defineComponent({
   async created() {
     try {
       const { data } = await saas.getInstances();
-      this.data = (data || []).forEach((instance, index) => {
+      const tableData = (data || []).map((instance, index) => {
         return {
           id: instance.id,
+          enabled: instance.is_enabled,
+          active: instance.is_active,
           name: instance.domain,
           cratedDate: instance.timestamp,
           stopDate: instance.timestamp_stop,
           progress: 100 / (index + 1),
-          des: "Solutions Developer",
         };
       });
+      // this.$set(this, "data", tableData )
+      this.data = tableData
+      console.log("### this.data", this.data);
     } catch (error) {
       console.log("## error 1", error);
     }

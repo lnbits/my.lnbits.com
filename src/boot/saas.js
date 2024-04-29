@@ -10,7 +10,7 @@ var saas = {
   loginDialogue: false,
   signUpDialogue: false,
   signupErrors: [],
-  access_token: "",
+  access_token: localStorage.getItem('token'),
   logged: false,
   login_details: {
     email: "",

@@ -15,21 +15,7 @@
         :columns="columns"
         hide-bottom
       >
-        <template v-slot:body-cell-Name="props">
-          <q-td :props="props">
-            <q-item style="max-width: 420px">
-              <q-item-section avatar>
-                <q-avatar>
-                  <img :src="props.row.avatar" />
-                </q-avatar>
-              </q-item-section>
 
-              <q-item-section>
-                <q-item-label>{{ props.row.name }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-td>
-        </template>
         <template v-slot:body-cell-Action="props">
           <q-td :props="props">
             <q-btn icon="edit" size="sm" flat dense />
@@ -58,6 +44,11 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "TableDarkMode",
   props: ["columns", "data", "header"],
+  watch:{
+    data(o, n){
+      console.log("### o n", o, n)
+    }
+  },
   setup() {
     return {
       getColor(val) {
