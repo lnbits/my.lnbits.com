@@ -1,0 +1,35 @@
+[
+    {
+        "user_id": 5,
+        "timestamp_stop": 1714048755,
+        "is_enabled": false,
+        "domain": "offendedflamingo4.lnbits.com",
+        "adminuser": null,
+        "id": 2445,
+        "timestamp": 1714048755,
+        "is_active": false,
+        "lnurl": null
+    },
+    {
+        "user_id": 5,
+        "timestamp_stop": 1714048759,
+        "is_enabled": false,
+        "domain": "guiltydunbird1.lnbits.com",
+        "adminuser": null,
+        "id": 2446,
+        "timestamp": 1714048759,
+        "is_active": false,
+        "lnurl": null
+    },
+    {
+        "user_id": 5,
+        "timestamp_stop": 1714048765,
+        "is_enabled": false,
+        "domain": "anxiousbittern9.lnbits.com",
+        "adminuser": null,
+        "id": 2447,
+        "timestamp": 1714048765,
+        "is_active": false,
+        "lnurl": null
+    }
+]

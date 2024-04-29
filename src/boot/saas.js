@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const saas = {
+console.log("### saas", saas)
+var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
   // url: "https://saas.b1tco1n.org",
@@ -223,9 +224,9 @@ const saas = {
     }
   },
   getInstances: async function (cb) {
-    if (!this.logged) {
-      throw Error("User not logged in!");
-    }
+    // if (!this.logged) {
+    //   throw Error("User not logged in!");
+    // }
 
     const response = await axios({
       method: "GET",

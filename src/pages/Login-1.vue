@@ -71,11 +71,8 @@ export default defineComponent({
     async login(){
       console.log("### login", this.username, this.password)
       try {
-        const {data} = await saas.login(this.username, this.password)
+        await saas.login(this.username, this.password)
 
-
-        const resp2 = await saas.getInstances()
-        console.log("### instances", resp2)
         this.$q.notify({
             message: 'Welcome back!',
             color: 'positive'
