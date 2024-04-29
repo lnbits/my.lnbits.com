@@ -36,7 +36,7 @@
               />
 
               <div>
-                <q-btn label="Login" to="/" type="button" color="primary"/>
+                <q-btn label="Login" @click="login" type="button" color="primary"/>
               </div>
             </q-form>
           </q-card-section>
@@ -49,14 +49,50 @@
 <script>
 import {defineComponent} from 'vue'
 import {ref} from 'vue'
+import {useQuasar} from "quasar";
+
+import {saas} from 'boot/saas'
+
 
 export default defineComponent({
   setup() {
+    const $q = useQuasar()
     return {
-      username: ref('Pratik'),
-      password: ref('12345')
+      $q,
+      username: ref(''),
+      password: ref('')
     }
   },
+  created() {
+    console.log('### api', saas)
+  },
+
+  methods: {
+    async login(){
+      console.log("### login", this.username, this.password)
+      try {
+        const {data} = await saas.login(this.username, this.password)
+
+
+        const resp2 = await saas.getInstances()
+        console.log("### instances", resp2)
+        this.$q.notify({
+            message: 'Welcome back!',
+            color: 'positive'
+          })
+      } catch (error) {
+        console.log("### error", error)
+        console.log("### this.$q.", this.$q)
+        this.$q.notify({
+            message: 'Failed to login!',
+            color: 'negative',
+            icon: 'warning'
+          })
+      }
+
+
+    }
+  }
 })
 </script>
 
