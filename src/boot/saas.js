@@ -11,6 +11,7 @@ var saas = {
   signUpDialogue: false,
   signupErrors: [],
   access_token: localStorage.getItem('token'),
+  email: localStorage.getItem('email'),
   logged: false,
   login_details: {
     email: "",
@@ -22,7 +23,6 @@ var saas = {
     password_repeat: "",
   },
   subdomain: "",
-  email: "",
   password: "",
   active_instance: {},
   active_instance_id: null,
@@ -65,21 +65,26 @@ var saas = {
       });
   },
   login: async function (email, password) {
-    const data = new FormData();
-    data.append("username", email);
-    data.append("password", password);
-    const response = await axios({
+    const formData = new FormData();
+    formData.append("username", email);
+    formData.append("password", password);
+    const {data} = await axios({
       method: "POST",
       url: this.url + "/login",
-      data: data,
+      data: formData,
       headers: {
         "Content-Type": "multipart/form-data"
       },
     });
-    this.access_token = response.data.access_token;
+    this.access_token = data.access_token;
+
+    // ##### BAD PRACTICE, FOR TESTING ONLY #####
+    localStorage.setItem('token', data.access_token);
+
+    localStorage.setItem('email', email);
 
     this.logged = true;
-    return response;
+    return data;
   },
   showInstance: function (id) {
     this.active_instance_id = id;
@@ -269,6 +274,7 @@ var saas = {
     this.logged = false;
     this.access_token = null
     localStorage.setItem('token', null)
+    localStorage.setItem('email', null)
   },
 };
 

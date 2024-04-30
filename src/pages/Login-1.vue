@@ -70,9 +70,8 @@ export default defineComponent({
   methods: {
     async login(){
       try {
-        const {data} = await saas.login(this.username, this.password)
-        // ##### BAD PRACTICE, FOR TESTING ONLY #####
-        localStorage.setItem('token', data.access_token);
+        const data = await saas.login(this.username, this.password)
+
 
         this.$q.notify({
             message: 'Welcome back!',

@@ -13,6 +13,7 @@
         <q-toolbar-title> My LNbits </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
+          <span v-text="userEmail"></span>
           <q-btn
             round
             dense
@@ -343,6 +344,12 @@ export default defineComponent({
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
     };
+  },
+  computed: {
+    userEmail: function () {
+      console.log("### saas.email", saas.email);
+      return saas.email;
+    },
   },
   methods: {
     logout: function () {
