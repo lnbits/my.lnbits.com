@@ -265,7 +265,10 @@ var saas = {
     });
   },
   logout: function () {
+    console.log("### logout")
     this.logged = false;
+    this.access_token = null
+    localStorage.setItem('token', null)
   },
 };
 
