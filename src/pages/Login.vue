@@ -2,7 +2,7 @@
     <q-layout>
         <q-page-container>
             <q-page class="flex bg-image flex-center">
-                <q-card v-bind:style="$q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
+                <q-card v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
                     <q-card-section>
                         <q-avatar size="103px" class="absolute-center shadow-10">
                             <img src="profile.svg" />
@@ -41,7 +41,7 @@ export default defineComponent({
     setup() {
         const $q = useQuasar();
         return {
-            $q,
+            q:$q,
             username: ref(""),
             password: ref(""),
         };
@@ -51,7 +51,7 @@ export default defineComponent({
         async login() {
             try {
                 await saas.login(this.username, this.password);
-                this.$q.notify({
+                this.q.notify({
                     message: "Logged in!",
                     color: "positive",
                 });
@@ -59,7 +59,7 @@ export default defineComponent({
                 setTimeout(()=> window.location.href = "/", 500)
             } catch (error) {
                 console.log("### error", error);
-                this.$q.notify({
+                this.q.notify({
                     message: "Failed to login!",
                     color: "negative",
                     icon: "warning",

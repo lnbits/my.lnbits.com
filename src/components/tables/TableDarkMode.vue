@@ -181,7 +181,7 @@ export default defineComponent({
     const $q = useQuasar();
 
     return {
-      $q,
+      q: $q,
       confirm(title, message) {
         return $q.dialog({
           title,
@@ -214,7 +214,7 @@ export default defineComponent({
           this.extendInstance(instance);
         } catch (error) {
           console.warn(error);
-          this.$q.notify({
+          this.q.notify({
             message: "Failed to create instance",
             color: "negative",
           });
@@ -230,13 +230,13 @@ export default defineComponent({
         try {
           const { data } = await saas.updateInstance(id, "restart");
           console.log("###  OK data", data);
-          this.$q.notify({
+          this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
           });
         } catch (error) {
           console.warn(error);
-          this.$q.notify({
+          this.q.notify({
             message: `Failed to restart instance ${id}.`,
             color: "negative",
           });
@@ -253,13 +253,13 @@ export default defineComponent({
         try {
           const { data } = await saas.updateInstance(id, "reset");
           console.log("###  OK data", data);
-          this.$q.notify({
+          this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
           });
         } catch (error) {
           console.warn(error);
-          this.$q.notify({
+          this.q.notify({
             message: `Failed to reset instance ${id}.`,
             color: "negative",
           });
@@ -276,13 +276,13 @@ export default defineComponent({
         try {
           const { data } = await saas.updateInstance(id, "disable");
           console.log("###  OK data", data);
-          this.$q.notify({
+          this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
           });
         } catch (error) {
           console.warn(error);
-          this.$q.notify({
+          this.q.notify({
             message: `Failed to disable instance ${id}.`,
             color: "negative",
           });
@@ -302,13 +302,13 @@ export default defineComponent({
           if (index >= 0) {
             this.data.splice(index, 1);
           }
-          this.$q.notify({
+          this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
           });
         } catch (error) {
           console.warn(error);
-          this.$q.notify({
+          this.q.notify({
             message: `Failed to destroy instance '${id}'`,
             color: "negative",
           });
@@ -325,7 +325,7 @@ export default defineComponent({
     copyData: function () {
       copyToClipboard(this.activeInstance.lnurl);
 
-      this.$q.notify({
+      this.q.notify({
         message: "Copied",
         color: "grey",
       });
