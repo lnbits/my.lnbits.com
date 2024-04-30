@@ -1,7 +1,5 @@
 import axios from "axios";
 
-
-console.log("### saas", saas);
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
@@ -194,8 +192,8 @@ var saas = {
     console.log("### logout");
     this.logged = false;
     this.access_token = null;
-    localStorage.setItem("token", null);
-    localStorage.setItem("email", null);
+    this.email = null;
+    localStorage.clear();
   },
 
   mapInstance: function (instance) {
@@ -225,29 +223,17 @@ var saas = {
   },
 };
 
-
 (async () => {
-  console.log("### init axios", axios.interceptors);
-
   axios.interceptors.response.use(
-    (response) => {
-      console.log("### interceptors.response");
-      if (response.status === 401) {
-        console.log("### You are not authorized");
-        saas.logout()
-      }
-      return response;
-    },
+    (response) => response,
     (err) => {
-      console.log("### interceptors err", err);
       if (err?.response?.status === 401) {
-        console.log("### You are not authorized");
-        saas.logout()
+        saas.logout();
+        window.location.href = "/login";
       }
       return Promise.reject(err);
     }
   );
 })();
-
 
 export { saas };
