@@ -12,7 +12,8 @@
           </q-card-section>
           <q-card-section>
             <div class="text-center q-pt-lg">
-              <div class="col text-h6 ellipsis">Log in</div>
+              <div v-if="isSignupRequest" class="col text-h6 ellipsis">Sign Up</div>
+              <div v-else class="col text-h6 ellipsis">Login</div>
             </div>
           </q-card-section>
           <q-card-section>
@@ -35,13 +36,14 @@
                 label="Password Repeat"
                 lazy-rules
               />
-
+              <q-linear-progress v-if="inProgress" indeterminate color="secondary" class="q-mt-sm" />
               <div>
                 <q-btn
                   label="Login"
                   @click="login"
                   type="button"
                   color="primary"
+                  :disable="inProgress"
                 />
                 <q-btn
                   label="Sign Up"
@@ -49,6 +51,7 @@
                   type="button"
                   color="secondary"
                   class="float-right"
+                  :disable="inProgress"
                 />
               </div>
             </q-form>
@@ -75,12 +78,14 @@ export default defineComponent({
       password: ref(""),
       passwordRepeat: ref(""),
       isSignupRequest: ref(false),
+      inProgress: ref(false),
     };
   },
 
   methods: {
     async login() {
       try {
+        this.inProgress = true
         await saas.login(this.username, this.password);
         this.q.notify({
           message: "Logged in!",
@@ -95,6 +100,8 @@ export default defineComponent({
           color: "negative",
           icon: "warning",
         });
+      } finally{
+        this.inProgress = false
       }
     },
     async signup() {
@@ -111,6 +118,7 @@ export default defineComponent({
         return;
       }
       try {
+        this.inProgress = true
         await saas.signup(this.username, this.password, this.passwordRepeat);
         this.q.notify({
           message: "Signed Up!",
@@ -124,6 +132,8 @@ export default defineComponent({
           color: "negative",
           icon: "warning",
         });
+      } finally{
+        this.inProgress = false
       }
     },
   },

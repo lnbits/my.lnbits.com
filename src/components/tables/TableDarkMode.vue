@@ -12,6 +12,12 @@
         />
       </div>
     </q-card-section>
+    <q-linear-progress
+      v-if="inProgress"
+      indeterminate
+      color="secondary"
+      class="q-mt-sm"
+    />
     <q-separator color="white" />
     <q-card-section class="q-pa-none">
       <q-table
@@ -175,6 +181,7 @@ export default defineComponent({
         rowsPerPage: 25,
         page: 1,
       },
+      inProgress: false,
     };
   },
   setup() {
@@ -208,6 +215,7 @@ export default defineComponent({
           " You will be propmpted with a Payment Request QR Code."
       ).onOk(async () => {
         try {
+          this.inProgress = true;
           const { data } = await saas.createInstance();
           const instance = saas.mapInstance(data);
           this.data.push(instance);
@@ -218,6 +226,8 @@ export default defineComponent({
             message: "Failed to create instance",
             color: "negative",
           });
+        } finally {
+          this.inProgress = false;
         }
       });
     },
@@ -228,8 +238,8 @@ export default defineComponent({
           " Restarting will make your instance temporarly unavailable."
       ).onOk(async () => {
         try {
+          this.inProgress = true;
           const { data } = await saas.updateInstance(id, "restart");
-          console.log("###  OK data", data);
           this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
@@ -240,6 +250,8 @@ export default defineComponent({
             message: `Failed to restart instance ${id}.`,
             color: "negative",
           });
+        } finally {
+          this.inProgress = false;
         }
       });
     },
@@ -250,6 +262,7 @@ export default defineComponent({
           " Resetting will delete all your admin settings including your super user."
       ).onOk(async () => {
         try {
+          this.inProgress = true;
           const { data } = await saas.updateInstance(id, "reset");
           this.q.notify({
             message: data.message || `${data}`,
@@ -261,6 +274,8 @@ export default defineComponent({
             message: `Failed to reset instance ${id}.`,
             color: "negative",
           });
+        } finally {
+          this.inProgress = false;
         }
       });
     },
@@ -271,6 +286,7 @@ export default defineComponent({
           " Disabling will make your instance unavailable."
       ).onOk(async () => {
         try {
+          this.inProgress = true;
           const { data } = await saas.updateInstance(id, "disable");
 
           this.q.notify({
@@ -283,6 +299,8 @@ export default defineComponent({
             message: `Failed to disable instance ${id}.`,
             color: "negative",
           });
+        } finally {
+          this.inProgress = false;
         }
       });
     },
@@ -293,6 +311,7 @@ export default defineComponent({
           " destroying will delete your instance and every bit of data."
       ).onOk(async () => {
         try {
+          this.inProgress = true;
           const { data } = await saas.updateInstance(id, "destroy");
           const index = this.data.findIndex((i) => i.id == id);
           if (index >= 0) {
@@ -308,6 +327,8 @@ export default defineComponent({
             message: `Failed to destroy instance '${id}'`,
             color: "negative",
           });
+        } finally {
+          this.inProgress = false;
         }
       });
     },
