@@ -1,7 +1,6 @@
 <template>
   <q-page class="q-pa-sm">
-    <table-dark-mode
-    ></table-dark-mode>
+    <table-dark-mode></table-dark-mode>
   </q-page>
 </template>
 
@@ -16,9 +15,7 @@ export default defineComponent({
     ),
   },
   data() {
-    return {
-
-    };
+    return {};
   },
 });
 </script>
