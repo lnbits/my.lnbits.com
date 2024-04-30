@@ -249,10 +249,8 @@ export default defineComponent({
         "Are you sure you want to reset?" +
           " Resetting will delete all your admin settings including your super user."
       ).onOk(async () => {
-        console.log("###  OK catcher");
         try {
           const { data } = await saas.updateInstance(id, "reset");
-          console.log("###  OK data", data);
           this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
@@ -272,10 +270,9 @@ export default defineComponent({
         "Are you sure you want to disable?" +
           " Disabling will make your instance unavailable."
       ).onOk(async () => {
-        console.log("###  OK catcher");
         try {
           const { data } = await saas.updateInstance(id, "disable");
-          console.log("###  OK data", data);
+
           this.q.notify({
             message: data.message || `${data}`,
             color: "positive",
@@ -295,7 +292,6 @@ export default defineComponent({
         "Are you sure you want to destroy?" +
           " destroying will delete your instance and every bit of data."
       ).onOk(async () => {
-        console.log("###  OK catcher");
         try {
           const { data } = await saas.updateInstance(id, "destroy");
           const index = this.data.findIndex((i) => i.id == id);
