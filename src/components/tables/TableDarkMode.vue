@@ -130,7 +130,7 @@
       </q-table>
     </q-card-section>
   </q-card>
-  <q-dialog v-model="qrDialog" position="top">
+  <q-dialog v-model="showPaymentQrDialog" position="top">
     <q-card style="min-height: 200px" class="q-pa-lg">
       <h3>
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
@@ -145,6 +145,11 @@
         />
       </p>
       <h5><span v-text="activeInstance.name"></span></h5>
+      <q-linear-progress
+        indeterminate
+        color="secondary"
+        class="q-mt-sm"
+      />
       <div class="row q-mt-md">
         <q-btn
           color="deep-purple"
@@ -175,7 +180,7 @@ export default defineComponent({
   data() {
     return {
       data: [],
-      qrDialog: false,
+      showPaymentQrDialog: false,
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
@@ -391,10 +396,37 @@ export default defineComponent({
         }
       });
     },
-    checkInstance: function (instance) {},
+    checkInstanceStatus: function (instance) {
+      const retryId = setInterval(async () => {
+        try {
+          const { data } = await saas.getInstances();
+          console.log("### checkInstance", data);
+          const updatedInstance = (data || [])
+            .map(saas.mapInstance)
+            .find((i) => i.id === instance.id);
+          if (
+            updatedInstance &&
+            updatedInstance.timestampStop > instance.timestampStop
+          ) {
+            this.showPaymentQrDialog = false;
+            this.q.notify({
+              message: `Instance ${instance.name} (${instance.id}) extended!`,
+              color: "positive",
+            });
+          }
+          if (!this.showPaymentQrDialog) {
+            console.log("### clearInterval no dialog", retryId);
+            clearInterval(retryId);
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+      }, 3000);
+    },
     extendInstance: function (instance) {
       this.activeInstance = instance;
-      this.qrDialog = true;
+      this.showPaymentQrDialog = true;
+      this.checkInstanceStatus(instance);
     },
     qrUrl: function () {
       return `https://demo.lnbits.com/api/v1/qrcode/${this.activeInstance.name}`;
@@ -414,7 +446,6 @@ export default defineComponent({
       const tableData = (data || []).map(saas.mapInstance);
 
       this.data = tableData;
-      console.log("## tableData", tableData);
     } catch (error) {
       console.warn(error);
     }

@@ -110,6 +110,8 @@ var saas = {
       name: instance.domain,
       cratedDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
+      timestamp: instance.timestamp,
+      timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
       progress: progress(instance.timestamp, instance.timestamp_stop),
     };
