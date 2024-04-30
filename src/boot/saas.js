@@ -79,11 +79,6 @@ var saas = {
     this.access_token = response.data.access_token;
 
     this.logged = true;
-    this.getInstances();
-    // this.interval = setInterval(function () {
-    //   this.getInstances();
-    // }, 15000);
-
     return response;
   },
   showInstance: function (id) {

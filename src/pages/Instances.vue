@@ -73,6 +73,8 @@ export default defineComponent({
       const tableData = (data || []).map((instance, index) => {
         return {
           id: instance.id,
+          instanceLink: `https://${instance.domain}/wallet?usr=${instance.adminuser}`,
+          backupLink: `https://${instance.domain}/admin/api/v1/backup/?usr=${instance.adminuser}`,
           enabled: instance.is_enabled,
           active: instance.is_active,
           name: instance.domain,
