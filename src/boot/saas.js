@@ -6,7 +6,6 @@ var saas = {
 
   access_token: localStorage.getItem("token"),
   email: localStorage.getItem("email"),
-  logged: false,
 
   signup: async function (email, password, password2) {
     const { data } = await axios({
@@ -25,8 +24,6 @@ var saas = {
     localStorage.setItem("token", data.access_token);
 
     localStorage.setItem("email", email);
-
-    this.logged = true;
 
     return data;
   },
@@ -49,7 +46,6 @@ var saas = {
 
     localStorage.setItem("email", email);
 
-    this.logged = true;
     return data;
   },
 
@@ -88,8 +84,6 @@ var saas = {
     return response;
   },
   logout: function () {
-    console.log("### logout");
-    this.logged = false;
     this.access_token = null;
     this.email = null;
     localStorage.clear();
