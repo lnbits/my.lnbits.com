@@ -14,7 +14,13 @@
     </q-card-section>
     <q-separator color="white" />
     <q-card-section class="q-pa-none">
-      <q-table dark class="table-bg" :rows="data" :columns="columns" :pagination.sync="pagination">
+      <q-table
+        dark
+        class="table-bg"
+        :rows="data"
+        :columns="columns"
+        :pagination.sync="pagination"
+      >
         <template v-slot:body-cell-Action="props">
           <q-td :props="props">
             <q-btn
@@ -136,7 +142,7 @@
       <div class="row q-mt-md">
         <q-btn
           color="deep-purple"
-          @click="copyInvoice"
+          @click="copyData"
           v-text="'Copy LNURL'"
         ></q-btn>
         <q-btn
@@ -201,15 +207,17 @@ export default defineComponent({
         "You are about the create a new LNbits instance." +
           " You will be propmpted with a Payment Request QR Code."
       ).onOk(async () => {
-        console.log("###  OK catcher");
         try {
           const { data } = await saas.createInstance();
-          console.log("### data", data);
           const instance = saas.mapInstance(data);
           this.data.push(instance);
           this.extendInstance(instance);
         } catch (error) {
-          console.log("### error", error);
+          console.warn(error);
+          this.$q.notify({
+            message: "Failed to create instance",
+            color: "negative",
+          });
         }
       });
     },
@@ -218,39 +226,68 @@ export default defineComponent({
         `Restart ${id}`,
         "Are you sure you want to restart?" +
           " Restarting will make your instance temporarly unavailable."
-      )
-        .onOk(() => {
-          console.log("###  OK catcher");
-        })
-        .onCancel(() => {
-          console.log("### Cancel");
-        });
+      ).onOk(async () => {
+        try {
+          const { data } = await saas.updateInstance(id, "restart");
+          console.log("###  OK data", data);
+          this.$q.notify({
+            message: data.message || `${data}`,
+            color: "positive",
+          });
+        } catch (error) {
+          console.warn(error);
+          this.$q.notify({
+            message: `Failed to restart instance ${id}.`,
+            color: "negative",
+          });
+        }
+      });
     },
     resetInstance: function (id) {
       this.confirm(
         `Reset ${id}`,
         "Are you sure you want to reset?" +
           " Resetting will delete all your admin settings including your super user."
-      )
-        .onOk(() => {
-          console.log("###  OK catcher");
-        })
-        .onCancel(() => {
-          console.log("### Cancel");
-        });
+      ).onOk(async () => {
+        console.log("###  OK catcher");
+        try {
+          const { data } = await saas.updateInstance(id, "reset");
+          console.log("###  OK data", data);
+          this.$q.notify({
+            message: data.message || `${data}`,
+            color: "positive",
+          });
+        } catch (error) {
+          console.warn(error);
+          this.$q.notify({
+            message: `Failed to reset instance ${id}.`,
+            color: "negative",
+          });
+        }
+      });
     },
     disableInstance: function (id) {
       this.confirm(
         `Disable ${id}`,
         "Are you sure you want to disable?" +
           " Disabling will make your instance unavailable."
-      )
-        .onOk(() => {
-          console.log("###  OK catcher");
-        })
-        .onCancel(() => {
-          console.log("### Cancel");
-        });
+      ).onOk(async () => {
+        console.log("###  OK catcher");
+        try {
+          const { data } = await saas.updateInstance(id, "disable");
+          console.log("###  OK data", data);
+          this.$q.notify({
+            message: data.message || `${data}`,
+            color: "positive",
+          });
+        } catch (error) {
+          console.warn(error);
+          this.$q.notify({
+            message: `Failed to disable instance ${id}.`,
+            color: "negative",
+          });
+        }
+      });
     },
     destroyInstance: function (id) {
       this.confirm(
@@ -281,17 +318,17 @@ export default defineComponent({
     extendInstance: function (instance) {
       this.activeInstance = instance;
       this.qrDialog = true;
-
-      console.log("### activeInstance", this.activeInstance);
     },
     qrUrl: function () {
       return `https://demo.lnbits.com/api/v1/qrcode/${this.activeInstance.name}`;
     },
-    copyInvoice: function () {
+    copyData: function () {
       copyToClipboard(this.activeInstance.lnurl);
-      // this.$q.notify({
-      //     message: "Copied to clipboard",
-      // })
+
+      this.$q.notify({
+        message: "Copied",
+        color: "grey",
+      });
     },
   },
 });
