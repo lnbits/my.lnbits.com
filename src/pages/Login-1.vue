@@ -70,11 +70,11 @@ export default defineComponent({
   methods: {
     async login(){
       try {
-        const data = await saas.login(this.username, this.password)
+        await saas.login(this.username, this.password)
 
 
         this.$q.notify({
-            message: 'Welcome back!',
+            message: 'Logged in!',
             color: 'positive'
           })
       } catch (error) {

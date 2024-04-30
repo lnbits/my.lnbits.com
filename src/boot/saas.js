@@ -164,69 +164,20 @@ var saas = {
       },
     });
   },
-  updateInstance: function (action) {
-    let that = this;
-    let update = () => {
-      axios({
-        method: "PUT",
-        url: this.url + "/instance",
-        data: {
-          action: action,
-          instance_id: this.active_instance.id,
-        },
-        headers: {
-          Authorization: "Bearer " + this.access_token,
-        },
-      })
-        .then(function (response) {
-          that.getInstances();
-          that.$q.notify({
-            type: "positive",
-            message: "ran action: " + action,
-          });
-          if (action == "destroy") {
-            that.instanceDialog = false;
-          }
-        })
-        .catch(function (error) {
-          let msg = "run action FAILED: " + action;
-          if (error.response && error.response.data) {
-            msg += ", " + error.response.data;
-          }
-          that.$q.notify({
-            type: "negative",
-            message: msg,
-          });
-        });
-    };
-    let message = undefined;
-    if (action == "destroy") {
-      message =
-        "are you sure you want to destroy? destroying will delete your instance and every bit of data.";
-    }
-    if (action == "reset") {
-      message =
-        "are you sure you want to reset? resetting will delete all your admin settings including your super user.";
-    }
-    if (action == "disable") {
-      message =
-        "are you sure you want to disable? disabling will make your instance unavailable.";
-    }
-    if (action == "restart") {
-      message =
-        "are you sure you want to restart? restarting will make your instance temporarly unavailable.";
-    }
-    if (message) {
-      this.confirmDialog(message).onOk(update);
-    } else {
-      update();
-    }
+  updateInstance: function (id, action) {
+    return axios({
+      method: "PUT",
+      url: this.url + "/instance",
+      data: {
+        action: action,
+        instance_id: id,
+      },
+      headers: {
+        Authorization: "Bearer " + this.access_token,
+      },
+    });
   },
-  getInstances: async function (cb) {
-    // if (!this.logged) {
-    //   throw Error("User not logged in!");
-    // }
-
+  getInstances: async function () {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance",
@@ -235,37 +186,9 @@ var saas = {
       },
     });
 
-    this.instances = response.data;
-    // this.setActiveInstance();
-    if (cb) {
-      cb();
-    }
-
     return response;
+  },
 
-    // if (error.response) {
-    //   msg = error.response.data.detail;
-    //   that.$q.notify({
-    //     type: "negative",
-    //     message: msg,
-    //   });
-    // }
-    // if (error.response.status == 401) {
-    //   let msg = "api_key timout...";
-    //   that.logged = false;
-    //   clearInterval(that.interval);
-    //   that.$q.notify({
-    //     type: "negative",
-    //     message: msg,
-    //   });
-    // }
-  },
-  copyInvoice: function () {
-    Quasar.copyToClipboard(this.active_instance.lnurl);
-    this.$q.notify({
-      message: "Copied to clipboard",
-    });
-  },
   logout: function () {
     console.log("### logout");
     this.logged = false;
