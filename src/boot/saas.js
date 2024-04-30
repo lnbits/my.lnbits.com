@@ -197,7 +197,18 @@ var saas = {
     localStorage.setItem("email", null);
   },
 
-  mapInstance: function (instance, index) {
+  mapInstance: function (instance) {
+    const progress = (start, stop) => {
+      const now = new Date().getTime() / 1000;
+      if (stop - start <= 0) {
+        return 100;
+      }
+
+      const percentage =  (1 - (stop - start) / (stop - now)) * 100;
+
+      console.log("## percentage", percentage, start, now, stop)
+      return percentage
+    };
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -208,7 +219,7 @@ var saas = {
       cratedDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       lnurl: instance.lnurl,
-      progress: 100 / (index + 1),
+      progress: progress(instance.timestamp, instance.timestamp_stop),
     };
   },
 };
