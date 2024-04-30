@@ -3,41 +3,11 @@ import axios from "axios";
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
-  // url: "https://saas.b1tco1n.org",
-  prompt: false,
-  instanceDialog: false,
-  loginDialogue: false,
-  signUpDialogue: false,
-  signupErrors: [],
+
   access_token: localStorage.getItem("token"),
   email: localStorage.getItem("email"),
   logged: false,
-  login_details: {
-    email: "",
-    password: "",
-  },
-  signup_details: {
-    email: "",
-    password: "",
-    password_repeat: "",
-  },
-  subdomain: "",
-  password: "",
-  active_instance: {},
-  active_instance_id: null,
-  interval: null,
-  instances: {},
 
-  date: function (date) {
-    return moment.unix(date).format("YYYY-MM-DD, hh:mm");
-  },
-  showPrompt: function () {
-    if (this.logged) {
-      this.createInstance();
-    } else {
-      this.loginDialogue = true;
-    }
-  },
   signup: async function (email, password, password2) {
     const { data } = await axios({
       method: "POST",
@@ -49,7 +19,6 @@ var saas = {
       },
     });
 
-    console.log("### data", data)
     this.access_token = data.access_token;
 
     // ##### BAD PRACTICE, FOR TESTING ONLY #####
@@ -59,7 +28,7 @@ var saas = {
 
     this.logged = true;
 
-    return data
+    return data;
   },
   login: async function (email, password) {
     const formData = new FormData();
@@ -83,44 +52,7 @@ var saas = {
     this.logged = true;
     return data;
   },
-  showInstance: function (id) {
-    this.active_instance_id = id;
-    this.setActiveInstance(id);
-  },
-  setActiveInstance: function (new_id) {
-    let id = new_id || this.active_instance_id;
-    if (id) {
-      this.active_instance = this.instances
-        .filter((instance) => {
-          return instance.id === id;
-        })
-        .pop();
-    }
-    if (new_id) {
-      this.instanceDialog = true;
-    }
-  },
-  qrUrl: function () {
-    return (
-      "https://legend.lnbits.com/api/v1/qrcode/" + this.active_instance.lnurl
-    );
-  },
-  openAdminUrl: function () {
-    let url =
-      "https://" +
-      this.active_instance.domain +
-      "/wallet?usr=" +
-      this.active_instance.adminuser;
-    window.open(url, "_blank");
-  },
-  downloadBackup: function () {
-    let url =
-      "https://" +
-      this.active_instance.domain +
-      "/admin/api/v1/backup/?usr=" +
-      this.active_instance.adminuser;
-    window.open(url, "_blank");
-  },
+
   createInstance: async function () {
     return axios({
       method: "POST",
@@ -129,38 +61,8 @@ var saas = {
         Authorization: "Bearer " + this.access_token,
       },
     });
-    // .then(function (response) {
-    //   that.$q.notify({
-    //     type: "positive",
-    //     message: "created instance!",
-    //   });
-    //   that.getInstances(function () {
-    //     that.showInstance(response.data.id);
-    //   });
-    // })
-    // .catch(function (error) {
-    //   if (error.response) {
-    //     msg = error.response.data.detail;
-    //     that.$q.notify({
-    //       type: "negative",
-    //       message: msg,
-    //     });
-    //   }
-    // });
   },
-  confirmDialog(message) {
-    return Quasar.Dialog.create({
-      message: message,
-      ok: {
-        flat: true,
-        color: "deep-purple",
-      },
-      cancel: {
-        flat: true,
-        color: "grey",
-      },
-    });
-  },
+
   updateInstance: function (id, action) {
     return axios({
       method: "PUT",
@@ -185,7 +87,6 @@ var saas = {
 
     return response;
   },
-
   logout: function () {
     console.log("### logout");
     this.logged = false;
