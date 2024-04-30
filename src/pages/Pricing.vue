@@ -44,11 +44,7 @@
     </q-page-container>
 
     <section class="flex row flex-center q-py-sm ">
-      <div class="text-weight-bold text-subtitle2 text-white ">
-        Copyright © {{ year }}, made with
-        <q-icon name="fas fa-heart"></q-icon>
-        by Pratik Patel
-      </div>
+
     </section>
   </q-layout>
 </template>
