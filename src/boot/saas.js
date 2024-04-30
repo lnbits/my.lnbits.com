@@ -1,6 +1,6 @@
 import axios from "axios";
 
-console.log("### saas", saas)
+console.log("### saas", saas);
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
@@ -10,8 +10,8 @@ var saas = {
   loginDialogue: false,
   signUpDialogue: false,
   signupErrors: [],
-  access_token: localStorage.getItem('token'),
-  email: localStorage.getItem('email'),
+  access_token: localStorage.getItem("token"),
+  email: localStorage.getItem("email"),
   logged: false,
   login_details: {
     email: "",
@@ -68,20 +68,20 @@ var saas = {
     const formData = new FormData();
     formData.append("username", email);
     formData.append("password", password);
-    const {data} = await axios({
+    const { data } = await axios({
       method: "POST",
       url: this.url + "/login",
       data: formData,
       headers: {
-        "Content-Type": "multipart/form-data"
+        "Content-Type": "multipart/form-data",
       },
     });
     this.access_token = data.access_token;
 
     // ##### BAD PRACTICE, FOR TESTING ONLY #####
-    localStorage.setItem('token', data.access_token);
+    localStorage.setItem("token", data.access_token);
 
-    localStorage.setItem('email', email);
+    localStorage.setItem("email", email);
 
     this.logged = true;
     return data;
@@ -124,33 +124,32 @@ var saas = {
       this.active_instance.adminuser;
     window.open(url, "_blank");
   },
-  createInstance: function () {
-    let that = this;
-    axios({
+  createInstance: async function () {
+    return axios({
       method: "POST",
       url: this.url + "/instance",
       headers: {
         Authorization: "Bearer " + this.access_token,
       },
-    })
-      .then(function (response) {
-        that.$q.notify({
-          type: "positive",
-          message: "created instance!",
-        });
-        that.getInstances(function () {
-          that.showInstance(response.data.id);
-        });
-      })
-      .catch(function (error) {
-        if (error.response) {
-          msg = error.response.data.detail;
-          that.$q.notify({
-            type: "negative",
-            message: msg,
-          });
-        }
-      });
+    });
+    // .then(function (response) {
+    //   that.$q.notify({
+    //     type: "positive",
+    //     message: "created instance!",
+    //   });
+    //   that.getInstances(function () {
+    //     that.showInstance(response.data.id);
+    //   });
+    // })
+    // .catch(function (error) {
+    //   if (error.response) {
+    //     msg = error.response.data.detail;
+    //     that.$q.notify({
+    //       type: "negative",
+    //       message: msg,
+    //     });
+    //   }
+    // });
   },
   confirmDialog(message) {
     return Quasar.Dialog.create({
@@ -232,7 +231,7 @@ var saas = {
       method: "GET",
       url: this.url + "/instance",
       headers: {
-        Authorization: "Bearer " + this.access_token
+        Authorization: "Bearer " + this.access_token,
       },
     });
 
@@ -242,7 +241,7 @@ var saas = {
       cb();
     }
 
-    return response
+    return response;
 
     // if (error.response) {
     //   msg = error.response.data.detail;
@@ -260,8 +259,6 @@ var saas = {
     //     message: msg,
     //   });
     // }
-
-
   },
   copyInvoice: function () {
     Quasar.copyToClipboard(this.active_instance.lnurl);
@@ -270,11 +267,26 @@ var saas = {
     });
   },
   logout: function () {
-    console.log("### logout")
+    console.log("### logout");
     this.logged = false;
-    this.access_token = null
-    localStorage.setItem('token', null)
-    localStorage.setItem('email', null)
+    this.access_token = null;
+    localStorage.setItem("token", null);
+    localStorage.setItem("email", null);
+  },
+
+  mapInstance: function (instance, index) {
+    return {
+      id: instance.id,
+      instanceLink: `https://${instance.domain}/wallet`,
+      backupLink: `https://${instance.domain}/admin/api/v1/backup`,
+      enabled: instance.is_enabled ? "Yes" : "No",
+      active: instance.is_active ? "Yes" : "No",
+      name: instance.domain,
+      cratedDate: new Date(instance.timestamp * 1000).toLocaleString(),
+      stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
+      lnurl: instance.lnurl,
+      progress: 100 / (index + 1),
+    };
   },
 };
 
