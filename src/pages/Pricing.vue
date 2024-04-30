@@ -11,7 +11,7 @@
           <q-btn square dense flat color="text-grey-7" to="/" label="Dashboard" icon="dashboard">
             <q-tooltip>Dashboard</q-tooltip>
           </q-btn>
-          <q-btn square dense flat color="text-grey-7" to="/Pricing" label="Pricing" icon="lock">
+          <q-btn square dense flat color="text-grey-7" to="/pricing" label="Pricing" icon="lock">
             <q-tooltip>Pricing</q-tooltip>
           </q-btn>
           <q-btn square dense flat color="text-grey-7" to="/Lock-2" label="Lock" icon="lock">

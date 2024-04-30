@@ -59,7 +59,7 @@
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/Pricing" active-class="q-item-no-link-highlighting">
+        <q-item to="/pricing" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="list" />
           </q-item-section>
@@ -106,13 +106,13 @@ export default defineComponent({
   },
   computed: {
     userEmail: function () {
-      console.log("### saas.email", saas.email);
       return saas.email;
     },
   },
   methods: {
     logout: function () {
       saas.logout();
+      window.location.href = "/";
     },
   },
 });

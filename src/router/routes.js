@@ -46,7 +46,7 @@ const routes = [
     component: () => import("pages/Maintenance.vue"),
   },
   {
-    path: "/Pricing",
+    path: "/pricing",
     component: () => import("pages/Pricing.vue"),
   },
   {
