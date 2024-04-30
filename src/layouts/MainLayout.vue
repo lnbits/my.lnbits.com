@@ -78,7 +78,6 @@
 
 <script>
 import EssentialLink from "components/EssentialLink.vue";
-import Messages from "./Messages.vue";
 
 import { defineComponent, ref } from "vue";
 import { useQuasar } from "quasar";
@@ -89,7 +88,6 @@ export default defineComponent({
 
   components: {
     EssentialLink,
-    Messages,
   },
 
   setup() {
