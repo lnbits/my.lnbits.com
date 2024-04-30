@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
     <table-dark-mode
-    v-if="data"
+      v-if="data"
       :data="data"
       :columns="columns"
       header="LNbits Instances"
@@ -12,6 +12,7 @@
 
 <script>
 import { defineComponent, defineAsyncComponent } from "vue";
+import { date } from "quasar";
 
 import { saas } from "boot/saas";
 
@@ -26,9 +27,27 @@ export default defineComponent({
     return {
       data: null,
       columns: [
-        { name: "ID", label: "Instance ID", field: "id", sortable: true, align: "left" },
-        { name: "enabled", label: "Enabled", field: "enabled", sortable: true, align: "left" },
-        { name: "active", label: "Active", field: "active", sortable: true, align: "left" },
+        {
+          name: "ID",
+          label: "Instance ID",
+          field: "id",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "enabled",
+          label: "Enabled",
+          field: "enabled",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "active",
+          label: "Active",
+          field: "active",
+          sortable: true,
+          align: "left",
+        },
         {
           name: "Name",
           label: "Name",
@@ -75,16 +94,22 @@ export default defineComponent({
           id: instance.id,
           instanceLink: `https://${instance.domain}/wallet?usr=${instance.adminuser}`,
           backupLink: `https://${instance.domain}/admin/api/v1/backup/?usr=${instance.adminuser}`,
-          enabled: instance.is_enabled,
-          active: instance.is_active,
+          enabled: instance.is_enabled ? "Yes" : "No",
+          active: instance.is_active ? "Yes" : "No",
           name: instance.domain,
-          cratedDate: instance.timestamp,
-          stopDate: instance.timestamp_stop,
+          cratedDate: date.formatDate(
+            instance.timestamp * 1000,
+            "YYYY-MM-DD HH:mm"
+          ),
+          stopDate: date.formatDate(
+            instance.timestamp_stop * 1000,
+            "YYYY-MM-DD HH:mm"
+          ),
           progress: 100 / (index + 1),
         };
       });
       // this.$set(this, "data", tableData )
-      this.data = tableData
+      this.data = tableData;
       console.log("### this.data", this.data);
     } catch (error) {
       console.log("## error 1", error);

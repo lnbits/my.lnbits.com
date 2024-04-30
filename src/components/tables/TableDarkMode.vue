@@ -5,6 +5,7 @@
         <span v-text="header"></span>
         <q-btn
           label="New Instance"
+          icon="add_to_queue"
           color="blue"
           class="float-right text-capitalize shadow-3"
         />
@@ -37,6 +38,7 @@
             <q-btn
               type="a"
               :href="props.row.backupLink"
+              target="_blank"
               icon="download"
               size="sm"
               flat
@@ -46,19 +48,19 @@
                 Download Backup.
               </q-tooltip>
             </q-btn>
-            <q-btn icon="restart_alt" title="Restart" size="sm" flat dense>
+            <q-btn icon="restart_alt"  size="sm" flat dense>
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Restart: restarting will make your instance temporarly
                 unavailable.
               </q-tooltip>
             </q-btn>
 
-            <q-btn icon="power_off" title="Reset" size="sm" flat dense>
+            <q-btn icon="power_off"  size="sm" flat dense>
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Reset: delete all your admin settings including your super user.
               </q-tooltip> </q-btn
             >
-            <q-btn icon="stop" title="Disable" size="sm" flat dense>
+            <q-btn icon="stop"  size="sm" flat dense>
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Stop: it will make your instance unavailable.
               </q-tooltip>
