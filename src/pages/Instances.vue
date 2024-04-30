@@ -2,9 +2,6 @@
     <q-page class="q-pa-sm">
         <table-dark-mode v-if="data" :data="data" :columns="columns" header="LNbits Instances" class="q-mt-lg"></table-dark-mode>
 
-        <!-- <p style="color: white;">
-            <q-img class="qrcode" :src="qrUrl()" alt="LNURLp"></q-img>
-        </p> -->
     </q-page>
 </template>
 
@@ -90,8 +87,8 @@ export default defineComponent({
             const tableData = (data || []).map((instance, index) => {
                 return {
                     id: instance.id,
-                    instanceLink: `https://${instance.domain}/wallet}`,
-                    backupLink: `https://${instance.domain}/admin/api/v1/backup/}`,
+                    instanceLink: `https://${instance.domain}/wallet`,
+                    backupLink: `https://${instance.domain}/admin/api/v1/backup`,
                     enabled: instance.is_enabled ? "Yes" : "No",
                     active: instance.is_active ? "Yes" : "No",
                     name: instance.domain,
@@ -103,6 +100,7 @@ export default defineComponent({
                         instance.timestamp_stop * 1000,
                         "YYYY-MM-DD HH:mm"
                     ),
+                    lnurl: instance.lnurl,
                     progress: 100 / (index + 1),
                 };
             });
@@ -111,11 +109,6 @@ export default defineComponent({
             console.log("### this.data", this.data);
         } catch (error) {
             console.log("## error 1", error);
-        }
-    },
-    methods: {
-        qrUrl: function() {
-            return `https://demo.lnbits.com/api/v1/qrcode/adoringoryx9.lnbits.com`
         }
     }
 });

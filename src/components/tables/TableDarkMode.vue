@@ -23,7 +23,7 @@
         <template v-slot:body-cell-Action="props">
           <q-td :props="props">
             <q-btn
-              @click="extendInstance(props.row.id)"
+              @click="extendInstance(props.row)"
               icon="qr_code_2"
               size="sm"
               flat
@@ -122,9 +122,11 @@
       </q-table>
     </q-card-section>
   </q-card>
-  <q-dialog v-model="instanceDialog" position="top">
-    <q-card style="min-height: 200px" class="q-px-lg q-py-lg">
-      <h3>Instance Control</h3>
+  <q-dialog v-model="qrDialog" position="top">
+    <q-card style="min-height: 200px" class="q-pa-lg">
+      <h3>
+        <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
+      </h3>
 
       <p style="color: white">
         <q-img
@@ -134,7 +136,8 @@
           alt="LNURLp"
         />
       </p>
-      <div class="row q-mt-lg">
+      <h5><span v-text="activeInstance.name"></span></h5>
+      <div class="row q-mt-md">
         <q-btn
           color="deep-purple"
           @click="copyInvoice"
@@ -155,7 +158,8 @@
 <script>
 import { defineComponent } from "vue";
 
-import { useQuasar } from "quasar";
+import { useQuasar, copyToClipboard } from "quasar";
+
 
 export default defineComponent({
   name: "TableDarkMode",
@@ -163,13 +167,15 @@ export default defineComponent({
 
   data() {
     return {
-      instanceDialog: false,
+      qrDialog: false,
+      activeInstance: null,
     };
   },
   setup() {
     const $q = useQuasar();
 
     return {
+      $q,
       confirm(title, message) {
         return $q.dialog({
           title,
@@ -241,11 +247,20 @@ export default defineComponent({
           console.log("### Cancel");
         });
     },
-    extendInstance: function (id) {
-      this.instanceDialog = true;
+    extendInstance: function (instance) {
+      this.activeInstance = instance;
+      this.qrDialog = true;
+
+      console.log("### activeInstance", this.activeInstance);
     },
     qrUrl: function () {
-      return `https://demo.lnbits.com/api/v1/qrcode/adoringoryx9.lnbits.com`;
+      return `https://demo.lnbits.com/api/v1/qrcode/${this.activeInstance.name}`;
+    },
+    copyInvoice: function () {
+     copyToClipboard(this.activeInstance.lnurl);
+      // this.$q.notify({
+      //     message: "Copied to clipboard",
+      // })
     },
   },
 });
