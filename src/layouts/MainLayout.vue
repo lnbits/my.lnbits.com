@@ -14,16 +14,7 @@
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
           <span v-text="userEmail"></span>
-          <q-btn
-            round
-            dense
-            flat
-            color="white"
-            :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
-            @click="$q.fullscreen.toggle()"
-            v-if="$q.screen.gt.sm"
-          >
-          </q-btn>
+
           <q-btn
             round
             dense
@@ -80,7 +71,6 @@
 import EssentialLink from "components/EssentialLink.vue";
 
 import { defineComponent, ref } from "vue";
-import { useQuasar } from "quasar";
 import { saas } from "boot/saas";
 
 export default defineComponent({
@@ -92,10 +82,8 @@ export default defineComponent({
 
   setup() {
     const leftDrawerOpen = ref(false);
-    const $q = useQuasar();
 
     return {
-      $q,
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
