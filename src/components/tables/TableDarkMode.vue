@@ -23,6 +23,17 @@
         <template v-slot:body-cell-Action="props">
           <q-td :props="props">
             <q-btn
+              @click="extendInstance(props.row.id)"
+              icon="qr_code_2"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Extend the life of this instance.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
               type="a"
               :href="props.row.instanceLink"
               target="_blank"
@@ -111,6 +122,34 @@
       </q-table>
     </q-card-section>
   </q-card>
+  <q-dialog v-model="instanceDialog" position="top">
+    <q-card style="min-height: 200px" class="q-px-lg q-py-lg">
+      <h3>Instance Control</h3>
+
+      <p style="color: white">
+        <q-img
+          class="qrcode"
+          style="width: 100%; height: auto"
+          :src="qrUrl()"
+          alt="LNURLp"
+        />
+      </p>
+      <div class="row q-mt-lg">
+        <q-btn
+          color="deep-purple"
+          @click="copyInvoice"
+          v-text="'Copy LNURL'"
+        ></q-btn>
+        <q-btn
+          v-close-popup
+          flat
+          color="grey"
+          class="q-ml-auto"
+          v-text="'Close'"
+        ></q-btn>
+      </div>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -121,10 +160,11 @@ import { useQuasar } from "quasar";
 export default defineComponent({
   name: "TableDarkMode",
   props: ["columns", "data", "header"],
-  watch: {
-    data(o, n) {
-      console.log("### o n", o, n);
-    },
+
+  data() {
+    return {
+      instanceDialog: false,
+    };
   },
   setup() {
     const $q = useQuasar();
@@ -200,6 +240,12 @@ export default defineComponent({
         .onCancel(() => {
           console.log("### Cancel");
         });
+    },
+    extendInstance: function (id) {
+      this.instanceDialog = true;
+    },
+    qrUrl: function () {
+      return `https://demo.lnbits.com/api/v1/qrcode/adoringoryx9.lnbits.com`;
     },
   },
 });
