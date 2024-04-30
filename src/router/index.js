@@ -38,10 +38,13 @@ export default route(function (/* { store, ssrContext } */) {
   router.beforeEach((to, from, next) => {
 
     if (to.path !== '/login' && !saas.access_token) {
-      next("/login");
-    } else {
-      next(true);
+      return next("/login");
     }
+    if (to.path == '/login' && saas.access_token) {
+      return next("/");
+    }
+    next(true);
+
   });
 
   return router;
