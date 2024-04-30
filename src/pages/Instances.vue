@@ -1,17 +1,12 @@
 <template>
   <q-page class="q-pa-sm">
     <table-dark-mode
-      :data="data"
-      :columns="columns"
-      header="LNbits Instances"
-      class="q-mt-lg"
     ></table-dark-mode>
   </q-page>
 </template>
 
 <script>
 import { defineComponent, defineAsyncComponent } from "vue";
-import { saas } from "boot/saas";
 
 export default defineComponent({
   name: "Instences",
@@ -22,77 +17,8 @@ export default defineComponent({
   },
   data() {
     return {
-      data: [],
-      columns: [
-        {
-          name: "ID",
-          label: "Instance ID",
-          field: "id",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "Name",
-          label: "Name",
-          field: "name",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "enabled",
-          label: "Enabled",
-          field: "enabled",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "active",
-          label: "Active",
-          field: "active",
-          sortable: true,
-          align: "left",
-        },
 
-        {
-          name: "Crated Date",
-          label: "Crated Date",
-          field: "cratedDate",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "Stop Date",
-          label: "Stop Date",
-          field: "stopDate",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "Progress",
-          label: "Progress",
-          field: "Progress",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "Action",
-          label: "",
-          field: "Action",
-          sortable: false,
-          align: "center",
-        },
-      ],
     };
-  },
-  async created() {
-    try {
-      const { data } = await saas.getInstances();
-      const tableData = (data || []).map(saas.mapInstance);
-      // this.$set(this, "data", tableData )
-      this.data = tableData;
-    } catch (error) {
-      console.log("## error 1", error);
-    }
   },
 });
 </script>

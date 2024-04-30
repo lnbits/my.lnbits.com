@@ -2,7 +2,7 @@
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
       <div class="text-h6 text-white">
-        <span v-text="header"></span>
+        <span>LNbits Instances</span>
         <q-btn
           @click="createInstance"
           label="New Instance"
@@ -171,10 +171,10 @@ import { saas } from "src/boot/saas";
 
 export default defineComponent({
   name: "TableDarkMode",
-  props: ["columns", "data", "header"],
 
   data() {
     return {
+      data: [],
       qrDialog: false,
       activeInstance: null,
       pagination: {
@@ -182,6 +182,65 @@ export default defineComponent({
         page: 1,
       },
       inProgress: false,
+      columns: [
+        {
+          name: "ID",
+          label: "Instance ID",
+          field: "id",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "Name",
+          label: "Name",
+          field: "name",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "enabled",
+          label: "Enabled",
+          field: "enabled",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "active",
+          label: "Active",
+          field: "active",
+          sortable: true,
+          align: "left",
+        },
+
+        {
+          name: "Crated Date",
+          label: "Crated Date",
+          field: "cratedDate",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "Stop Date",
+          label: "Stop Date",
+          field: "stopDate",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "Progress",
+          label: "Progress",
+          field: "Progress",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "Action",
+          label: "",
+          field: "Action",
+          sortable: false,
+          align: "center",
+        },
+      ],
     };
   },
   setup() {
@@ -332,6 +391,7 @@ export default defineComponent({
         }
       });
     },
+    checkInstance: function (instance) {},
     extendInstance: function (instance) {
       this.activeInstance = instance;
       this.qrDialog = true;
@@ -347,6 +407,17 @@ export default defineComponent({
         color: "grey",
       });
     },
+  },
+  async created() {
+    try {
+      const { data } = await saas.getInstances();
+      const tableData = (data || []).map(saas.mapInstance);
+
+      this.data = tableData;
+      console.log("## tableData", tableData);
+    } catch (error) {
+      console.warn(error);
+    }
   },
 });
 </script>
