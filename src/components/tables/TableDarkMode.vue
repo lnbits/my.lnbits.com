@@ -14,7 +14,7 @@
     </q-card-section>
     <q-separator color="white" />
     <q-card-section class="q-pa-none">
-      <q-table dark class="table-bg" :rows="data" :columns="columns">
+      <q-table dark class="table-bg" :rows="data" :columns="columns" :pagination.sync="pagination">
         <template v-slot:body-cell-Action="props">
           <q-td :props="props">
             <q-btn
@@ -165,6 +165,10 @@ export default defineComponent({
     return {
       qrDialog: false,
       activeInstance: null,
+      pagination: {
+        rowsPerPage: 25,
+        page: 1,
+      },
     };
   },
   setup() {
