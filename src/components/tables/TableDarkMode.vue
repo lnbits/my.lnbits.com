@@ -48,24 +48,49 @@
                 Download Backup.
               </q-tooltip>
             </q-btn>
-            <q-btn icon="restart_alt"  size="sm" flat dense>
+            <q-btn
+              @click="restartInstance(props.row.id)"
+              icon="restart_alt"
+              size="sm"
+              flat
+              dense
+            >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Restart: restarting will make your instance temporarly
                 unavailable.
               </q-tooltip>
             </q-btn>
 
-            <q-btn icon="power_off"  size="sm" flat dense>
+            <q-btn
+              @click="resetInstance(props.row.id)"
+              icon="power_off"
+              size="sm"
+              flat
+              dense
+            >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Reset: delete all your admin settings including your super user.
-              </q-tooltip> </q-btn
-            >
-            <q-btn icon="stop"  size="sm" flat dense>
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Stop: it will make your instance unavailable.
               </q-tooltip>
             </q-btn>
-            <q-btn icon="delete" size="sm" class="q-ml-sm" flat dense>
+            <q-btn
+              @click="disableInstance(props.row.id)"
+              icon="stop"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Disable: it will make your instance unavailable.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              @click="destroyInstance(props.row.id)"
+              icon="delete"
+              size="sm"
+              class="q-ml-sm"
+              flat
+              dense
+            >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Destroy: destroying will delete your instance and every bit of
                 data.
@@ -91,6 +116,8 @@
 <script>
 import { defineComponent } from "vue";
 
+import { useQuasar } from "quasar";
+
 export default defineComponent({
   name: "TableDarkMode",
   props: ["columns", "data", "header"],
@@ -100,7 +127,17 @@ export default defineComponent({
     },
   },
   setup() {
+    const $q = useQuasar();
+
     return {
+      confirm(title, message) {
+        return $q.dialog({
+          title,
+          message,
+          cancel: true,
+          persistent: true,
+        });
+      },
       getColor(val) {
         if (val > 70 && val <= 100) {
           return "red";
@@ -110,6 +147,60 @@ export default defineComponent({
         return "green";
       },
     };
+  },
+  methods: {
+    restartInstance: function (id) {
+      this.confirm(
+        `Restart ${id}`,
+        "Are you sure you want to restart?" +
+          " Restarting will make your instance temporarly unavailable."
+      )
+        .onOk(() => {
+          console.log("###  OK catcher");
+        })
+        .onCancel(() => {
+          console.log("### Cancel");
+        });
+    },
+    resetInstance: function (id) {
+      this.confirm(
+        `Reset ${id}`,
+        "Are you sure you want to reset?" +
+          " Resetting will delete all your admin settings including your super user."
+      )
+        .onOk(() => {
+          console.log("###  OK catcher");
+        })
+        .onCancel(() => {
+          console.log("### Cancel");
+        });
+    },
+    disableInstance: function (id) {
+      this.confirm(
+        `Disable ${id}`,
+        "Are you sure you want to disable?" +
+          " Disabling will make your instance unavailable."
+      )
+        .onOk(() => {
+          console.log("###  OK catcher");
+        })
+        .onCancel(() => {
+          console.log("### Cancel");
+        });
+    },
+    destroyInstance: function (id) {
+      this.confirm(
+        `Destroy ${id}`,
+        "Are you sure you want to destroy?" +
+          " destroying will delete your instance and every bit of data."
+      )
+        .onOk(() => {
+          console.log("###  OK catcher");
+        })
+        .onCancel(() => {
+          console.log("### Cancel");
+        });
+    },
   },
 });
 </script>

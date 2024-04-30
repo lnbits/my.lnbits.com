@@ -35,6 +35,13 @@ export default defineComponent({
           align: "left",
         },
         {
+          name: "Name",
+          label: "Name",
+          field: "name",
+          sortable: true,
+          align: "left",
+        },
+        {
           name: "enabled",
           label: "Enabled",
           field: "enabled",
@@ -48,13 +55,7 @@ export default defineComponent({
           sortable: true,
           align: "left",
         },
-        {
-          name: "Name",
-          label: "Name",
-          field: "name",
-          sortable: true,
-          align: "left",
-        },
+
         {
           name: "Crated Date",
           label: "Crated Date",
