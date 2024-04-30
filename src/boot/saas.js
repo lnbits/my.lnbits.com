@@ -38,30 +38,28 @@ var saas = {
       this.loginDialogue = true;
     }
   },
-  signup: function () {
-    let that = this;
-    axios({
+  signup: async function (email, password, password2) {
+    const { data } = await axios({
       method: "POST",
       url: this.url + "/signup",
-      data: this.signup_details,
-    })
-      .then(function (response) {
-        that.$q.notify({
-          type: "positive",
-          message: "signup successful!",
-        });
-        that.signUpDialogue = false;
-        that.loginDialogue = true;
-      })
-      .catch(function (error) {
-        if (error.response) {
-          that.signupErrors = error.response.data.detail;
-          that.$q.notify({
-            type: "negative",
-            message: "signup failed.",
-          });
-        }
-      });
+      data: {
+        email,
+        password,
+        password_repeat: password2,
+      },
+    });
+
+    console.log("### data", data)
+    this.access_token = data.access_token;
+
+    // ##### BAD PRACTICE, FOR TESTING ONLY #####
+    localStorage.setItem("token", data.access_token);
+
+    localStorage.setItem("email", email);
+
+    this.logged = true;
+
+    return data
   },
   login: async function (email, password) {
     const formData = new FormData();

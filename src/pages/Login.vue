@@ -1,33 +1,62 @@
 <template>
-    <q-layout>
-        <q-page-container>
-            <q-page class="flex bg-image flex-center">
-                <q-card v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }">
-                    <q-card-section>
-                        <q-avatar size="103px" class="absolute-center shadow-10">
-                            <img src="profile.svg" />
-                        </q-avatar>
-                    </q-card-section>
-                    <q-card-section>
-                        <div class="text-center q-pt-lg">
-                            <div class="col text-h6 ellipsis">Log in</div>
-                        </div>
-                    </q-card-section>
-                    <q-card-section>
-                        <q-form class="q-gutter-md">
-                            <q-input filled v-model="username" label="Username" lazy-rules />
+  <q-layout>
+    <q-page-container>
+      <q-page class="flex bg-image flex-center">
+        <q-card
+          v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
+        >
+          <q-card-section>
+            <q-avatar size="103px" class="absolute-center shadow-10">
+              <img src="profile.svg" />
+            </q-avatar>
+          </q-card-section>
+          <q-card-section>
+            <div class="text-center q-pt-lg">
+              <div class="col text-h6 ellipsis">Log in</div>
+            </div>
+          </q-card-section>
+          <q-card-section>
+            <q-form class="q-gutter-md">
+              <q-input filled v-model="username" label="Username" lazy-rules />
 
-                            <q-input type="password" filled v-model="password" label="Password" lazy-rules />
+              <q-input
+                type="password"
+                filled
+                v-model="password"
+                label="Password"
+                lazy-rules
+              />
 
-                            <div>
-                                <q-btn label="Login" @click="login" type="button" color="primary" />
-                            </div>
-                        </q-form>
-                    </q-card-section>
-                </q-card>
-            </q-page>
-        </q-page-container>
-    </q-layout>
+              <q-input
+                v-if="isSignupRequest"
+                type="password"
+                filled
+                v-model="passwordRepeat"
+                label="Password Repeat"
+                lazy-rules
+              />
+
+              <div>
+                <q-btn
+                  label="Login"
+                  @click="login"
+                  type="button"
+                  color="primary"
+                />
+                <q-btn
+                  label="Sign Up"
+                  @click="signup"
+                  type="button"
+                  color="secondary"
+                  class="float-right"
+                />
+              </div>
+            </q-form>
+          </q-card-section>
+        </q-card>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script>
@@ -38,40 +67,71 @@ import { useQuasar } from "quasar";
 import { saas } from "boot/saas";
 
 export default defineComponent({
-    setup() {
-        const $q = useQuasar();
-        return {
-            q:$q,
-            username: ref(""),
-            password: ref(""),
-        };
-    },
+  setup() {
+    const $q = useQuasar();
+    return {
+      q: $q,
+      username: ref(""),
+      password: ref(""),
+      passwordRepeat: ref(""),
+      isSignupRequest: ref(false),
+    };
+  },
 
-    methods: {
-        async login() {
-            try {
-                await saas.login(this.username, this.password);
-                this.q.notify({
-                    message: "Logged in!",
-                    color: "positive",
-                });
-                // window.location.href = "/";
-                setTimeout(()=> window.location.href = "/", 500)
-            } catch (error) {
-                console.log("### error", error);
-                this.q.notify({
-                    message: "Failed to login!",
-                    color: "negative",
-                    icon: "warning",
-                });
-            }
-        },
+  methods: {
+    async login() {
+      try {
+        await saas.login(this.username, this.password);
+        this.q.notify({
+          message: "Logged in!",
+          color: "positive",
+        });
+        // window.location.href = "/";
+        setTimeout(() => (window.location.href = "/"), 500);
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: "Failed to login!",
+          color: "negative",
+          icon: "warning",
+        });
+      }
     },
+    async signup() {
+      if (!this.isSignupRequest) {
+        this.isSignupRequest = true;
+        return;
+      }
+      if (this.password !== this.passwordRepeat) {
+        this.q.notify({
+          message: "Passwords do not match!",
+          color: "negative",
+          icon: "warning",
+        });
+        return;
+      }
+      try {
+        await saas.signup(this.username, this.password, this.passwordRepeat);
+        this.q.notify({
+          message: "Signed Up!",
+          color: "positive",
+        });
+        setTimeout(() => (window.location.href = "/"), 500);
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: "Failed to sign up!",
+          color: "negative",
+          icon: "warning",
+        });
+      }
+    },
+  },
 });
 </script>
 
 <style>
 .bg-image {
-    background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
+  background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
 }
 </style>

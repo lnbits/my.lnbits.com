@@ -90,7 +90,6 @@ export default defineComponent({
       const tableData = (data || []).map(saas.mapInstance);
       // this.$set(this, "data", tableData )
       this.data = tableData;
-      console.log("### this.data", this.data);
     } catch (error) {
       console.log("## error 1", error);
     }
