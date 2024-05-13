@@ -1,12 +1,12 @@
 {
-  "name": "LNbits SaaS UI",
+  "name": "lnbits-saas-ui",
   "version": "0.0.1",
   "description": "LNbits SaaS UI",
   "productName": "LNbits SaaS UI",
-  "author": "pratikpatelpp802@gmail.com",
   "private": true,
   "scripts": {
     "start": "quasar dev",
+    "build": "quasar build",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
