@@ -11,7 +11,7 @@
             </q-avatar>
           </q-card-section>
           <q-card-section>
-            <div class="text-center q-pt-lg">
+            <div class="text-center q-mt-lg q-pt-lg">
               <div v-if="isSignupRequest" class="col text-h6 ellipsis">Sign Up</div>
               <div v-else class="col text-h6 ellipsis">Login</div>
             </div>
