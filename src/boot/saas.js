@@ -3,6 +3,7 @@ import axios from "axios";
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
+  serverTime: null,
 
   access_token: localStorage.getItem("token"),
   email: localStorage.getItem("email"),
@@ -83,23 +84,37 @@ var saas = {
 
     return response;
   },
+  status: async function () {
+    const response = await axios({
+      method: "GET",
+      url: this.url,
+    });
+
+    this.serverTime = response.data.timestamp;
+
+    return response;
+  },
   logout: function () {
     this.access_token = null;
     this.email = null;
     localStorage.clear();
+    // todo: call endpoint
   },
 
   mapInstance: function (instance) {
-    const progress = (start, stop) => {
+    const progress = (start, stop, serverTime) => {
       const now = new Date().getTime() / 1000;
-      if (stop - start <= 0) {
+      if (!serverTime) {
+        return 0;
+      }
+      if (stop - start <= 0 || stop - serverTime <= 0) {
         return 100;
       }
 
-      const percentage = (1 - (stop - start) / (stop - now)) * 100;
+      const percentage = (1 - (stop - serverTime) / (stop - start)) * 100;
 
       console.log("## percentage", percentage, start, now, stop);
-      return percentage;
+      return Math.round(percentage);
     };
     return {
       id: instance.id,
@@ -113,7 +128,11 @@ var saas = {
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-      progress: progress(instance.timestamp, instance.timestamp_stop),
+      progress: progress(
+        instance.timestamp,
+        instance.timestamp_stop,
+        this.serverTime
+      ),
     };
   },
 };

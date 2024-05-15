@@ -118,7 +118,8 @@
         </template>
 
         <template v-slot:body-cell-Progress="props">
-          <q-td :props="props">
+          <q-td :props="props" tool-tip="xxxxx">
+            <q-tooltip><span v-text="props.row.progress + '%'"></span></q-tooltip>
             <q-linear-progress
               dark
               :color="getColor(props.row.progress)"
@@ -145,11 +146,7 @@
         />
       </p>
       <h5><span v-text="activeInstance.name"></span></h5>
-      <q-linear-progress
-        indeterminate
-        color="secondary"
-        class="q-mt-sm"
-      />
+      <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <div class="row q-mt-md">
         <q-btn
           color="deep-purple"
@@ -400,9 +397,8 @@ export default defineComponent({
       const retryId = setInterval(async () => {
         try {
           const { data } = await saas.getInstances();
-          console.log("### checkInstance", data);
           const updatedInstance = (data || [])
-            .map(saas.mapInstance)
+            .map(i => saas.mapInstance(i))
             .find((i) => i.id === instance.id);
           if (
             updatedInstance &&
@@ -415,13 +411,23 @@ export default defineComponent({
             });
           }
           if (!this.showPaymentQrDialog) {
-            console.log("### clearInterval no dialog", retryId);
             clearInterval(retryId);
           }
         } catch (error) {
           console.warn(error);
         }
       }, 3000);
+    },
+    serverStatus: async function () {
+      try {
+        await saas.status();
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: "Failed to check SaaS Server status!",
+          color: "negative",
+        });
+      }
     },
     extendInstance: function (instance) {
       this.activeInstance = instance;
@@ -443,7 +449,8 @@ export default defineComponent({
   async created() {
     try {
       const { data } = await saas.getInstances();
-      const tableData = (data || []).map(saas.mapInstance);
+      await this.serverStatus()
+      const tableData = (data || []).map(i => saas.mapInstance(i));
 
       this.data = tableData;
     } catch (error) {
