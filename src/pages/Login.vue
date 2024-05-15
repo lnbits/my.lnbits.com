@@ -39,11 +39,19 @@
               <q-linear-progress v-if="inProgress" indeterminate color="secondary" class="q-mt-sm" />
               <div>
                 <q-btn
+                  v-if="!this.isSignupRequest"
                   label="Login"
                   @click="login"
                   type="button"
                   color="primary"
                   :disable="inProgress"
+                />
+                <q-btn
+                  v-else
+                  @click="this.isSignupRequest = false"
+                  label="Back"
+                  type="button"
+                  color="grey"
                 />
                 <q-btn
                   label="Sign Up"
