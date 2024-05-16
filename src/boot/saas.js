@@ -5,6 +5,7 @@ var saas = {
   url: "https://api.lnbits.com",
   serverTime: null,
 
+  access_token: localStorage.getItem("token"),
   email: localStorage.getItem("email"),
 
   signup: async function (email, password, password2) {
@@ -18,6 +19,11 @@ var saas = {
       },
     });
 
+    this.access_token = data.access_token;
+
+    // ##### BAD PRACTICE, FOR TESTING ONLY #####
+    localStorage.setItem("token", data.access_token);
+
     localStorage.setItem("email", email);
 
     return data;
@@ -30,12 +36,15 @@ var saas = {
       method: "POST",
       url: this.url + "/login",
       data: formData,
-      // withCredentials: true,
-      // xsrfCookieName: "access_token",
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
+    this.access_token = data.access_token;
+
+    // ##### BAD PRACTICE, FOR TESTING ONLY #####
+    localStorage.setItem("token", data.access_token);
+
     localStorage.setItem("email", email);
 
     return data;
@@ -45,6 +54,9 @@ var saas = {
     return axios({
       method: "POST",
       url: this.url + "/instance",
+      headers: {
+        Authorization: "Bearer " + this.access_token,
+      },
     });
   },
 
@@ -56,12 +68,18 @@ var saas = {
         action: action,
         instance_id: id,
       },
+      headers: {
+        Authorization: "Bearer " + this.access_token,
+      },
     });
   },
   getInstances: async function () {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance",
+      headers: {
+        Authorization: "Bearer " + this.access_token,
+      },
     });
 
     return response;
@@ -77,6 +95,7 @@ var saas = {
     return response;
   },
   logout: function () {
+    this.access_token = null;
     this.email = null;
     localStorage.clear();
     // todo: call endpoint
