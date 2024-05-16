@@ -27,7 +27,7 @@
         :columns="columns"
         :pagination.sync="pagination"
       >
-        <template v-slot:body-cell-Action="props">
+        <template v-slot:body-cell-action="props">
           <q-td :props="props">
             <q-btn
               @click="extendInstance(props.row)"
@@ -140,14 +140,24 @@
 
         <template v-slot:body-cell-name="props">
           <q-td :props="props">
-            <span v-text="props.row.name"></span>
-            <br />
-            <q-badge v-if="props.row.expired" color="yellow" text-color="black">
-              <span
-                >Instance was stopped because you ran out of time. Pay the LNURL
-                to start it again.</span
-              >
-            </q-badge>
+            <!-- <span v-text="props.row.name"></span> -->
+            <q-btn
+              type="a"
+              :href="props.row.instanceLink"
+              :label="props.row.name"
+              target="_blank"
+              no-caps
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <span v-if="props.row.expired"
+                  >Instance was stopped because you ran out of time. Pay the
+                  LNURL to start it again.</span
+                >
+                <span v-else> Open the instance in a new tab. </span>
+              </q-tooltip>
+            </q-btn>
           </q-td>
         </template>
       </q-table>
@@ -208,6 +218,20 @@ export default defineComponent({
       inProgress: false,
       columns: [
         {
+          name: "action",
+          label: "",
+          field: "action",
+          sortable: false,
+          align: "center",
+        },
+        {
+          name: "name",
+          label: "Name",
+          field: "name",
+          sortable: true,
+          align: "left",
+        },
+        {
           name: "id",
           label: "Instance ID",
           field: "id",
@@ -215,9 +239,9 @@ export default defineComponent({
           align: "left",
         },
         {
-          name: "name",
-          label: "Name",
-          field: "name",
+          name: "progress",
+          label: "Progress",
+          field: "Progress",
           sortable: true,
           align: "left",
         },
@@ -249,20 +273,6 @@ export default defineComponent({
           field: "stopDate",
           sortable: true,
           align: "left",
-        },
-        {
-          name: "progress",
-          label: "Progress",
-          field: "Progress",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "Action",
-          label: "",
-          field: "Action",
-          sortable: false,
-          align: "center",
         },
       ],
     };
