@@ -30,7 +30,7 @@ var saas = {
       method: "POST",
       url: this.url + "/login",
       data: formData,
-      // withCredentials: true,
+      withCredentials: true,
       // xsrfCookieName: "access_token",
       headers: {
         "Content-Type": "multipart/form-data",
