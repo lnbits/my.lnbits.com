@@ -11,6 +11,7 @@ var saas = {
     const { data } = await axios({
       method: "POST",
       url: this.url + "/signup",
+      withCredentials: true,
       data: {
         email,
         password,
@@ -31,7 +32,6 @@ var saas = {
       url: this.url + "/login",
       data: formData,
       withCredentials: true,
-      // xsrfCookieName: "access_token",
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -45,6 +45,7 @@ var saas = {
     return axios({
       method: "POST",
       url: this.url + "/instance",
+      withCredentials: true,
     });
   },
 
@@ -52,6 +53,7 @@ var saas = {
     return axios({
       method: "PUT",
       url: this.url + "/instance",
+      withCredentials: true,
       data: {
         action: action,
         instance_id: id,
@@ -62,6 +64,7 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance",
+      withCredentials: true,
     });
 
     return response;
@@ -70,6 +73,7 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url,
+      withCredentials: true,
     });
 
     this.serverTime = response.data.timestamp;
