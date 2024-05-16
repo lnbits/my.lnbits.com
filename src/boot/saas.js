@@ -82,7 +82,7 @@ var saas = {
   },
   logout: async function () {
     const response = await axios({
-      method: "GET",
+      method: "POST",
       url: this.url + "/logout",
       withCredentials: true,
     });
