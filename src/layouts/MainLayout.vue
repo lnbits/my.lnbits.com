@@ -71,6 +71,7 @@
 import EssentialLink from "components/EssentialLink.vue";
 
 import { defineComponent, ref } from "vue";
+import { useQuasar } from "quasar";
 import { saas } from "boot/saas";
 
 export default defineComponent({
@@ -81,9 +82,11 @@ export default defineComponent({
   },
 
   setup() {
+    const $q = useQuasar();
     const leftDrawerOpen = ref(false);
 
     return {
+      q: $q,
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -96,9 +99,21 @@ export default defineComponent({
     },
   },
   methods: {
-    logout: function () {
-      saas.logout();
-      window.location.href = "/";
+    logout: async function () {
+      try {
+        await saas.logout();
+        this.q.notify({
+          message: "Logged out!",
+          color: "positive",
+        });
+        setTimeout(() => (window.location.href = "/login"), 500);
+      } catch (error) {
+        this.q.notify({
+          message: "Failed to logout!",
+          color: "negative",
+          icon: "warning",
+        });
+      }
     },
   },
 });

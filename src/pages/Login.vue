@@ -99,7 +99,6 @@ export default defineComponent({
           message: "Logged in!",
           color: "positive",
         });
-        // window.location.href = "/";
         setTimeout(() => (window.location.href = "/"), 500);
       } catch (error) {
         console.warn(error);

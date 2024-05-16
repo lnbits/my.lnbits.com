@@ -80,10 +80,16 @@ var saas = {
 
     return response;
   },
-  logout: function () {
+  logout: async function () {
+    const response = await axios({
+      method: "GET",
+      url: this.url + "/logout",
+      withCredentials: true,
+    });
+    console.log('### response', response)
     this.email = null;
     localStorage.clear();
-    // todo: call endpoint
+    return response;
   },
 
   mapInstance: function (instance) {
