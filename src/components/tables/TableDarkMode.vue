@@ -145,6 +145,7 @@
               type="a"
               :href="props.row.instanceLink"
               :label="props.row.name"
+              :disable="!props.row.enabled"
               target="_blank"
               no-caps
               flat

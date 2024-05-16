@@ -10,7 +10,7 @@
           icon="menu"
           aria-label="Menu"
         />
-        <q-toolbar-title> My bits </q-toolbar-title>
+        <q-toolbar-title> My Bits </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
           <span v-text="userEmail"></span>
