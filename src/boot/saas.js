@@ -94,7 +94,6 @@ var saas = {
 
   mapInstance: function (instance) {
     const progress = (start, stop, serverTime) => {
-      const now = new Date().getTime() / 1000;
       if (!serverTime) {
         return 0;
       }
@@ -104,7 +103,6 @@ var saas = {
 
       const percentage = (1 - (stop - serverTime) / (stop - start)) * 100;
 
-      console.log("## percentage", percentage, start, now, stop);
       return Math.round(percentage);
     };
     return {

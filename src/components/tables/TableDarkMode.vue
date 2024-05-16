@@ -444,7 +444,7 @@ export default defineComponent({
       this.checkInstanceStatus(instance);
     },
     qrUrl: function () {
-      return `https://demo.lnbits.com/api/v1/qrcode/${this.activeInstance.name}`;
+      return `https://demo.lnbits.com/api/v1/qrcode/${this.activeInstance.lnurl}`;
     },
     copyData: function () {
       copyToClipboard(this.activeInstance.lnurl);
