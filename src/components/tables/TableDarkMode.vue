@@ -292,9 +292,13 @@ export default defineComponent({
         });
       },
       getColor(val) {
-        if (val > 70 && val <= 100) {
+        if (val > 95 && val <= 100) {
           return "red";
-        } else if (val > 50 && val <= 70) {
+        }
+        if (val > 70 && val <= 95) {
+          return "orange";
+        }
+        if (val > 50 && val <= 70) {
           return "blue";
         }
         return "green";
