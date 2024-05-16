@@ -120,14 +120,16 @@ var saas = {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
       backupLink: `https://${instance.domain}/admin/api/v1/backup`,
-      enabled: instance.is_enabled ? "Yes" : "No",
-      active: instance.is_active ? "Yes" : "No",
+      enabled: instance.is_enabled,
+      active: instance.is_active,
+      expired: instance.timestamp_stop < this.serverTime,
       name: instance.domain,
       cratedDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
+
       progress: progress(
         instance.timestamp,
         instance.timestamp_stop,

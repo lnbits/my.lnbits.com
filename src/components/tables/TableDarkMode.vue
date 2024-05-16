@@ -56,6 +56,7 @@
             <q-btn
               type="a"
               :href="props.row.backupLink"
+              :disable="!props.row.enabled"
               target="_blank"
               icon="download"
               size="sm"
@@ -64,23 +65,13 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Download Backup.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              @click="restartInstance(props.row.id)"
-              icon="restart_alt"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Restart: restarting will make your instance temporarly
-                unavailable.
+                <span v-text="props.row.active"></span>
               </q-tooltip>
             </q-btn>
 
             <q-btn
               @click="resetInstance(props.row.id)"
+              :disable="!props.row.enabled"
               icon="power_off"
               size="sm"
               flat
@@ -91,6 +82,8 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              v-if="props.row.enabled"
+              :disable="props.row.expired"
               @click="disableInstance(props.row.id)"
               icon="stop"
               size="sm"
@@ -99,6 +92,19 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Disable: it will make your instance unavailable.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              v-else
+              :disable="props.row.expired"
+              @click="disableInstance(props.row.id)"
+              icon="play_circle_outline"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Enable: it will make your instance available again.
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -117,15 +123,31 @@
           </q-td>
         </template>
 
-        <template v-slot:body-cell-Progress="props">
-          <q-td :props="props" tool-tip="xxxxx">
-            <q-tooltip><span v-text="props.row.progress + '%'"></span></q-tooltip>
+        <template v-slot:body-cell-progress="props">
+          <q-td :props="props">
+            <q-tooltip
+              ><span v-text="props.row.progress + '%'"></span
+            ></q-tooltip>
+
             <q-linear-progress
               dark
               :color="getColor(props.row.progress)"
               :value="props.row.progress / 100"
               class="q-mt-md"
             />
+          </q-td>
+        </template>
+
+        <template v-slot:body-cell-name="props">
+          <q-td :props="props">
+            <span v-text="props.row.name"></span>
+            <br />
+            <q-badge v-if="props.row.expired" color="yellow" text-color="black">
+              <span
+                >Instance was stopped because you ran out of time. Pay the LNURL
+                to start it again.</span
+              >
+            </q-badge>
           </q-td>
         </template>
       </q-table>
@@ -186,14 +208,14 @@ export default defineComponent({
       inProgress: false,
       columns: [
         {
-          name: "ID",
+          name: "id",
           label: "Instance ID",
           field: "id",
           sortable: true,
           align: "left",
         },
         {
-          name: "Name",
+          name: "name",
           label: "Name",
           field: "name",
           sortable: true,
@@ -229,7 +251,7 @@ export default defineComponent({
           align: "left",
         },
         {
-          name: "Progress",
+          name: "progress",
           label: "Progress",
           field: "Progress",
           sortable: true,
@@ -285,30 +307,6 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: "Failed to create instance",
-            color: "negative",
-          });
-        } finally {
-          this.inProgress = false;
-        }
-      });
-    },
-    restartInstance: function (id) {
-      this.confirm(
-        `Restart ${id}`,
-        "Are you sure you want to restart?" +
-          " Restarting will make your instance temporarly unavailable."
-      ).onOk(async () => {
-        try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "restart");
-          this.q.notify({
-            message: data.message || `${data}`,
-            color: "positive",
-          });
-        } catch (error) {
-          console.warn(error);
-          this.q.notify({
-            message: `Failed to restart instance ${id}.`,
             color: "negative",
           });
         } finally {
@@ -398,7 +396,7 @@ export default defineComponent({
         try {
           const { data } = await saas.getInstances();
           const updatedInstance = (data || [])
-            .map(i => saas.mapInstance(i))
+            .map((i) => saas.mapInstance(i))
             .find((i) => i.id === instance.id);
           if (
             updatedInstance &&
@@ -449,8 +447,8 @@ export default defineComponent({
   async created() {
     try {
       const { data } = await saas.getInstances();
-      await this.serverStatus()
-      const tableData = (data || []).map(i => saas.mapInstance(i));
+      await this.serverStatus();
+      const tableData = (data || []).map((i) => saas.mapInstance(i));
 
       this.data = tableData;
     } catch (error) {
