@@ -96,8 +96,7 @@
             </q-btn>
             <q-btn
               v-else
-              :disable="props.row.expired"
-              @click="disableInstance(props.row.id)"
+              @click="enableInstance(props.row.id)"
               icon="play_circle_outline"
               size="sm"
               flat
@@ -262,9 +261,9 @@ export default defineComponent({
         },
 
         {
-          name: "Crated Date",
-          label: "Crated Date",
-          field: "cratedDate",
+          name: "Created Date",
+          label: "Created Date",
+          field: "createdDate",
           sortable: true,
           align: "left",
         },
@@ -371,6 +370,30 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: `Failed to disable instance ${id}.`,
+            color: "negative",
+          });
+        } finally {
+          this.inProgress = false;
+        }
+      });
+    },
+    enableInstance: function (id) {
+      this.confirm(
+        `Enable ${id}`,
+        "Are you sure you want to enable?"
+      ).onOk(async () => {
+        try {
+          this.inProgress = true;
+          const { data } = await saas.updateInstance(id, "enable");
+
+          this.q.notify({
+            message: data.message || `${data}`,
+            color: "positive",
+          });
+        } catch (error) {
+          console.warn(error);
+          this.q.notify({
+            message: `Failed to enable instance ${id}.`,
             color: "negative",
           });
         } finally {
