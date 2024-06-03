@@ -2,7 +2,7 @@ import axios from "axios";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
-  url: "https://api.lnbits.com",
+  url: "http://localhost:8888",
   serverTime: null,
 
   username: localStorage.getItem("username"),
