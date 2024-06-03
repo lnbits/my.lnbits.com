@@ -7,7 +7,7 @@
         >
           <q-card-section class="q-mb-md">
             <q-avatar size="150px" class="absolute-center shadow-10 " color="primary">
-              <img src="profile.svg" class="q-pa-sm" />
+              <img src="profile.svg" class="q-pa-md" />
             </q-avatar>
           </q-card-section>
           <q-card-section>
