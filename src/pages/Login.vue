@@ -6,24 +6,45 @@
           v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
         >
           <q-card-section class="q-mb-md">
-            <q-avatar size="150px" class="absolute-center shadow-10 " color="primary">
+            <q-avatar
+              size="150px"
+              class="absolute-center shadow-10"
+              color="primary"
+            >
               <img src="profile.svg" class="q-pa-sm" />
             </q-avatar>
           </q-card-section>
           <q-card-section>
             <div class="text-center q-mt-lg q-pt-lg">
-              <div v-if="isSignupRequest" class="col text-h6 ellipsis">Sign Up</div>
+              <div v-if="isSignupRequest" class="col text-h6 ellipsis">
+                Sign Up
+              </div>
               <div v-else class="col text-h6 ellipsis">Login</div>
             </div>
           </q-card-section>
           <q-card-section>
             <q-form class="q-gutter-md">
-              <q-input filled v-model="username" label="Username" lazy-rules />
+              <q-input
+                filled
+                v-model="username"
+                :rules="[
+                  (val) =>
+                    (val && val.length >= 3) ||
+                    'Username must have at least 3 characters',
+                ]"
+                label="Username"
+                lazy-rules
+              />
 
               <q-input
                 type="password"
                 filled
                 v-model="password"
+                :rules="[
+                  (val) =>
+                    (val && val.length >= 8) ||
+                    'Password must have at least 8 characters',
+                ]"
                 label="Password"
                 lazy-rules
               />
@@ -33,10 +54,20 @@
                 type="password"
                 filled
                 v-model="passwordRepeat"
+                :rules="[
+                  (val) =>
+                    (val && val.length >= 8) ||
+                    'Password must have at least 8 characters',
+                ]"
                 label="Password Repeat"
                 lazy-rules
               />
-              <q-linear-progress v-if="inProgress" indeterminate color="secondary" class="q-mt-sm" />
+              <q-linear-progress
+                v-if="inProgress"
+                indeterminate
+                color="secondary"
+                class="q-mt-sm"
+              />
               <div>
                 <q-btn
                   v-if="!this.isSignupRequest"
@@ -93,7 +124,7 @@ export default defineComponent({
   methods: {
     async login() {
       try {
-        this.inProgress = true
+        this.inProgress = true;
         await saas.login(this.username, this.password);
         this.q.notify({
           message: "Logged in!",
@@ -104,11 +135,12 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to login!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
-      } finally{
-        this.inProgress = false
+      } finally {
+        this.inProgress = false;
       }
     },
     async signup() {
@@ -125,7 +157,7 @@ export default defineComponent({
         return;
       }
       try {
-        this.inProgress = true
+        this.inProgress = true;
         await saas.signup(this.username, this.password, this.passwordRepeat);
         this.q.notify({
           message: "Signed Up!",
@@ -136,11 +168,12 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to sign up!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
-      } finally{
-        this.inProgress = false
+      } finally {
+        this.inProgress = false;
       }
     },
   },

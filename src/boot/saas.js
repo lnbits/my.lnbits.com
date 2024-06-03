@@ -126,6 +126,9 @@ var saas = {
       ),
     };
   },
+  mapErrorToString(error){
+    return error.response?.data?.detail?.map(d=>d.msg).join(", ")
+  }
 };
 
 (async () => {
@@ -134,7 +137,7 @@ var saas = {
     (err) => {
       if (err?.response?.status === 401) {
         saas.logout();
-        window.location.href = "/login";
+        setTimeout(() => (window.location.href = "/login"), 1000);
       }
       return Promise.reject(err);
     }

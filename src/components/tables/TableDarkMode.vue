@@ -321,6 +321,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: "Failed to create instance",
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -345,6 +346,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: `Failed to reset instance ${id}.`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -370,6 +372,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: `Failed to disable instance ${id}.`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -394,6 +397,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: `Failed to enable instance ${id}.`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -422,6 +426,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: `Failed to destroy instance '${id}'`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -461,6 +466,7 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to check SaaS Server status!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
         });
       }

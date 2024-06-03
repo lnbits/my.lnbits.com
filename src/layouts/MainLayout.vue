@@ -110,6 +110,7 @@ export default defineComponent({
       } catch (error) {
         this.q.notify({
           message: "Failed to logout!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
