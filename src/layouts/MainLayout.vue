@@ -13,7 +13,7 @@
         <q-toolbar-title> My Bits </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
-          <span v-text="userEmail"></span>
+          <span v-text="username"></span>
 
           <q-btn
             round
@@ -94,8 +94,8 @@ export default defineComponent({
     };
   },
   computed: {
-    userEmail: function () {
-      return saas.email;
+    username: function () {
+      return saas.username;
     },
   },
   methods: {

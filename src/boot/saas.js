@@ -5,7 +5,7 @@ var saas = {
   url: "http://localhost:8888",
   serverTime: null,
 
-  email: localStorage.getItem("email"),
+  username: localStorage.getItem("username"),
 
   signup: async function (username, password, password2) {
     const { data } = await axios({
@@ -19,7 +19,7 @@ var saas = {
       },
     });
 
-    localStorage.setItem("email", username);
+    localStorage.setItem("username", username);
 
     return data;
   },
@@ -36,7 +36,7 @@ var saas = {
         "Content-Type": "multipart/form-data",
       },
     });
-    localStorage.setItem("email", username);
+    localStorage.setItem("username", username);
 
     return data;
   },
@@ -87,7 +87,7 @@ var saas = {
       withCredentials: true,
     });
     console.log('### response', response)
-    this.email = null;
+    this.username = null;
     localStorage.clear();
     return response;
   },
