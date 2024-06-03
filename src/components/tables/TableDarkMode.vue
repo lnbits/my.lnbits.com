@@ -240,8 +240,8 @@ export default defineComponent({
         },
         {
           name: "progress",
-          label: "Progress",
-          field: "Progress",
+          label: "Time Left",
+          field: "Time Left",
           sortable: true,
           align: "left",
         },
