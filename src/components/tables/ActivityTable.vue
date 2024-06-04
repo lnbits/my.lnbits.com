@@ -1,15 +1,25 @@
 <template>
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
-      <div class="text-h6 text-white">
-        <span>Instances Activity</span>
-        <q-btn
-
-          label="New Instance"
-          icon="add_to_queue"
-          color="blue"
-          class="float-right text-capitalize shadow-3"
-        />
+      <div class="row">
+        <div class="col-9">
+          <div class="text-h6 text-white">
+            <span>Instances Activity</span>
+          </div>
+        </div>
+        <div class="col-3">
+          <q-select
+            @update:model-value="showActivty"
+            v-model="selectedInstance"
+            :options="instances"
+            outlined
+            dark
+            dense
+            color="white"
+            clearable
+            label="Instance activity"
+          ></q-select>
+        </div>
       </div>
     </q-card-section>
     <q-linear-progress
@@ -27,51 +37,19 @@
         :columns="columns"
         :pagination.sync="pagination"
       >
-
-
-
         <template v-slot:body-cell-success="props">
           <q-td :props="props">
-            <q-icon v-if="props.row.success === true" name="done" color="green"/>
+            <q-icon
+              v-if="props.row.success === true"
+              name="done"
+              color="green"
+            />
             <q-icon v-else name="warning" color="yellow" />
-
           </q-td>
         </template>
       </q-table>
     </q-card-section>
   </q-card>
-  <q-dialog v-model="showPaymentQrDialog" position="top">
-    <q-card style="min-height: 200px" class="q-pa-lg">
-      <h3>
-        <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
-      </h3>
-
-      <p style="color: white">
-        <q-img
-          class="qrcode"
-          style="width: 100%; height: auto"
-          :src="qrUrl()"
-          alt="LNURLp"
-        />
-      </p>
-      <h5><span v-text="activeInstance.name"></span></h5>
-      <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
-      <div class="row q-mt-md">
-        <q-btn
-          color="deep-purple"
-          @click="copyData"
-          v-text="'Copy LNURL'"
-        ></q-btn>
-        <q-btn
-          v-close-popup
-          flat
-          color="grey"
-          class="q-ml-auto"
-          v-text="'Close'"
-        ></q-btn>
-      </div>
-    </q-card>
-  </q-dialog>
 </template>
 
 <script>
@@ -86,8 +64,9 @@ export default defineComponent({
   data() {
     return {
       data: [],
-      showPaymentQrDialog: false,
-      activeInstance: null,
+      instances: [],
+      selectedInstance: null,
+
       pagination: {
         rowsPerPage: 50,
         page: 1,
@@ -135,7 +114,7 @@ export default defineComponent({
           field: "extra_hours",
           sortable: true,
           align: "left",
-        }
+        },
       ],
     };
   },
@@ -151,15 +130,14 @@ export default defineComponent({
           cancel: true,
           persistent: true,
         });
-      }
+      },
     };
   },
   methods: {
-    refreshUserActivity: async function () {
+    fetchUserActivity: async function () {
       try {
-        const {data} = await saas.getUserInstancesLogs();
-        this.data = data
-        console.log("### this.data", this.data)
+        const { data } = await saas.getUserInstancesLogs();
+        this.data = data;
       } catch (error) {
         console.warn(error);
         this.q.notify({
@@ -169,9 +147,58 @@ export default defineComponent({
         });
       }
     },
+    fetchInstanceActivity: async function (id) {
+      try {
+        const { data } = await saas.getInstancesLogs(id);
+        this.data = data;
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: "Failed to fetch instance activity!",
+          caption: saas.mapErrorToString(error),
+          color: "negative",
+        });
+      }
+    },
+    fetchUserInstances: async function () {
+      try {
+        const { data } = await saas.getInstances();
+        this.instances = data.map((i) => ({
+          label: `[${i.id}] ${i.domain}`,
+          value: i.id,
+        }));
+      } catch (error) {
+        console.warn(error);
+        this.q.notify({
+          message: "Failed to fetch instances!",
+          caption: saas.mapErrorToString(error),
+          color: "negative",
+        });
+      }
+    },
+    showActivty: async function (instance) {
+      try {
+        this.inProgress = true;
+        if (!instance) {
+          await this.fetchUserActivity();
+        } else {
+          await this.fetchInstanceActivity(instance.value);
+        }
+      } catch (error) {
+      } finally {
+        this.inProgress = false;
+      }
+    },
   },
   async created() {
-    await this.refreshUserActivity();
+    try {
+      this.inProgress = true;
+      await this.fetchUserActivity();
+      await this.fetchUserInstances();
+    } catch (error) {
+    } finally {
+      this.inProgress = false;
+    }
   },
 });
 </script>

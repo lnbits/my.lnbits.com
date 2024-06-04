@@ -78,6 +78,15 @@ var saas = {
 
     return response;
   },
+  getInstancesLogs: async function (id) {
+    const response = await axios({
+      method: "GET",
+      url: this.url + `/instance/${id}/logs`,
+      withCredentials: true,
+    });
+
+    return response;
+  },
   status: async function () {
     const response = await axios({
       method: "GET",
@@ -95,7 +104,6 @@ var saas = {
       url: this.url + "/logout",
       withCredentials: true,
     });
-    console.log('### response', response)
     this.username = null;
     localStorage.clear();
     return response;
@@ -127,7 +135,10 @@ var saas = {
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-      timeLeft: Math.floor(Math.max(instance.timestamp_stop - this.serverTime),0),
+      timeLeft: Math.floor(
+        Math.max(instance.timestamp_stop - this.serverTime),
+        0
+      ),
 
       progress: progress(
         instance.timestamp,
@@ -136,16 +147,16 @@ var saas = {
       ),
     };
   },
-  mapErrorToString(error){
-    const data = error.response?.data
-    if (!data){
-      return
+  mapErrorToString(error) {
+    const data = error.response?.data;
+    if (!data) {
+      return;
     }
-    if (typeof data === 'string'){
-      return data
+    if (typeof data === "string") {
+      return data;
     }
-    return data?.detail?.map(d=>d.msg).join(", ")
-  }
+    return data?.detail?.map((d) => d.msg).join(", ");
+  },
 };
 
 (async () => {
