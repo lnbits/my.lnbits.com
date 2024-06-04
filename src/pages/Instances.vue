@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-sm">
-    <table-dark-mode></table-dark-mode>
+    <instances-table></instances-table>
   </q-page>
 </template>
 
@@ -10,8 +10,8 @@ import { defineComponent, defineAsyncComponent } from "vue";
 export default defineComponent({
   name: "Instances",
   components: {
-    TableDarkMode: defineAsyncComponent(() =>
-      import("components/tables/TableDarkMode.vue")
+    InstancesTable: defineAsyncComponent(() =>
+      import("components/tables/InstancesTable.vue")
     ),
   },
   data() {
