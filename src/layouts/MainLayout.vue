@@ -50,9 +50,17 @@
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item to="/activity" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="manage_history" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Activity</q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item to="/pricing" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="list" />
+            <q-icon name="currency_bitcoin" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Pricing</q-item-label>

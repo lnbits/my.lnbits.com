@@ -8,7 +8,7 @@
 import { defineComponent, defineAsyncComponent } from "vue";
 
 export default defineComponent({
-  name: "Instances",
+  name: "Activity",
   components: {
     TableDarkMode: defineAsyncComponent(() =>
       import("components/tables/TableDarkMode.vue")

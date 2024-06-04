@@ -2,7 +2,7 @@ import axios from "axios";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
-  url: "https://api.lnbits.com",
+  url: "http://localhost:8888",
   serverTime: null,
 
   username: localStorage.getItem("username"),
@@ -61,6 +61,15 @@ var saas = {
     });
   },
   getInstances: async function () {
+    const response = await axios({
+      method: "GET",
+      url: this.url + "/instance",
+      withCredentials: true,
+    });
+
+    return response;
+  },
+  getInstancesLogs: async function () {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance",
