@@ -381,29 +381,28 @@ export default defineComponent({
       });
     },
     enableInstance: function (id) {
-      this.confirm(
-        `Enable ${id}`,
-        "Are you sure you want to enable?"
-      ).onOk(async () => {
-        try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "enable");
+      this.confirm(`Enable ${id}`, "Are you sure you want to enable?").onOk(
+        async () => {
+          try {
+            this.inProgress = true;
+            const { data } = await saas.updateInstance(id, "enable");
 
-          this.q.notify({
-            message: data.message || `${data}`,
-            color: "positive",
-          });
-        } catch (error) {
-          console.warn(error);
-          this.q.notify({
-            message: `Failed to enable instance ${id}.`,
-            caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
-        } finally {
-          this.inProgress = false;
+            this.q.notify({
+              message: data.message || `${data}`,
+              color: "positive",
+            });
+          } catch (error) {
+            console.warn(error);
+            this.q.notify({
+              message: `Failed to enable instance ${id}.`,
+              caption: saas.mapErrorToString(error),
+              color: "negative",
+            });
+          } finally {
+            this.inProgress = false;
+          }
         }
-      });
+      );
     },
     destroyInstance: function (id) {
       this.confirm(
@@ -452,6 +451,7 @@ export default defineComponent({
             });
           }
           if (!this.showPaymentQrDialog) {
+            await this.refreshState();
             clearInterval(retryId);
           }
         } catch (error) {
@@ -487,17 +487,20 @@ export default defineComponent({
         color: "grey",
       });
     },
+    refreshState: async function () {
+      try {
+        const { data } = await saas.getInstances();
+        await this.serverStatus();
+        const tableData = (data || []).map((i) => saas.mapInstance(i));
+
+        this.data = tableData;
+      } catch (error) {
+        console.warn(error);
+      }
+    },
   },
   async created() {
-    try {
-      const { data } = await saas.getInstances();
-      await this.serverStatus();
-      const tableData = (data || []).map((i) => saas.mapInstance(i));
-
-      this.data = tableData;
-    } catch (error) {
-      console.warn(error);
-    }
+    await this.refreshState();
   },
 });
 </script>
