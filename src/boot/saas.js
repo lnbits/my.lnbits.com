@@ -69,10 +69,10 @@ var saas = {
 
     return response;
   },
-  getInstancesLogs: async function () {
+  getUserInstancesLogs: async function () {
     const response = await axios({
       method: "GET",
-      url: this.url + "/instance",
+      url: this.url + "/instance/logs",
       withCredentials: true,
     });
 
