@@ -103,7 +103,7 @@ var saas = {
 
       const percentage = (1 - (stop - serverTime) / (stop - start)) * 100;
 
-      return Math.round(percentage);
+      return Math.floor(percentage);
     };
     return {
       id: instance.id,
@@ -118,6 +118,7 @@ var saas = {
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
+      timeLeft: Math.floor(Math.max(instance.timestamp_stop - this.serverTime),0),
 
       progress: progress(
         instance.timestamp,
@@ -127,7 +128,14 @@ var saas = {
     };
   },
   mapErrorToString(error){
-    return error.response?.data?.detail?.map(d=>d.msg).join(", ")
+    const data = error.response?.data
+    if (!data){
+      return
+    }
+    if (typeof data === 'string'){
+      return data
+    }
+    return data?.detail?.map(d=>d.msg).join(", ")
   }
 };
 
