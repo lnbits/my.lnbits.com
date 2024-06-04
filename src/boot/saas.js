@@ -5,27 +5,27 @@ var saas = {
   url: "https://api.lnbits.com",
   serverTime: null,
 
-  email: localStorage.getItem("email"),
+  username: localStorage.getItem("username"),
 
-  signup: async function (email, password, password2) {
+  signup: async function (username, password, password2) {
     const { data } = await axios({
       method: "POST",
       url: this.url + "/signup",
       withCredentials: true,
       data: {
-        email,
+        username,
         password,
         password_repeat: password2,
       },
     });
 
-    localStorage.setItem("email", email);
+    localStorage.setItem("username", username);
 
     return data;
   },
-  login: async function (email, password) {
+  login: async function (username, password) {
     const formData = new FormData();
-    formData.append("username", email);
+    formData.append("username", username);
     formData.append("password", password);
     const { data } = await axios({
       method: "POST",
@@ -36,7 +36,7 @@ var saas = {
         "Content-Type": "multipart/form-data",
       },
     });
-    localStorage.setItem("email", email);
+    localStorage.setItem("username", username);
 
     return data;
   },
@@ -87,7 +87,7 @@ var saas = {
       withCredentials: true,
     });
     console.log('### response', response)
-    this.email = null;
+    this.username = null;
     localStorage.clear();
     return response;
   },
@@ -126,6 +126,9 @@ var saas = {
       ),
     };
   },
+  mapErrorToString(error){
+    return error.response?.data?.detail?.map(d=>d.msg).join(", ")
+  }
 };
 
 (async () => {
@@ -134,7 +137,7 @@ var saas = {
     (err) => {
       if (err?.response?.status === 401) {
         saas.logout();
-        window.location.href = "/login";
+        setTimeout(() => (window.location.href = "/login"), 1000);
       }
       return Promise.reject(err);
     }
