@@ -1,4 +1,38 @@
 <template>
+  <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
+    <q-card-section class="q-pa-none">
+      <div class="row q-col-gutter-sm">
+        <div
+          v-for="(item, index) in activityStats"
+          :key="index"
+          class="col-md-3 col-sm-12 col-xs-12"
+        >
+          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
+            <q-item-section
+              side
+              :style="`background-color: ${item.color2}`"
+              class="q-pa-lg q-mr-none text-white"
+            >
+              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
+            </q-item-section>
+            <q-item-section class="q-pa-md q-ml-none text-white">
+              <q-item-label class="text-white text-h6 text-weight-bolder">{{
+                item.value
+              }}</q-item-label>
+              <q-item-label>{{ item.title }}</q-item-label>
+            </q-item-section>
+            <q-item-section
+              v-if="icon_position === 'right'"
+              side
+              class="q-mr-md text-white"
+            >
+              <q-icon :name="item.icon" color="white" size="44px"></q-icon>
+            </q-item-section>
+          </q-item>
+        </div>
+      </div>
+    </q-card-section>
+  </q-card>
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
       <div class="row">
@@ -32,6 +66,7 @@
     <q-card-section class="q-pa-none">
       <q-table
         dark
+        dense
         class="table-bg"
         :rows="data"
         :columns="columns"
@@ -67,8 +102,39 @@ export default defineComponent({
       instances: [],
       selectedInstance: null,
 
+      activityStats: [
+        {
+          title: "Instances",
+          icon: "dns",
+          value: 0,
+          color1: "#546bfa",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Hours Bought",
+          icon: "timer",
+          value: "20",
+          color1: "#3a9688",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Sats Paid",
+          icon: "currency_bitcoin",
+          value: "321",
+          color1: "#7cb342",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Activity Entries",
+          icon: "reorder",
+          value: "82",
+          color1: "#f88c2b",
+          color2: "#3e51b5",
+        },
+      ],
+
       pagination: {
-        rowsPerPage: 50,
+        rowsPerPage: 20,
         page: 1,
       },
       inProgress: false,
@@ -88,8 +154,15 @@ export default defineComponent({
           align: "left",
         },
         {
+          name: "instance_name",
+          label: "Instance Name",
+          field: "instance_name",
+          sortable: true,
+          align: "left",
+        },
+        {
           name: "name",
-          label: "Name",
+          label: "Action",
           field: "name",
           sortable: true,
           align: "left",
@@ -98,6 +171,13 @@ export default defineComponent({
           name: "description",
           label: "Description",
           field: "description",
+          sortable: true,
+          align: "left",
+        },
+        {
+          name: "time",
+          label: "Time",
+          field: "time",
           sortable: true,
           align: "left",
         },
@@ -137,7 +217,7 @@ export default defineComponent({
     fetchUserActivity: async function () {
       try {
         const { data } = await saas.getUserInstancesLogs();
-        this.data = data;
+        this.data = this.mapInstanceLogs(data);
       } catch (error) {
         console.warn(error);
         this.q.notify({
@@ -150,7 +230,7 @@ export default defineComponent({
     fetchInstanceActivity: async function (id) {
       try {
         const { data } = await saas.getInstancesLogs(id);
-        this.data = data;
+        this.data = this.mapInstanceLogs(data);
       } catch (error) {
         console.warn(error);
         this.q.notify({
@@ -163,9 +243,11 @@ export default defineComponent({
     fetchUserInstances: async function () {
       try {
         const { data } = await saas.getInstances();
+        this.activityStats[0].value = data.length;
         this.instances = data.map((i) => ({
-          label: `[${i.id}] ${i.domain}`,
           value: i.id,
+          label: `[${i.id}] ${i.domain}`,
+          name: i.domain,
         }));
       } catch (error) {
         console.warn(error);
@@ -189,12 +271,31 @@ export default defineComponent({
         this.inProgress = false;
       }
     },
+    instanceNameFromId: function (id) {
+      const instance = this.instances.find((i) => i.value === id);
+      if (instance) {
+        return instance.name;
+      }
+      return "?";
+    },
+    mapInstanceLogs: function (logs) {
+      this.activityStats[1].value = logs.reduce((t, l) => t + l.extra_hours, 0);
+      this.activityStats[2].value = logs.reduce((t, l) => t + l.cost_sats, 0);
+      this.activityStats[3].value = logs.length;
+      return logs
+        .map((i) => ({
+          ...i,
+          instance_name: this.instanceNameFromId(i.instance_id),
+          time: new Date(i.timestamp * 1000).toLocaleString(),
+        }))
+        .reverse();
+    },
   },
   async created() {
     try {
       this.inProgress = true;
-      await this.fetchUserActivity();
       await this.fetchUserInstances();
+      await this.fetchUserActivity();
     } catch (error) {
     } finally {
       this.inProgress = false;
