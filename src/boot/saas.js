@@ -1,4 +1,5 @@
 import axios from "axios";
+import { secondsToDhm } from "src/boot/utils";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
@@ -122,6 +123,10 @@ var saas = {
 
       return Math.floor(percentage);
     };
+
+    const timeLeft = Math.floor(
+      Math.max(instance.timestamp_stop - this.serverTime, 0)
+    );
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -135,11 +140,8 @@ var saas = {
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-      timeLeft: Math.floor(
-        Math.max(instance.timestamp_stop - this.serverTime),
-        0
-      ),
-
+      timeLeft: timeLeft,
+      timeLeftFormatted: secondsToDhm(timeLeft),
       progress: progress(
         instance.timestamp,
         instance.timestamp_stop,

@@ -21,13 +21,7 @@
               }}</q-item-label>
               <q-item-label>{{ item.title }}</q-item-label>
             </q-item-section>
-            <q-item-section
-              v-if="icon_position === 'right'"
-              side
-              class="q-mr-md text-white"
-            >
-              <q-icon :name="item.icon" color="white" size="44px"></q-icon>
-            </q-item-section>
+
           </q-item>
         </div>
       </div>
