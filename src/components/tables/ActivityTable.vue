@@ -21,7 +21,6 @@
               }}</q-item-label>
               <q-item-label>{{ item.title }}</q-item-label>
             </q-item-section>
-
           </q-item>
         </div>
       </div>
@@ -45,7 +44,7 @@
             dense
             color="white"
             clearable
-            label="Instance activity"
+            label="Select Instance"
           ></q-select>
         </div>
       </div>
@@ -289,7 +288,12 @@ export default defineComponent({
     try {
       this.inProgress = true;
       await this.fetchUserInstances();
-      await this.fetchUserActivity();
+      const urlParams = new URLSearchParams(window.location.search);
+
+      this.selectedInstance = this.instances.find(
+        (i) => `${i.value}` === urlParams.get("instance_id")
+      );
+      this.showActivty(this.selectedInstance);
     } catch (error) {
     } finally {
       this.inProgress = false;

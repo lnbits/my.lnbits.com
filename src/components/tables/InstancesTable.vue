@@ -1,5 +1,5 @@
 <template>
-    <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
+  <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
     <q-card-section class="q-pa-none">
       <div class="row q-col-gutter-sm">
         <div
@@ -21,7 +21,6 @@
               }}</q-item-label>
               <q-item-label>{{ item.title }}</q-item-label>
             </q-item-section>
-
           </q-item>
         </div>
       </div>
@@ -165,9 +164,25 @@
           </q-td>
         </template>
 
+        <template v-slot:body-cell-id="props">
+          <q-td :props="props">
+            <q-btn
+              type="a"
+              :href="`/activity?instance_id=${props.row.id}`"
+              :label="props.row.id"
+              no-caps
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <span> Show activity for this instance. </span>
+              </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-name="props">
           <q-td :props="props">
-            <!-- <span v-text="props.row.name"></span> -->
             <q-btn
               type="a"
               :href="props.row.instanceLink"
@@ -402,6 +417,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -418,7 +434,8 @@ export default defineComponent({
       this.confirm(
         `Disable ${id}`,
         "Are you sure you want to disable?" +
-          " Disabling will make your instance unavailable."
+          " Disabling will make your instance unavailable." +
+          " The clock is still ticking!"
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -428,6 +445,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -451,6 +469,7 @@ export default defineComponent({
               message: data.message || `${data}`,
               color: "positive",
             });
+            await this.refreshState();
           } catch (error) {
             console.warn(error);
             this.q.notify({
@@ -481,6 +500,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -553,10 +573,16 @@ export default defineComponent({
         await this.serverStatus();
         const tableData = (data || []).map((i) => saas.mapInstance(i));
 
-        this.activityStats[0].value = tableData.length
-        this.activityStats[1].value = tableData.filter(i => i.enabled === true).length
-        this.activityStats[2].value = tableData.filter(i => i.active === true).length
-        this.activityStats[3].value = secondsToDhm(tableData.reduce((t, i) => t + i.timeLeft, 0))
+        this.activityStats[0].value = tableData.length;
+        this.activityStats[1].value = tableData.filter(
+          (i) => i.enabled === true
+        ).length;
+        this.activityStats[2].value = tableData.filter(
+          (i) => i.active === true
+        ).length;
+        this.activityStats[3].value = secondsToDhm(
+          tableData.reduce((t, i) => t + i.timeLeft, 0)
+        );
 
         this.data = tableData;
       } catch (error) {
@@ -565,7 +591,14 @@ export default defineComponent({
     },
   },
   async created() {
-    await this.refreshState();
+    try {
+      this.inProgress = true;
+      await this.refreshState();
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      this.inProgress = false;
+    }
   },
 });
 </script>
