@@ -9,7 +9,7 @@ function secondsToDhm(seconds) {
   const mDisplay = m > 0 ? m + "m" : "";
 
   const text = dDisplay + hDisplay + mDisplay
-  return text || 'none'
+  return text || '0'
 }
 
 export { secondsToDhm };
