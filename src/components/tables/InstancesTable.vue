@@ -123,6 +123,7 @@
             </q-btn>
             <q-btn
               v-else
+              :disable="props.row.expired"
               @click="enableInstance(props.row.id)"
               icon="play_circle_outline"
               size="sm"
