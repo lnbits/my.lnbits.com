@@ -1,4 +1,5 @@
 import axios from "axios";
+import { secondsToDhm } from "src/boot/utils";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
@@ -69,6 +70,24 @@ var saas = {
 
     return response;
   },
+  getUserInstancesLogs: async function () {
+    const response = await axios({
+      method: "GET",
+      url: this.url + "/instance/logs",
+      withCredentials: true,
+    });
+
+    return response;
+  },
+  getInstancesLogs: async function (id) {
+    const response = await axios({
+      method: "GET",
+      url: this.url + `/instance/${id}/logs`,
+      withCredentials: true,
+    });
+
+    return response;
+  },
   status: async function () {
     const response = await axios({
       method: "GET",
@@ -86,7 +105,6 @@ var saas = {
       url: this.url + "/logout",
       withCredentials: true,
     });
-    console.log('### response', response)
     this.username = null;
     localStorage.clear();
     return response;
@@ -103,8 +121,12 @@ var saas = {
 
       const percentage = (1 - (stop - serverTime) / (stop - start)) * 100;
 
-      return Math.round(percentage);
+      return Math.floor(percentage);
     };
+
+    const timeLeft = Math.floor(
+      Math.max(instance.timestamp_stop - this.serverTime, 0)
+    );
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -118,7 +140,8 @@ var saas = {
       timestamp: instance.timestamp,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-
+      timeLeft: timeLeft,
+      timeLeftFormatted: secondsToDhm(timeLeft),
       progress: progress(
         instance.timestamp,
         instance.timestamp_stop,
@@ -126,9 +149,16 @@ var saas = {
       ),
     };
   },
-  mapErrorToString(error){
-    return error.response?.data?.detail?.map(d=>d.msg).join(", ")
-  }
+  mapErrorToString(error) {
+    const data = error.response?.data;
+    if (!data) {
+      return;
+    }
+    if (typeof data === "string") {
+      return data;
+    }
+    return data?.detail?.map((d) => d.msg).join(", ");
+  },
 };
 
 (async () => {

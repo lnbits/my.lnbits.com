@@ -5,6 +5,7 @@ const routes = [
     children: [
       { path: "", component: () => import("pages/Instances.vue") },
       { path: "/instances", component: () => import("pages/Instances.vue") },
+      { path: "/activity", component: () => import("pages/Activity.vue") },
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},

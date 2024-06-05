@@ -1,4 +1,31 @@
 <template>
+  <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
+    <q-card-section class="q-pa-none">
+      <div class="row q-col-gutter-sm">
+        <div
+          v-for="(item, index) in activityStats"
+          :key="index"
+          class="col-md-3 col-sm-12 col-xs-12"
+        >
+          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
+            <q-item-section
+              side
+              :style="`background-color: ${item.color2}`"
+              class="q-pa-lg q-mr-none text-white"
+            >
+              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
+            </q-item-section>
+            <q-item-section class="q-pa-md q-ml-none text-white">
+              <q-item-label class="text-white text-h6 text-weight-bolder">{{
+                item.value
+              }}</q-item-label>
+              <q-item-label>{{ item.title }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </div>
+    </q-card-section>
+  </q-card>
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
       <div class="text-h6 text-white">
@@ -137,9 +164,25 @@
           </q-td>
         </template>
 
+        <template v-slot:body-cell-id="props">
+          <q-td :props="props">
+            <q-btn
+              type="a"
+              :href="`/activity?instance_id=${props.row.id}`"
+              :label="props.row.id"
+              no-caps
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <span> Show activity for this instance. </span>
+              </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-name="props">
           <q-td :props="props">
-            <!-- <span v-text="props.row.name"></span> -->
             <q-btn
               type="a"
               :href="props.row.instanceLink"
@@ -202,6 +245,7 @@ import { defineComponent } from "vue";
 
 import { useQuasar, copyToClipboard } from "quasar";
 import { saas } from "src/boot/saas";
+import { secondsToDhm } from "src/boot/utils";
 
 export default defineComponent({
   name: "TableDarkMode",
@@ -239,9 +283,9 @@ export default defineComponent({
           align: "left",
         },
         {
-          name: "progress",
-          label: "Progress",
-          field: "Progress",
+          name: "timeLeft",
+          label: "Time Left",
+          field: "timeLeftFormatted",
           sortable: true,
           align: "left",
         },
@@ -273,6 +317,37 @@ export default defineComponent({
           field: "stopDate",
           sortable: true,
           align: "left",
+        },
+      ],
+
+      activityStats: [
+        {
+          title: "Instances",
+          icon: "dns",
+          value: 0,
+          color1: "#546bfa",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Enabled",
+          icon: "power_settings_new",
+          value: "0",
+          color1: "#3a9688",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Active",
+          icon: "toggle_on",
+          value: "0",
+          color1: "#7cb342",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Total Time Left",
+          icon: "running_with_errors",
+          value: "0",
+          color1: "#f88c2b",
+          color2: "#3e51b5",
         },
       ],
     };
@@ -342,6 +417,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -358,7 +434,8 @@ export default defineComponent({
       this.confirm(
         `Disable ${id}`,
         "Are you sure you want to disable?" +
-          " Disabling will make your instance unavailable."
+          " Disabling will make your instance unavailable." +
+          " The clock is still ticking!"
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -368,6 +445,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -381,29 +459,29 @@ export default defineComponent({
       });
     },
     enableInstance: function (id) {
-      this.confirm(
-        `Enable ${id}`,
-        "Are you sure you want to enable?"
-      ).onOk(async () => {
-        try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "enable");
+      this.confirm(`Enable ${id}`, "Are you sure you want to enable?").onOk(
+        async () => {
+          try {
+            this.inProgress = true;
+            const { data } = await saas.updateInstance(id, "enable");
 
-          this.q.notify({
-            message: data.message || `${data}`,
-            color: "positive",
-          });
-        } catch (error) {
-          console.warn(error);
-          this.q.notify({
-            message: `Failed to enable instance ${id}.`,
-            caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
-        } finally {
-          this.inProgress = false;
+            this.q.notify({
+              message: data.message || `${data}`,
+              color: "positive",
+            });
+            await this.refreshState();
+          } catch (error) {
+            console.warn(error);
+            this.q.notify({
+              message: `Failed to enable instance ${id}.`,
+              caption: saas.mapErrorToString(error),
+              color: "negative",
+            });
+          } finally {
+            this.inProgress = false;
+          }
         }
-      });
+      );
     },
     destroyInstance: function (id) {
       this.confirm(
@@ -422,6 +500,7 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
@@ -452,6 +531,7 @@ export default defineComponent({
             });
           }
           if (!this.showPaymentQrDialog) {
+            await this.refreshState();
             clearInterval(retryId);
           }
         } catch (error) {
@@ -487,16 +567,37 @@ export default defineComponent({
         color: "grey",
       });
     },
+    refreshState: async function () {
+      try {
+        const { data } = await saas.getInstances();
+        await this.serverStatus();
+        const tableData = (data || []).map((i) => saas.mapInstance(i));
+
+        this.activityStats[0].value = tableData.length;
+        this.activityStats[1].value = tableData.filter(
+          (i) => i.enabled === true
+        ).length;
+        this.activityStats[2].value = tableData.filter(
+          (i) => i.active === true
+        ).length;
+        this.activityStats[3].value = secondsToDhm(
+          tableData.reduce((t, i) => t + i.timeLeft, 0)
+        );
+
+        this.data = tableData;
+      } catch (error) {
+        console.warn(error);
+      }
+    },
   },
   async created() {
     try {
-      const { data } = await saas.getInstances();
-      await this.serverStatus();
-      const tableData = (data || []).map((i) => saas.mapInstance(i));
-
-      this.data = tableData;
+      this.inProgress = true;
+      await this.refreshState();
     } catch (error) {
       console.warn(error);
+    } finally {
+      this.inProgress = false;
     }
   },
 });
