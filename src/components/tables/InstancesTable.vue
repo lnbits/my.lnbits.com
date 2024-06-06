@@ -518,7 +518,7 @@ export default defineComponent({
       this.confirm(
         `Destroy ${id}`,
         "Are you sure you want to destroy?" +
-          " destroying will delete your instance and every bit of data."
+          " This action will delete all data and is not recoverable."
       ).onOk(async () => {
         try {
           this.inProgress = true;
