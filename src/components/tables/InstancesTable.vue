@@ -368,8 +368,8 @@ export default defineComponent({
           color2: "#3e51b5",
         },
         {
-          title: "Active",
-          icon: "toggle_on",
+          title: "Deployed",
+          icon: "cloud_done",
           value: "0",
           color1: "#7cb342",
           color2: "#3e51b5",
