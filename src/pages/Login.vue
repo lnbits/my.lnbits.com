@@ -64,7 +64,7 @@
                     (val && val.length >= 8) ||
                     'Password must have at least 8 characters',
                 ]"
-                label="Password Repeat"
+                label="Confirm password"
                 lazy-rules
               />
               <q-linear-progress
