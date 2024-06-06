@@ -129,7 +129,7 @@ var saas = {
         return "Not Paid"
       }
       if (!enabled) {
-        return "Paused"
+        return "Disabled"
       }
       return "Runnning"
     }

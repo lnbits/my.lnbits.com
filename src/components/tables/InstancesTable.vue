@@ -313,7 +313,7 @@ export default defineComponent({
         },
         {
           name: "status",
-          label: "status",
+          label: "Status",
           field: "statusText",
           sortable: true,
           align: "left",
