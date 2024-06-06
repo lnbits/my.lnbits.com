@@ -155,12 +155,12 @@
             <q-tooltip
               ><span v-text="props.row.progress + '%'"></span
             ></q-tooltip>
-
+                <span v-text="props.row.timeLeftFormatted" class="float-right"></span>
             <q-linear-progress
               dark
               :color="getColor(props.row.progress)"
               :value="props.row.progress / 100"
-              class="q-mt-md"
+              class="q-mt-sm"
             />
           </q-td>
         </template>
@@ -283,11 +283,17 @@ export default defineComponent({
           sortable: true,
           align: "left",
         },
+        // {
+        //   name: "timeLeft",
+        //   label: "Time Left",
+        //   field: "timeLeftFormatted",
+        //   sortable: true,
+        //   align: "left",
+        // },
         {
-          name: "timeLeft",
+          name: "progress",
           label: "Time Left",
-          field: "timeLeftFormatted",
-          sortable: true,
+          field: "progress",
           align: "left",
         },
         {

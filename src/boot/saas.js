@@ -138,12 +138,13 @@ var saas = {
       createdDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       timestamp: instance.timestamp,
+      timestampStart: instance.timestamp_start,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
       timeLeft: timeLeft,
       timeLeftFormatted: secondsToDhm(timeLeft),
       progress: progress(
-        instance.timestamp,
+        instance.timestamp_start || instance.timestamp,
         instance.timestamp_stop,
         this.serverTime
       ),
