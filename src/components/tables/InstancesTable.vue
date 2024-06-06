@@ -236,6 +236,10 @@
       <h3>
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
       </h3>
+      <p>
+        Scan the QR code below using a lightning wallet to add credit to your
+        balance for this instance.
+      </p>
 
       <p style="color: white">
         <q-img
