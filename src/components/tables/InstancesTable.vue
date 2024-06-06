@@ -155,7 +155,10 @@
             <q-tooltip
               ><span v-text="props.row.progress + '%'"></span
             ></q-tooltip>
-                <span v-text="props.row.timeLeftFormatted" class="float-right"></span>
+            <span
+              v-text="props.row.timeLeftFormatted"
+              class="float-right"
+            ></span>
             <q-linear-progress
               dark
               :color="getColor(props.row.progress)"
@@ -206,13 +209,23 @@
         </template>
         <template v-slot:body-cell-enabled="props">
           <q-td :props="props">
-            <q-icon v-if="props.row.enabled" name="done" size="sm" color="green"></q-icon>
+            <q-icon
+              v-if="props.row.enabled"
+              name="done"
+              size="sm"
+              color="green"
+            ></q-icon>
             <q-icon v-else name="close" size="sm" color="grey"></q-icon>
           </q-td>
         </template>
         <template v-slot:body-cell-active="props">
           <q-td :props="props">
-            <q-icon v-if="props.row.active" name="cloud_done" size="sm" color="green"></q-icon>
+            <q-icon
+              v-if="props.row.active"
+              name="cloud_done"
+              size="sm"
+              color="green"
+            ></q-icon>
             <q-icon v-else name="cloud_off" size="sm" color="grey"></q-icon>
           </q-td>
         </template>
