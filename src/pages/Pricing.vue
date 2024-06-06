@@ -82,14 +82,14 @@ const pricing_data = [
     price: "_ _ _ sats per day",
     icon: "today",
     background_image: "linear-gradient(-225deg, #5D9FFF 0%, #6BBBFF 100%)",
-    text: "Comming Soon",
+    text: "Coming Soon",
   },
   {
     title: "Weekly",
     price: "_ _ _ sats per week",
     icon: "calendar_view_week",
     background_image: "linear-gradient(to right, #2B86C5 0%, #2B86C5 100%)",
-    text: "Comming Soon",
+    text: "Coming Soon",
   },
 ];
 export default defineComponent({
