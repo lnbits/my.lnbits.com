@@ -255,7 +255,7 @@
         <q-btn
           color="deep-purple"
           @click="copyData"
-          v-text="'Copy LNURL'"
+          v-text="'Copy'"
         ></q-btn>
         <q-btn
           v-close-popup
