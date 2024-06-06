@@ -419,7 +419,9 @@ export default defineComponent({
       this.confirm(
         "Create New Instance",
         "You are about the create a new LNbits instance." +
-          " You will be propmpted with a Payment Request QR Code."
+          " You will be shown a payment request QR code." +
+          " Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance." +
+          " It costs 21 sats to run an instance for one hour."
       ).onOk(async () => {
         try {
           this.inProgress = true;
