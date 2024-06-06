@@ -73,7 +73,7 @@
                   v-if="!this.isSignupRequest"
                   label="Login"
                   @click="login"
-                  type="button"
+                  type="submit"
                   color="primary"
                   :disable="inProgress"
                 />
@@ -87,7 +87,7 @@
                 <q-btn
                   label="Sign Up"
                   @click="signup"
-                  type="button"
+                  type="submit"
                   color="secondary"
                   class="float-right"
                   :disable="inProgress"
