@@ -21,6 +21,11 @@
               </div>
               <div v-else class="col text-h6 ellipsis">Login</div>
             </div>
+            <div class="text-center q-pt-lg">
+              <div class="col ellipsis">
+                Manage your <strong>LNbits</strong> instances in the cloud.
+              </div>
+            </div>
           </q-card-section>
           <q-card-section>
             <q-form>
