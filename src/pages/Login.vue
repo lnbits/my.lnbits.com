@@ -17,13 +17,13 @@
           <q-card-section>
             <div class="text-center q-mt-lg q-pt-lg">
               <div v-if="isSignupRequest" class="col text-h6 ellipsis">
-                Sign Up
+                Register
               </div>
               <div v-else class="col text-h6 ellipsis">Login</div>
             </div>
           </q-card-section>
           <q-card-section>
-            <q-form class="q-gutter-md">
+            <q-form>
               <q-input
                 filled
                 v-model="username"
@@ -68,31 +68,37 @@
                 color="secondary"
                 class="q-mt-sm"
               />
-              <div>
-                <q-btn
-                  v-if="!this.isSignupRequest"
-                  label="Login"
-                  @click="login"
-                  type="submit"
-                  color="primary"
-                  :disable="inProgress"
-                />
-                <q-btn
-                  v-else
-                  @click="this.isSignupRequest = false"
-                  label="Back"
-                  type="button"
-                  color="grey"
-                />
-                <q-btn
-                  label="Sign Up"
-                  @click="signup"
-                  type="submit"
-                  color="secondary"
-                  class="float-right"
-                  :disable="inProgress"
-                />
+
+              <q-btn
+                v-if="!this.isSignupRequest"
+                label="Login"
+                @click="login"
+                type="submit"
+                color="primary"
+                class="full-width"
+                :disable="inProgress"
+              />
+
+              <div v-if="!this.isSignupRequest" class="q-mt-sm text-center">
+                <span>or</span>
               </div>
+
+              <q-btn
+                label="Register"
+                @click="signup"
+                type="submit"
+                color="secondary"
+                class="full-width q-mt-sm"
+                :disable="inProgress"
+              />
+              <q-btn
+                v-if="this.isSignupRequest"
+                @click="this.isSignupRequest = false"
+                label="Back"
+                type="button"
+                class="full-width q-mt-md"
+                color="grey"
+              />
             </q-form>
           </q-card-section>
         </q-card>
@@ -167,7 +173,7 @@ export default defineComponent({
       } catch (error) {
         console.warn(error);
         this.q.notify({
-          message: "Failed to sign up!",
+          message: "Failed to register!",
           caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
