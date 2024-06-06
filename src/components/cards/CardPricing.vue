@@ -11,7 +11,7 @@
       </div>
     </q-card-section>
     <q-card-section class="q-pa-none">
-      <div class="text-h2 text-weight-bolder text-center">
+      <div class="text-h4 text-weight-bolder text-center">
         {{ price }}
       </div>
     </q-card-section>

@@ -46,6 +46,7 @@
             v-for="pricing_item in pricing_data"
           >
             <card-pricing
+              class="q-ml-lg q-mr-lg"
               :title="pricing_item.title"
               :icon="pricing_item.icon"
               :price="pricing_item.price"
