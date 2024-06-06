@@ -92,7 +92,6 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Download Backup.
-                <span v-text="props.row.active"></span>
               </q-tooltip>
             </q-btn>
 
