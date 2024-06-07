@@ -28,15 +28,11 @@
             </div>
           </q-card-section>
           <q-card-section>
-            <q-form>
+            <q-form @submit="onSubmit">
               <q-input
                 filled
                 v-model="username"
-                :rules="[
-                  (val) =>
-                    (val && val.length >= 3) ||
-                    'Username must have at least 3 characters',
-                ]"
+                :rules="[checkUsername]"
                 label="Username"
                 lazy-rules
               />
@@ -45,11 +41,7 @@
                 type="password"
                 filled
                 v-model="password"
-                :rules="[
-                  (val) =>
-                    (val && val.length >= 8) ||
-                    'Password must have at least 8 characters',
-                ]"
+                :rules="[checkPassword]"
                 label="Password"
                 lazy-rules
               />
@@ -59,11 +51,7 @@
                 type="password"
                 filled
                 v-model="passwordRepeat"
-                :rules="[
-                  (val) =>
-                    (val && val.length >= 8) ||
-                    'Password must have at least 8 characters',
-                ]"
+                :rules="[checkPassword]"
                 label="Confirm password"
                 lazy-rules
               />
@@ -136,6 +124,15 @@ export default defineComponent({
     async login() {
       try {
         this.inProgress = true;
+        const message = this.validateForm();
+        if (message) {
+          this.q.notify({
+            message,
+            color: "negative",
+            icon: "warning",
+          });
+          return false;
+        }
         await saas.login(this.username, this.password);
         this.q.notify({
           message: "Logged in!",
@@ -150,8 +147,53 @@ export default defineComponent({
           color: "negative",
           icon: "warning",
         });
+        return false;
       } finally {
         this.inProgress = false;
+      }
+    },
+    checkUsername(val) {
+      return (
+        (val && val.length >= 3) || "Username must have at least 3 characters"
+      );
+    },
+    checkPassword(val) {
+      return (
+        (val && val.length >= 8) || "Password must have at least 8 characters"
+      );
+    },
+    validateForm() {
+      const usernameMessage = this.checkUsername(this.username);
+      if (usernameMessage !== true) {
+        return usernameMessage;
+      }
+      const passwordMessage = this.checkPassword(this.password);
+      if (passwordMessage !== true) {
+        return passwordMessage;
+      }
+      return null;
+    },
+    validateSignupForm() {
+      const message = this.validateForm();
+      if (message) {
+        return message;
+      }
+      const passwordRepeatMessage = this.checkPassword(this.passwordRepeat);
+      if (passwordRepeatMessage !== true) {
+        return passwordRepeatMessage;
+      }
+      if (this.password !== this.passwordRepeat) {
+        return "Passwords do not match!";
+      }
+
+      return null;
+    },
+
+    async onSubmit() {
+      if (this.isSignupRequest) {
+        await this.signup();
+      } else {
+        await this.login();
       }
     },
     async signup() {
@@ -159,14 +201,16 @@ export default defineComponent({
         this.isSignupRequest = true;
         return;
       }
-      if (this.password !== this.passwordRepeat) {
+      const message = this.validateSignupForm();
+      if (message) {
         this.q.notify({
-          message: "Passwords do not match!",
+          message,
           color: "negative",
           icon: "warning",
         });
         return;
       }
+
       try {
         this.inProgress = true;
         await saas.signup(this.username, this.password, this.passwordRepeat);
@@ -183,6 +227,7 @@ export default defineComponent({
           color: "negative",
           icon: "warning",
         });
+        return false;
       } finally {
         this.inProgress = false;
       }
