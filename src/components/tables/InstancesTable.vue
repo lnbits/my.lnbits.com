@@ -92,7 +92,6 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Download Backup.
-                <span v-text="props.row.active"></span>
               </q-tooltip>
             </q-btn>
 
@@ -237,6 +236,10 @@
       <h3>
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
       </h3>
+      <p>
+        Scan the QR code below using a lightning wallet to add credit to your
+        balance for this instance.
+      </p>
 
       <p style="color: white">
         <q-img
@@ -252,7 +255,7 @@
         <q-btn
           color="deep-purple"
           @click="copyData"
-          v-text="'Copy LNURL'"
+          v-text="'Copy'"
         ></q-btn>
         <q-btn
           v-close-popup
@@ -308,33 +311,33 @@ export default defineComponent({
           sortable: true,
           align: "left",
         },
-        // {
-        //   name: "timeLeft",
-        //   label: "Time Left",
-        //   field: "timeLeftFormatted",
-        //   sortable: true,
-        //   align: "left",
-        // },
+        {
+          name: "status",
+          label: "Status",
+          field: "statusText",
+          sortable: true,
+          align: "left",
+        },
         {
           name: "progress",
           label: "Time Left",
           field: "progress",
           align: "left",
         },
-        {
-          name: "enabled",
-          label: "Enabled",
-          field: "enabled",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "active",
-          label: "Deployed",
-          field: "active",
-          sortable: true,
-          align: "left",
-        },
+        // {
+        //   name: "enabled",
+        //   label: "Enabled",
+        //   field: "enabled",
+        //   sortable: true,
+        //   align: "left",
+        // },
+        // {
+        //   name: "active",
+        //   label: "Deployed",
+        //   field: "active",
+        //   sortable: true,
+        //   align: "left",
+        // },
 
         {
           name: "Created Date",
@@ -416,7 +419,9 @@ export default defineComponent({
       this.confirm(
         "Create New Instance",
         "You are about the create a new LNbits instance." +
-          " You will be propmpted with a Payment Request QR Code."
+          " You will be shown a payment request QR code." +
+          " Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance." +
+          " It costs 21 sats to run an instance for one hour."
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -519,7 +524,7 @@ export default defineComponent({
       this.confirm(
         `Destroy ${id}`,
         "Are you sure you want to destroy?" +
-          " destroying will delete your instance and every bit of data."
+          " This action will delete all data and is not recoverable."
       ).onOk(async () => {
         try {
           this.inProgress = true;

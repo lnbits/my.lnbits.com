@@ -30,6 +30,7 @@
         class="flex text-white flex-center layout_bg"
       >
         <div style="position: relative">
+          <div class="text-h2 q-mb-lg text-center">LNbits</div>
           <div class="text-h4 text-center">
             The world's most powerful suite of bitcoin tools.
           </div>
@@ -42,9 +43,10 @@
         <div class="row q-col-gutter-sm q-px-sm q-ml-xl q-mr-xl">
           <div
             class="col-lg-4 col-md-4 col-xs-12 col-sm-12"
-            v-for="(pricing_item) in pricing_data"
+            v-for="pricing_item in pricing_data"
           >
             <card-pricing
+              class="q-ml-lg q-mr-lg"
               :title="pricing_item.title"
               :icon="pricing_item.icon"
               :price="pricing_item.price"
@@ -70,7 +72,7 @@ const pricing_data = [
     title: "Hourly",
     price: "21 sats per hour",
     active: true,
-    link: '/instances',
+    link: "/instances",
     icon: "hourglass_top",
     background_image: "linear-gradient(to right, #ed6ea0 0%, #ec8c69 100%)",
     text: "Start Now",
@@ -80,15 +82,15 @@ const pricing_data = [
     price: "_ _ _ sats per day",
     icon: "today",
     background_image: "linear-gradient(-225deg, #5D9FFF 0%, #6BBBFF 100%)",
-    text: "Comming Soon",
+    text: "Coming Soon",
   },
   {
     title: "Weekly",
     price: "_ _ _ sats per week",
     icon: "calendar_view_week",
     background_image: "linear-gradient(to right, #2B86C5 0%, #2B86C5 100%)",
-    text: "Comming Soon",
-  }
+    text: "Coming Soon",
+  },
 ];
 export default defineComponent({
   name: "Pricing",
