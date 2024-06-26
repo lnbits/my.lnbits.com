@@ -3,7 +3,7 @@ import { secondsToDhm } from "src/boot/utils";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
-  url: "https://api.lnbits.com",
+  url: process.env.apiUrl,
   serverTime: null,
 
   username: localStorage.getItem("username"),
@@ -125,14 +125,14 @@ var saas = {
     };
 
     const status = (active, enabled) => {
-      if (!active){
-        return "Not Paid"
+      if (!active) {
+        return "Not Paid";
       }
       if (!enabled) {
-        return "Disabled"
+        return "Disabled";
       }
-      return "Runnning"
-    }
+      return "Runnning";
+    };
 
     const timeLeft = Math.floor(
       Math.max(instance.timestamp_stop - this.serverTime, 0)
@@ -179,7 +179,7 @@ var saas = {
     (err) => {
       if (err?.response?.status === 401) {
         saas.logout();
-        if (window.location.pathname !==  "/login") {
+        if (window.location.pathname !== "/login") {
           setTimeout(() => (window.location.href = "/login"), 500);
         }
       }
