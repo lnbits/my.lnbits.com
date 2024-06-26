@@ -1,7 +1,11 @@
 import axios from "axios";
 import { secondsToDhm } from "src/boot/utils";
 
-var saas = {
+if (!process.env.DEV) {
+  axios.defaults.withCredentials = true;
+}
+
+const saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: process.env.apiUrl,
   serverTime: null,
@@ -11,8 +15,7 @@ var saas = {
   signup: async function (username, password, password2) {
     const { data } = await axios({
       method: "POST",
-      url: this.url + "/signup",
-      withCredentials: true,
+      url: this.url + "/auth/register",
       data: {
         username,
         password,
@@ -25,28 +28,31 @@ var saas = {
     return data;
   },
   login: async function (username, password) {
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("password", password);
     const { data } = await axios({
       method: "POST",
-      url: this.url + "/login",
-      data: formData,
-      withCredentials: true,
-      headers: {
-        "Content-Type": "multipart/form-data",
+      url: this.url + "/auth",
+      data: {
+        username,
+        password,
       },
     });
     localStorage.setItem("username", username);
 
     return data;
   },
-
+  logout: async function () {
+    const response = await axios({
+      method: "POST",
+      url: this.url + "/auth/logout",
+    });
+    this.username = null;
+    localStorage.clear();
+    return response;
+  },
   createInstance: async function () {
     return axios({
       method: "POST",
       url: this.url + "/instance",
-      withCredentials: true,
     });
   },
 
@@ -54,7 +60,7 @@ var saas = {
     return axios({
       method: "PUT",
       url: this.url + "/instance",
-      withCredentials: true,
+
       data: {
         action: action,
         instance_id: id,
@@ -65,7 +71,6 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance",
-      withCredentials: true,
     });
 
     return response;
@@ -74,7 +79,6 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url + "/instance/logs",
-      withCredentials: true,
     });
 
     return response;
@@ -83,7 +87,6 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url + `/instance/${id}/logs`,
-      withCredentials: true,
     });
 
     return response;
@@ -92,21 +95,10 @@ var saas = {
     const response = await axios({
       method: "GET",
       url: this.url,
-      withCredentials: true,
     });
 
     this.serverTime = response.data.timestamp;
 
-    return response;
-  },
-  logout: async function () {
-    const response = await axios({
-      method: "POST",
-      url: this.url + "/logout",
-      withCredentials: true,
-    });
-    this.username = null;
-    localStorage.clear();
     return response;
   },
 
