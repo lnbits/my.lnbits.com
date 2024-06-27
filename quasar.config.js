@@ -55,7 +55,7 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
-        apiUrl: "https://demo.lnbits.com/api/v1",
+        apiUrl: "http://localhost:5000/api/v1",
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

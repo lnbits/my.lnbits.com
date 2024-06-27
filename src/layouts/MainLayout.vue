@@ -1,40 +1,35 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          @click="toggleLeftDrawer"
-          icon="menu"
-          aria-label="Menu"
-        />
-        <q-toolbar-title> My Nostr </q-toolbar-title>
+      <q-toolbar class="container">
+        <q-toolbar-title class="text-secondary" @click="home">
+          <b>MyNostr</b>
+        </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
           <span v-text="username"></span>
 
-          <q-btn
-            round
-            dense
-            flat
-            color="white"
-            icon="fab fa-github"
-            type="a"
-            href="https://github.com/lnbits"
-            target="_blank"
-          >
-          </q-btn>
+          <q-btn stretch flat label="Indentifiers" />
 
-          <q-btn round flat>
-            <q-avatar @click="logout()" icon="logout" size="26px"> </q-avatar>
+          <q-btn
+            stretch
+            flat
+            :label="username ? 'Logout' : 'Login'"
+            @click="handleLogin"
+          >
+            <q-icon
+              :name="username ? 'logout' : 'login'"
+              class="q-ml-sm"
+            ></q-icon>
+            <!-- <q-avatar v-if="username" @click="logout()" icon="logout">
+            </q-avatar>
+            <q-avatar v-else @click="goToLogin" icon="login"> </q-avatar> -->
           </q-btn>
         </div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
+    <!-- <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
       bordered
@@ -67,9 +62,9 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-drawer>
+    </q-drawer> -->
 
-    <q-page-container class="bg-grey-2">
+    <q-page-container class="bg-image">
       <svg
         aria-hidden="true"
         viewBox="0 0 668 1069"
@@ -255,63 +250,143 @@
   </q-layout>
 </template>
 
-<script>
-import EssentialLink from "components/EssentialLink.vue";
-
-import { defineComponent, ref } from "vue";
+<script setup>
 import { useQuasar } from "quasar";
+import { useRouter } from "vue-router";
 import { saas } from "boot/saas";
 
-export default defineComponent({
-  name: "MainLayout",
+const $q = useQuasar();
+const $router = useRouter();
 
-  components: {
-    EssentialLink,
-  },
+const username = saas.username;
 
-  setup() {
-    const $q = useQuasar();
-    const leftDrawerOpen = ref(false);
+const home = () => {
+  $router.push("/");
+};
 
-    return {
-      q: $q,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
-      },
-    };
-  },
-  computed: {
-    username: function () {
-      return saas.username;
-    },
-  },
-  methods: {
-    logout: async function () {
-      try {
-        await saas.logout();
-        this.q.notify({
-          message: "Logged out!",
-          color: "positive",
-        });
-        setTimeout(() => (window.location.href = "/login"), 500);
-      } catch (error) {
-        this.q.notify({
-          message: "Failed to logout!",
-          caption: saas.mapErrorToString(error),
-          color: "negative",
-          icon: "warning",
-        });
-      }
-    },
-  },
-});
+const goToLogin = () => {
+  $router.push("/login");
+};
+
+const logout = async () => {
+  try {
+    await saas.logout();
+    $q.notify({
+      message: "Logged out!",
+      color: "positive",
+    });
+    setTimeout(() => $router.push("/"), 500);
+  } catch (error) {
+    $q.notify({
+      message: "Failed to logout!",
+      caption: saas.mapErrorToString(error),
+      color: "negative",
+      icon: "warning",
+    });
+  }
+};
+
+const handleLogin = () => {
+  if (username) {
+    logout();
+  } else {
+    goToLogin();
+  }
+};
+
+// export default defineComponent({
+//   name: "MainLayout",
+
+//   components: {
+//     EssentialLink,
+//   },
+
+//   setup() {
+//     const $q = useQuasar();
+//     const leftDrawerOpen = ref(false);
+//     const $router = useRouter()
+
+//     return {
+//       q: $q,
+//       leftDrawerOpen,
+//       toggleLeftDrawer() {
+//         leftDrawerOpen.value = !leftDrawerOpen.value;
+//       },
+//     };
+//   },
+//   computed: {
+//     username: function () {
+//       return saas.username;
+//     },
+//   },
+//   methods: {
+//     home() {
+//       $router.push("/");
+//     },
+//     logout: async function () {
+//       try {
+//         await saas.logout();
+//         this.q.notify({
+//           message: "Logged out!",
+//           color: "positive",
+//         });
+//         setTimeout(() => (window.location.href = "/login"), 500);
+//       } catch (error) {
+//         this.q.notify({
+//           message: "Failed to logout!",
+//           caption: saas.mapErrorToString(error),
+//           color: "negative",
+//           icon: "warning",
+//         });
+//       }
+//     },
+//   },
+// });
 </script>
 
-<style>
-.svg {
-  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
+<style lang="scss">
+.bg-image {
+  background: $primary;
+  background: linear-gradient(
+    142deg,
+    $primary 0%,
+    $primary 75%,
+    $secondary 120%
+  );
+
+  .svg {
+    opacity: 30%;
+  }
 }
+.container,
+.container-fluid {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+.container {
+  @media (min-width: $breakpoint-sm-min) {
+    max-width: 700px;
+  }
+
+  @media (min-width: $breakpoint-md-min) {
+    max-width: 950px;
+  }
+
+  @media (min-width: $breakpoint-lg-min) {
+    max-width: 1200px;
+  }
+
+  @media (min-width: $breakpoint-xl-min) {
+    max-width: 1450px;
+  }
+}
+// .svg {
+//   mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
+// }
 /* FONT AWESOME GENERIC BEAT */
 .fa-beat {
   animation: fa-beat 5s ease infinite;
