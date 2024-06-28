@@ -9,21 +9,59 @@
         <div class="q-gutter-sm row items-center no-wrap">
           <span v-text="username"></span>
 
-          <q-btn stretch flat label="Indentifiers" />
+          <q-btn stretch flat label="Indentifiers" class="text-capitalize" />
 
-          <q-btn
+          <!-- <q-btn
             stretch
             flat
             :label="username ? 'Logout' : 'Login'"
             @click="handleLogin"
+            class="text-capitalize"
           >
             <q-icon
               :name="username ? 'logout' : 'login'"
               class="q-ml-sm"
             ></q-icon>
-            <!-- <q-avatar v-if="username" @click="logout()" icon="logout">
+          <q-avatar v-if="username" @click="logout()" icon="logout">
             </q-avatar>
-            <q-avatar v-else @click="goToLogin" icon="login"> </q-avatar> -->
+            <q-avatar v-else @click="goToLogin" icon="login"> </q-avatar>
+          </q-btn> -->
+          <q-btn stretch flat>
+            <q-avatar size="26px" class="q-ml-sm">
+              <img src="~assets/nostrich-head-32.svg" />
+            </q-avatar>
+            <q-menu>
+              <q-list style="min-width: 100px">
+                <q-item v-if="username" clickable v-close-popup @click="logout">
+                  <q-item-section>Logout</q-item-section>
+                </q-item>
+
+                <q-item v-else clickable v-close-popup @click="goToLogin">
+                  <q-item-section>Login</q-item-section>
+                </q-item>
+                <!-- <q-item clickable v-close-popup>
+                  <q-item-section>New incognito tab</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup>
+                  <q-item-section>Recent tabs</q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup>
+                  <q-item-section>History</q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup>
+                  <q-item-section>Downloads</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup>
+                  <q-item-section>Settings</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup>
+                  <q-item-section>Help &amp; Feedback</q-item-section>
+                </q-item> -->
+              </q-list>
+            </q-menu>
           </q-btn>
         </div>
       </q-toolbar>
@@ -286,13 +324,13 @@ const logout = async () => {
   }
 };
 
-const handleLogin = () => {
-  if (username) {
-    logout();
-  } else {
-    goToLogin();
-  }
-};
+// const handleLogin = () => {
+//   if (username) {
+//     logout();
+//   } else {
+//     goToLogin();
+//   }
+// };
 
 // export default defineComponent({
 //   name: "MainLayout",

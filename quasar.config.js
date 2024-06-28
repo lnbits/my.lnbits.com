@@ -19,7 +19,7 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli/boot-files
-    boot: ["i18n"],
+    boot: ["i18n", "saas"],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ["app.css"],
@@ -55,7 +55,8 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
-        apiUrl: "http://localhost:5000/api/v1",
+        apiUrl: "http://localhost:5000",
+        domainID: "QC86K9k2DFmHbM9XuatBt7",
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

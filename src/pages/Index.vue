@@ -17,6 +17,7 @@
         label="Find and buy a nostr.com handle"
         label-color="blue-grey-4"
         suffix="@nostr.com"
+        @keydown.enter.prevent="handleSearch"
       >
         <template v-slot:before>
           <NostrHeadIcon color="blue-grey-4" />
@@ -29,23 +30,73 @@
             color="secondary"
             label="Search"
             @click="handleSearch"
+            class="text-capitalize"
           />
         </template>
       </q-input>
+    </div>
+    <div class="nip-list">
+      <CardItem
+        v-for="nip5 in [...nip5List.values()]"
+        :name="nip5.local"
+        :available="nip5.available"
+      />
+      <!-- <q-list dark v-if="nip5List.size">
+        <q-item
+          v-for="nip5 in [...nip5List.values()]"
+          :key="nip5"
+          clickable
+          v-ripple
+          @click="handle = nip5"
+        >
+          <q-item-section class="text-secondary">
+            <q-item-label>{{ nip5.local }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-btn
+              v-if="nip5.available"
+              unelevated
+              color="positive"
+              label="Buy"
+            />
+            <q-btn v-else round unelevated color="negative" icon="close" />
+          </q-item-section>
+        </q-item>
+      </q-list> -->
     </div>
     <!-- </q-card> -->
   </q-page>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { saas } from "src/boot/saas";
+import { useQuasar } from "quasar";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
+import CardItem from "components/cards/CardItem.vue";
+
+const $q = useQuasar();
 
 const handle = ref("");
+const nip5List = new Map();
 
-const handleSearch = () => {
-  console.log("Searching for handle: ", handle.value);
+const handleSearch = async () => {
+  if (nip5List.has(handle.value)) {
+    return $q.notify({
+      message: `Already searched ${handle.value}.`,
+      color: "warning",
+    });
+  }
+  try {
+    const { data } = await saas.queryIdentifier(handle.value);
+    console.log("data: ", data);
+    nip5List.set(handle.value, { local: handle.value, ...data });
+  } catch (error) {
+    console.error("Error searching for identifier: ", error);
+  } finally {
+    handle.value = "";
+  }
 };
 </script>
 
@@ -69,5 +120,12 @@ const handleSearch = () => {
     width: 80%;
     max-width: 800px;
   }
+}
+.nip-list {
+  margin-top: 2rem;
+  width: 80%;
+  max-width: 700px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>
