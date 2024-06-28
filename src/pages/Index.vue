@@ -3,23 +3,24 @@
     <!-- <q-card class="my-card"> -->
     <div class="hero">
       <div class="pitch text-center text-secondary">
-        <h1 class="text-h2 text-bold">Get your Nostr Indentifier</h1>
+        <h1 class="text-h2 text-bold">Your @nostr Identity</h1>
         <p class="text-h6">
-          Simplifying Nostr keys into easy-to-read handles, like @username for
-          social media.
+          Nostr Identifier | Nostr Relay | LN Address
         </p>
       </div>
       <q-input
         dark
+        standout
+        autofocus
         rounded
         v-model.trim="handle"
-        class="input"
-        label="Find and buy a nostr.com handle"
+        class="input q-pa-lg"
+        placeholder="@nostr"
         label-color="blue-grey-4"
-        suffix="@nostr.com"
+        :input-style="{ fontSize: '30px' }"
         @keydown.enter.prevent="handleSearch"
       >
-        <template v-slot:before>
+        <template v-slot:prepend>
           <NostrHeadIcon color="blue-grey-4" />
         </template>
         <template v-slot:append>
