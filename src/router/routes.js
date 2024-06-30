@@ -3,8 +3,17 @@ const routes = [
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { path: "", component: () => import("pages/Index.vue") },
-      { path: "/nip05", component: () => import("pages/Nip05.vue") },
+      { name: "Index", path: "", component: () => import("pages/Index.vue") },
+      {
+        name: "Login",
+        path: "/login",
+        component: () => import("pages/Login.vue"),
+      },
+      {
+        name: "Profile",
+        path: "/profile",
+        component: () => import("src/pages/Profile.vue"),
+      },
       { path: "/activity", component: () => import("pages/Activity.vue") },
 
       // Not completed yet
@@ -21,10 +30,6 @@ const routes = [
   {
     path: "/pricing",
     component: () => import("pages/Pricing.vue"),
-  },
-  {
-    path: "/login",
-    component: () => import("pages/Login.vue"),
   },
 ];
 

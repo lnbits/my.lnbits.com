@@ -1,12 +1,9 @@
 <template>
   <q-page class="q-pa-sm">
-    <!-- <q-card class="my-card"> -->
     <div class="hero">
       <div class="pitch text-center text-secondary">
-        <h1 class="text-h2 text-bold">Your @nostr Identity</h1>
-        <p class="text-h6">
-          Nostr Identifier | Nostr Relay | LN Address
-        </p>
+        <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
+        <p class="text-h6">Nostr Identifier | Nostr Relay | LN Address</p>
       </div>
       <q-input
         dark
@@ -15,9 +12,9 @@
         rounded
         v-model.trim="handle"
         class="input q-pa-lg"
-        placeholder="@nostr"
+        placeholder="@nostr.com"
         label-color="blue-grey-4"
-        :input-style="{ fontSize: '30px' }"
+        :input-style="{ fontSize: '22px' }"
         @keydown.enter.prevent="handleSearch"
       >
         <template v-slot:prepend>
@@ -36,68 +33,57 @@
         </template>
       </q-input>
     </div>
-    <div class="nip-list">
+    <div class="nip-list" v-if="$store.showCard">
       <CardItem
-        v-for="nip5 in [...nip5List.values()]"
-        :name="nip5.local"
-        :available="nip5.available"
+        :name="$store.handle"
+        :data="$store.handleData"
+        :close="$store.resetHandle"
+        :action="handleBuy"
       />
-      <!-- <q-list dark v-if="nip5List.size">
-        <q-item
-          v-for="nip5 in [...nip5List.values()]"
-          :key="nip5"
-          clickable
-          v-ripple
-          @click="handle = nip5"
-        >
-          <q-item-section class="text-secondary">
-            <q-item-label>{{ nip5.local }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              v-if="nip5.available"
-              unelevated
-              color="positive"
-              label="Buy"
-            />
-            <q-btn v-else round unelevated color="negative" icon="close" />
-          </q-item-section>
-        </q-item>
-      </q-list> -->
     </div>
-    <!-- </q-card> -->
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { saas } from "src/boot/saas";
 import { useQuasar } from "quasar";
+import { useAppStore } from "src/stores/store";
+import { useRouter } from "vue-router";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardItem from "components/cards/CardItem.vue";
 
 const $q = useQuasar();
+const $store = useAppStore();
+const $router = useRouter();
 
 const handle = ref("");
-const nip5List = new Map();
 
 const handleSearch = async () => {
-  if (nip5List.has(handle.value)) {
-    return $q.notify({
-      message: `Already searched ${handle.value}.`,
-      color: "warning",
-    });
-  }
   try {
     const { data } = await saas.queryIdentifier(handle.value);
-    console.log("data: ", data);
-    nip5List.set(handle.value, { local: handle.value, ...data });
+    $store.handle = handle.value;
+    $store.handleData = data;
   } catch (error) {
     console.error("Error searching for identifier: ", error);
   } finally {
     handle.value = "";
   }
+};
+const handleBuy = () => {
+  if (!$store.isLoggedIn) {
+    $q.notify({
+      message: "Please login to buy",
+      color: "negative",
+      position: "top",
+      timeout: 2000,
+    });
+  }
+  $store.buying = true;
+  setTimeout(() => {
+    $router.push({ path: "/profile" });
+  }, 500);
 };
 </script>
 

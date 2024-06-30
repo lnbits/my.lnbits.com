@@ -1,48 +1,22 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar class="container">
+      <q-toolbar class="container-fluid">
         <q-toolbar-title class="text-secondary" @click="home">
           <b>MyNostr</b>
         </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
-          <span v-text="username"></span>
-
-          <q-btn stretch flat label="Indentifiers" class="text-capitalize" />
-
-          <!-- <q-btn
-            stretch
-            flat
-            :label="username ? 'Logout' : 'Login'"
-            @click="handleLogin"
-            class="text-capitalize"
-          >
-            <q-icon
-              :name="username ? 'logout' : 'login'"
-              class="q-ml-sm"
-            ></q-icon>
-          <q-avatar v-if="username" @click="logout()" icon="logout">
-            </q-avatar>
-            <q-avatar v-else @click="goToLogin" icon="login"> </q-avatar>
-          </q-btn> -->
-          <q-btn stretch flat>
+          <q-btn flat v-if="$store.isLoggedIn">
             <q-avatar size="26px" class="q-ml-sm">
               <img src="~assets/nostrich-head-32.svg" />
             </q-avatar>
             <q-menu>
               <q-list style="min-width: 100px">
-                <q-item v-if="username" clickable v-close-popup @click="logout">
-                  <q-item-section>Logout</q-item-section>
+                <q-item clickable v-close-popup to="/profile">
+                  <q-item-section>Profile</q-item-section>
                 </q-item>
-
-                <q-item v-else clickable v-close-popup @click="goToLogin">
-                  <q-item-section>Login</q-item-section>
-                </q-item>
-                <!-- <q-item clickable v-close-popup>
-                  <q-item-section>New incognito tab</q-item-section>
-                </q-item>
-                <q-separator />
+                <!-- <q-separator />
                 <q-item clickable v-close-popup>
                   <q-item-section>Recent tabs</q-item-section>
                 </q-item>
@@ -60,48 +34,26 @@
                 <q-item clickable v-close-popup>
                   <q-item-section>Help &amp; Feedback</q-item-section>
                 </q-item> -->
+                <q-item clickable v-close-popup @click="logout">
+                  <q-item-section>Logout</q-item-section>
+                </q-item>
               </q-list>
             </q-menu>
           </q-btn>
+          <template v-else>
+            <q-btn to="/login" flat label="sign in" class="text-capitalize" />
+            <q-btn
+              to="/login?signup=true"
+              unelevated
+              rounded
+              color="secondary"
+              label="sign up"
+              class="text-capitalize"
+            />
+          </template>
         </div>
       </q-toolbar>
     </q-header>
-
-    <!-- <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      class="bg-primary text-white"
-    >
-      <q-list>
-        <q-item></q-item>
-        <q-item to="/nip05" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="alternate_email" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Nostr handles</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/activity" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="manage_history" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Activity</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item to="/pricing" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="currency_bitcoin" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Pricing</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-drawer> -->
-
     <q-page-container class="bg-image">
       <svg
         aria-hidden="true"
@@ -292,19 +244,30 @@
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 import { saas } from "boot/saas";
+import { onMounted } from "vue";
+import { useAppStore } from "src/stores/store";
 
 const $q = useQuasar();
 const $router = useRouter();
+const $store = useAppStore();
 
-const username = saas.username;
+onMounted(() => {
+  if (saas.username) {
+    $store.username = saas.username;
+  }
+});
 
 const home = () => {
   $router.push("/");
 };
 
-const goToLogin = () => {
-  $router.push("/login");
-};
+// const goToLogin = () => {
+//   $router.push("/login");
+// };
+
+// const goToRegister = () => {
+//   $router.push("/login");
+// };
 
 const logout = async () => {
   try {
@@ -313,6 +276,7 @@ const logout = async () => {
       message: "Logged out!",
       color: "positive",
     });
+    $store.$reset();
     setTimeout(() => $router.push("/"), 500);
   } catch (error) {
     $q.notify({
@@ -323,74 +287,12 @@ const logout = async () => {
     });
   }
 };
-
-// const handleLogin = () => {
-//   if (username) {
-//     logout();
-//   } else {
-//     goToLogin();
-//   }
-// };
-
-// export default defineComponent({
-//   name: "MainLayout",
-
-//   components: {
-//     EssentialLink,
-//   },
-
-//   setup() {
-//     const $q = useQuasar();
-//     const leftDrawerOpen = ref(false);
-//     const $router = useRouter()
-
-//     return {
-//       q: $q,
-//       leftDrawerOpen,
-//       toggleLeftDrawer() {
-//         leftDrawerOpen.value = !leftDrawerOpen.value;
-//       },
-//     };
-//   },
-//   computed: {
-//     username: function () {
-//       return saas.username;
-//     },
-//   },
-//   methods: {
-//     home() {
-//       $router.push("/");
-//     },
-//     logout: async function () {
-//       try {
-//         await saas.logout();
-//         this.q.notify({
-//           message: "Logged out!",
-//           color: "positive",
-//         });
-//         setTimeout(() => (window.location.href = "/login"), 500);
-//       } catch (error) {
-//         this.q.notify({
-//           message: "Failed to logout!",
-//           caption: saas.mapErrorToString(error),
-//           color: "negative",
-//           icon: "warning",
-//         });
-//       }
-//     },
-//   },
-// });
 </script>
 
 <style lang="scss">
 .bg-image {
   background: $primary;
-  background: linear-gradient(
-    142deg,
-    $primary 0%,
-    $primary 75%,
-    $secondary 120%
-  );
+  background: linear-gradient(142deg, $primary 65%, $secondary 170%);
 
   .svg {
     opacity: 30%;

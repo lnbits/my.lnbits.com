@@ -1,35 +1,58 @@
 <template>
-  <q-card class="no-shadow q-mb-sm" bordered>
-    <q-item>
-      <q-item-section avatar>
-        <NostrHeadIcon color="blue-grey-4" size="md" />
-      </q-item-section>
-
-      <q-item-section>
-        <q-item-label class="text-h6">{{ name }}</q-item-label>
-        <q-item-label caption style="font-size: 20px" v-if="available">
-          {{ price || "$100" }}
-        </q-item-label>
-      </q-item-section>
-
-      <q-item-section side>
-        <q-btn
-          v-if="available"
-          label="buy"
-          size="md"
-          color="positive"
-          class="text-capitalize"
-        ></q-btn>
-        <q-icon v-else name="close" color="negative" />
-      </q-item-section>
-    </q-item>
+  <q-card class="no-shadow q-pa-md bg-blue-grey-1" bordered>
+    <q-card-section class="row items-center q-pb-none">
+      <div class="text-h6">
+        {{ data.available ? "Great News" : "Oh... Try again!" }}
+      </div>
+      <q-btn class="q-ml-auto" icon="close" flat round dense @click="close" />
+    </q-card-section>
+    <q-card-section class="text-grey-8 q-mb-lg">
+      <div v-if="data.available" class="text-h6">
+        <span>
+          {{
+            data.available
+              ? `${name} is available!`
+              : `${name} is not available!`
+          }}
+        </span>
+        &nbsp;Get it now for
+        <span class="text-primary">{{
+          data.currency != "sats"
+            ? formatCurrency(data.price, data.currency)
+            : formatSat(data.price)
+        }}</span>
+      </div>
+      <div v-else class="text-h6">
+        <span>
+          The handle <span class="text-primary">{{ name }}</span> is not
+          available!
+        </span>
+      </div>
+    </q-card-section>
+    <q-card-actions v-if="data.available">
+      <q-btn
+        color="positive"
+        label="Buy now"
+        size="lg"
+        class="text-capitalize q-ml-auto"
+        @click="action"
+      />
+    </q-card-actions>
   </q-card>
 </template>
 
 <script setup>
-defineProps(["name", "price", "available"]);
+defineProps(["name", "data", "close", "action"]);
 
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
+const formatCurrency = (value, currency) => {
+  return new Intl.NumberFormat(window.LOCALE, {
+    style: "currency",
+    currency: currency,
+  }).format(value);
+};
+const formatSat = (value) => {
+  return new Intl.NumberFormat(window.LOCALE).format(value);
+};
 </script>
 
 <style scoped></style>

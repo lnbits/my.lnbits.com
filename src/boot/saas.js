@@ -1,4 +1,3 @@
-import { boot } from "quasar/wrappers";
 import axios from "axios";
 
 if (!process.env.DEV) {
@@ -23,6 +22,7 @@ const saas = {
       },
     });
 
+    this.username = username;
     localStorage.setItem("username", username);
 
     return data;
@@ -36,6 +36,8 @@ const saas = {
         password,
       },
     });
+
+    this.username = username;
     localStorage.setItem("username", username);
 
     return data;
@@ -55,6 +57,14 @@ const saas = {
       method: "GET",
       url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/search?q=${identifier}`,
     });
+    return response;
+  },
+  getUsrAddresses: async function () {
+    const response = await axios({
+      method: "GET",
+      url: `${this.url}/nostrnip5/api/v1/addresses/user`,
+    });
+
     return response;
   },
   // createInstance: async function () {
@@ -161,31 +171,32 @@ const saas = {
   //     ),
   //   };
   // },
-  // mapErrorToString(error) {
-  //   const data = error.response?.data;
-  //   if (!data) {
-  //     return;
-  //   }
-  //   if (typeof data === "string") {
-  //     return data;
-  //   }
-  //   return data?.detail?.map((d) => d.msg).join(", ");
-  // },
+  mapErrorToString(error) {
+    const data = error.response?.data;
+    if (!data) {
+      return;
+    }
+    if (typeof data === "string") {
+      return data;
+    }
+    return data?.detail?.map((d) => d.msg).join(", ");
+  },
 };
 
-(async () => {
-  axios.interceptors.response.use(
-    (response) => response,
-    (err) => {
-      if (err?.response?.status === 401) {
-        saas.logout();
-        if (window.location.pathname !== "/login") {
-          setTimeout(() => (window.location.href = "/login"), 500);
-        }
-      }
-      return Promise.reject(err);
-    }
-  );
-})();
+// DISABLED FOR TESTING PURPOSES
+// (async () => {
+//   axios.interceptors.response.use(
+//     (response) => response,
+//     (err) => {
+//       if (err?.response?.status === 401) {
+//         saas.logout();
+//         if (window.location.pathname !== "/login") {
+//           setTimeout(() => (window.location.href = "/login"), 500);
+//         }
+//       }
+//       return Promise.reject(err);
+//     }
+//   );
+// })();
 
 export { saas };

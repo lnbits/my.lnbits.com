@@ -35,18 +35,23 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
-  // router.beforeEach((to, from, next) => {
-  //   if (to.path == "/") {
-  //     return next("/");
-  //   }
-  //   if (to.path !== "/login" && !saas.username) {
-  //     return next("/login");
-  //   }
-  //   if (to.path == "/login" && saas.username) {
-  //     return next("/");
-  //   }
-  //   next(true);
-  // });
+  router.beforeEach(async (to, from) => {
+    if (to.path == "/") {
+      return;
+    }
+    if (
+      // make sure the user is authenticated
+      !saas.username &&
+      // ❗️ Avoid an infinite redirect
+      to.name !== "Login"
+    ) {
+      // redirect the user to the login page
+      return { name: "Login" };
+    }
+    if (to.name == "Login" && saas.username) {
+      return { name: "Profile" };
+    }
+  });
 
   return router;
 });
