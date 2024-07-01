@@ -55,7 +55,7 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
-        apiUrl: "http://localhost:5000",
+        apiUrl: "",
         domainID: "QC86K9k2DFmHbM9XuatBt7",
       },
       // rawDefine: {}

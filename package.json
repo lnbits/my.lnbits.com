@@ -6,6 +6,8 @@
   "private": true,
   "scripts": {
     "start": "quasar dev",
+    "serve": "quasar serve ./dist/spa",
+    "prod": "npm run build && npm run serve",
     "build": "quasar build",
     "test": "echo \"No test specified\" && exit 0"
   },
