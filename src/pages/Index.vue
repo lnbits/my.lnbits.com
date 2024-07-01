@@ -82,7 +82,7 @@ const handleBuy = () => {
   }
   $store.buying = true;
   setTimeout(() => {
-    $router.push({ path: "/profile" });
+    $router.push({ path: "/identities" });
   }, 500);
 };
 </script>
@@ -96,7 +96,7 @@ const handleBuy = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6.875rem 0 6.875rem;
+  padding: 5rem 0 6.875rem;
 
   .pitch {
     width: 80%;

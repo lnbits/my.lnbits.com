@@ -11,8 +11,8 @@ const routes = [
       },
       {
         name: "Profile",
-        path: "/profile",
-        component: () => import("src/pages/Profile.vue"),
+        path: "/identities",
+        component: () => import("src/pages/Indentities.vue"),
       },
       { path: "/activity", component: () => import("pages/Activity.vue") },
 

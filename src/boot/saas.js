@@ -1,8 +1,8 @@
 import axios from "axios";
 
-if (!process.env.DEV) {
-  axios.defaults.withCredentials = true;
-}
+// if (!process.env.DEV) {
+axios.defaults.withCredentials = true;
+// }
 
 const saas = {
   domain: process.env.domainID,
@@ -59,10 +59,31 @@ const saas = {
     });
     return response;
   },
-  getUsrAddresses: async function () {
+  getUsrIdentities: async function () {
     const response = await axios({
       method: "GET",
       url: `${this.url}/nostrnip5/api/v1/addresses/user`,
+    });
+
+    return response;
+  },
+  createIdentity: async function (identifier, pubkey) {
+    const response = await axios({
+      method: "POST",
+      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address`,
+      data: {
+        domain_id: this.domain,
+        local_part: identifier,
+        pubkey: pubkey,
+      },
+    });
+
+    return response;
+  },
+  checkIdentityPayment: async function (paymentHash) {
+    const response = await axios({
+      method: "GET",
+      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/payments/${paymentHash}`,
     });
 
     return response;

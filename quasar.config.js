@@ -7,11 +7,10 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
+import { configure } from "quasar/wrappers";
+import path from "path";
 
-const { configure } = require("quasar/wrappers");
-const path = require("path");
-
-module.exports = configure(function (/* ctx */) {
+export default configure((/* ctx */) => {
   return {
     // https://v2.quasar.dev/quasar-cli/prefetch-feature
     // preFetch: true,
@@ -86,6 +85,7 @@ module.exports = configure(function (/* ctx */) {
       // https: true,
       open: true, // opens browser window automatically
       port: 8080,
+      strictPort: true,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

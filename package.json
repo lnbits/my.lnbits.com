@@ -4,6 +4,7 @@
   "description": "My Nostr",
   "productName": "My Nostr",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "quasar dev",
     "serve": "quasar serve ./dist/spa",
@@ -12,6 +13,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@chenfengyuan/vue-qrcode": "^2.0.0",
     "@quasar/extras": "^1.16.11",
     "@quasar/quasar-ui-qcalendar": "^4.0.0-beta.16",
     "axios": "^1.7.2",
@@ -26,10 +28,11 @@
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^3.4.0",
-    "@quasar/app-vite": "^1.9.3",
+    "@quasar/app-vite": "^2.0.0-beta.1",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
-    "quasar-app-extension-qhierarchy": "^1.0.15"
+    "quasar-app-extension-qhierarchy": "^1.0.15",
+    "vite-plugin-checker": "^0.7.0"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",

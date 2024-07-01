@@ -13,8 +13,8 @@
             </q-avatar>
             <q-menu>
               <q-list style="min-width: 100px">
-                <q-item clickable v-close-popup to="/profile">
-                  <q-item-section>Profile</q-item-section>
+                <q-item clickable v-close-popup to="/identities">
+                  <q-item-section>Identities</q-item-section>
                 </q-item>
                 <!-- <q-separator />
                 <q-item clickable v-close-popup>
