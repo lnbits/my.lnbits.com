@@ -4,16 +4,10 @@
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
         <q-breadcrumbs-el
-          label="Docs"
-          icon="widgets"
-          to="/start/pick-quasar-flavour"
+          label="Indentities"
+          icon="alternate_email"
+          to="/identities"
         />
-        <q-breadcrumbs-el
-          label="Breadcrumbs"
-          icon="navigation"
-          to="/vue-components/breadcrumbs"
-        />
-        <q-breadcrumbs-el label="Build" icon="build" />
       </q-breadcrumbs>
     </div>
     <q-input
@@ -64,35 +58,21 @@
         Identity is not available. Try another.
       </template>
     </q-input>
-    <q-card class="no-shadow" bordered>
-      <q-card-section>
-        <div class="text-h6 text-grey-8">Custom Grid View</div>
-      </q-card-section>
-      <q-separator />
-      <q-card-section class="q-pa-none">
-        <q-table
-          grid
-          :rows="identities"
-          :columns="columns"
-          hide-bottom
-          :rows-per-page-options="[0]"
-        >
-          <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3">
-              <CardProfile
-                :name="props.row.local_part"
-                :pubkey="props.row.pubkey"
-                :time="props.row.time"
-              ></CardProfile>
-            </div>
-          </template>
-        </q-table>
-      </q-card-section>
-    </q-card>
-    <!-- <q-card class="q-mt-lg no-shadow" bordered>
-      <q-card-section class="row">
+    <q-card
+      class="q-mt-lg no-shadow"
+      :class="identitiesDisplay ? 'transparent' : ''"
+      bordered
+    >
+      <q-card-section class="row bg-white">
         <div class="text-h6 text-weight-bolder text-grey-8">My Identities</div>
         <q-space></q-space>
+        <q-checkbox
+          class="q-mr-lg"
+          left-label
+          v-model="identitiesDisplay"
+          checked-icon="list"
+          unchecked-icon="grid_view"
+        />
         <q-btn
           class="text-capitalize"
           outline
@@ -102,9 +82,21 @@
         ></q-btn>
       </q-card-section>
       <q-separator></q-separator>
-      <q-list>
-        <q-expansion-item v-for="identity in identities">
-          <template v-slot:header>
+      <q-card-section>
+        <div v-if="identitiesDisplay" class="row q-mt-md">
+          <div
+            v-for="identity in identities"
+            class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
+          >
+            <CardProfile
+              :name="identity.local_part"
+              :pubkey="identity.pubkey"
+              :time="identity.time"
+            ></CardProfile>
+          </div>
+        </div>
+        <q-list v-else>
+          <q-item clickable v-ripple v-for="identity in identities">
             <q-item-section avatar>
               <q-avatar>
                 <NostrHeadIcon color="blue-grey-4" />
@@ -125,33 +117,10 @@
             <q-item-section side top>
               {{ timeFromNow(identity.time * 1000) }}
             </q-item-section>
-          </template>
-
-          <q-card class="q-pa-md">
-            <q-card-actions>
-              <q-btn
-                color="secondary"
-                text-color="primary"
-                class="text-capitalize"
-                label="Renew"
-                ><q-tooltip>Renew your identity subscription</q-tooltip></q-btn
-              >
-              <q-btn
-                color="secondary"
-                text-color="primary"
-                class="text-capitalize q-ml-md"
-                label="Rotate"
-                ><q-tooltip
-                  >Change the public key associated to this @nostr.com
-                  identity</q-tooltip
-                ></q-btn
-              >
-            </q-card-actions>
-          </q-card>
-          <q-separator />
-        </q-expansion-item>
-      </q-list>
-    </q-card> -->
+          </q-item>
+        </q-list>
+      </q-card-section>
+    </q-card>
     <q-dialog
       v-model="dataDialog"
       :backdrop-filter="'blur(4px) saturate(150%)'"
@@ -252,6 +221,7 @@ const isValid = computed(() => {
 });
 
 const identities = ref([]);
+const identitiesDisplay = ref(true);
 
 const dataDialog = ref(false);
 const dialogHandle = ref("");
