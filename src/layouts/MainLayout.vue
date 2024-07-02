@@ -300,6 +300,7 @@ const logout = async () => {
 }
 .container,
 .container-fluid {
+  max-width: $breakpoint-lg-min;
   width: 100%;
   margin-right: auto;
   margin-left: auto;

@@ -42,7 +42,6 @@
         color="secondary"
         text-color="primary"
         label="Buy now"
-        size="lg"
         class="text-capitalize q-ml-auto"
         @click="action"
       />
