@@ -3,11 +3,7 @@
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
-        <q-breadcrumbs-el
-          label="Indentities"
-          icon="alternate_email"
-          to="/identities"
-        />
+        <q-breadcrumbs-el label="Indentities" icon="alternate_email" />
       </q-breadcrumbs>
     </div>
     <q-input
@@ -83,7 +79,7 @@
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
-        <div v-if="identitiesDisplay" class="row q-mt-md">
+        <div v-if="identitiesDisplay" class="id-card row q-mt-md">
           <div
             v-for="identity in identities"
             class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
@@ -96,7 +92,13 @@
           </div>
         </div>
         <q-list v-else>
-          <q-item clickable v-ripple v-for="identity in identities">
+          <q-item
+            clickable
+            v-ripple
+            v-for="identity in identities"
+            tag="a"
+            :href="`/identities/${identity.local_part}`"
+          >
             <q-item-section avatar>
               <q-avatar>
                 <NostrHeadIcon color="blue-grey-4" />
@@ -203,7 +205,6 @@ import { timeFromNow } from "src/boot/utils";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
-import { time } from "echarts";
 
 const $q = useQuasar();
 const $store = useAppStore();
@@ -385,5 +386,8 @@ onMounted(async () => {
     height: auto !important;
     object-fit: contain;
   }
+}
+.id-card a {
+  text-decoration: none;
 }
 </style>

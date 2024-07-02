@@ -10,11 +10,16 @@ const routes = [
         component: () => import("pages/Login.vue"),
       },
       {
-        name: "Profile",
+        name: "Identities",
         path: "/identities",
         component: () => import("src/pages/Indentities.vue"),
       },
-      { path: "/activity", component: () => import("pages/Activity.vue") },
+      {
+        name: "Profile",
+        path: "/identities/:profile",
+        component: () => import("pages/Profile.vue"),
+        props: true,
+      },
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
@@ -26,10 +31,6 @@ const routes = [
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/Error404.vue"),
-  },
-  {
-    path: "/pricing",
-    component: () => import("pages/Pricing.vue"),
   },
 ];
 
