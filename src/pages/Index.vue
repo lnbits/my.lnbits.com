@@ -41,6 +41,55 @@
         :action="handleBuy"
       />
     </div>
+    <section>
+      <div class="container row">
+        <div class="col-12 col-md-7">
+          <div class="text-secondary container">
+            <h3>A decentralized social network with a chance of working</h3>
+            <p class="text-h6 text-secondary q-mb-md">
+              Learn about Nostr: A simple, open protocol that enables a truly
+              censorship-resistant and global social network.
+            </p>
+            <div>
+              <q-btn
+                rounded
+                unelevated
+                text-color="primary"
+                color="secondary"
+                label="Learn More"
+                class="text-capitalize"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-5">
+          <q-video
+            :ratio="16 / 9"
+            src="https://www.youtube.com/embed/5W-jtbbh3eA"
+          />
+        </div>
+      </div>
+      <div class="container-fluid index-content">
+        <q-layout view="hHh lpr fFf">
+          <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
+            navigation from nostr.com
+          </q-drawer>
+
+          <q-drawer
+            show-if-above
+            v-model="rightDrawerOpen"
+            side="right"
+            bordered
+          >
+            anouncments and stuff
+          </q-drawer>
+
+          <q-page-container class="text-grey-4">
+            actual content, possibly from the .md files
+          </q-page-container>
+        </q-layout>
+      </div>
+    </section>
   </q-page>
 </template>
 
@@ -96,7 +145,9 @@ const handleBuy = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5rem 0 6.875rem;
+  padding-top: 5rem;
+  height: 61.8vh;
+  // padding: 5rem 0 6.875rem;
 
   .pitch {
     width: 80%;
@@ -114,5 +165,9 @@ const handleBuy = () => {
   max-width: 700px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.1);
+}
+
+.index-content {
+  padding: 5rem 0;
 }
 </style>
