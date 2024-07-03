@@ -1,9 +1,14 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar class="container-fluid">
-        <q-toolbar-title class="text-secondary" @click="home">
-          <b>MyNostr</b>
+      <q-toolbar class="container-fluid q-py-md">
+        <q-toolbar-title
+          class="text-h2"
+          style="font-size: 2rem; font-weight: 700; cursor: pointer"
+          @click="home"
+          clickable
+        >
+          <b>Nostr</b>
         </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
