@@ -50,7 +50,7 @@
               Learn about Nostr: A simple, open protocol that enables a truly
               censorship-resistant and global social network.
             </p>
-            <div>
+            <div class="q-mb-lg">
               <q-btn
                 rounded
                 unelevated
@@ -70,7 +70,43 @@
         </div>
       </div>
       <div class="container-fluid index-content">
-        <q-layout view="hHh lpr fFf">
+        <aside class="sidebar">
+          <div class="text-secondary">
+            <h3>What is Nostr?</h3>
+            <p class="text-h6">
+              Nostr is a decentralized social network that enables users to
+              create and manage their own identities.
+            </p>
+          </div>
+        </aside>
+        <div class="info">
+          <div class="text-secondary">
+            <h3>Get Started</h3>
+            <p class="text-h6">
+              Get your own Nostr identity and start using the Nostr protocol.
+            </p>
+            <div class="q-mb-lg">
+              <q-btn
+                rounded
+                unelevated
+                text-color="primary"
+                color="secondary"
+                label="Get Started"
+                class="text-capitalize"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="text-secondary">
+            <h3>Why Nostr?</h3>
+            <p class="text-h6">
+              Nostr is a simple, open protocol that enables a truly
+              censorship-resistant and global social network.
+            </p>
+          </div>
+        </div>
+        <!-- <q-layout view="hHh lpr fFf">
           <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
             navigation from nostr.com
           </q-drawer>
@@ -87,7 +123,7 @@
           <q-page-container class="text-grey-4">
             actual content, possibly from the .md files
           </q-page-container>
-        </q-layout>
+        </q-layout> -->
       </div>
     </section>
   </q-page>
@@ -168,6 +204,49 @@ const handleBuy = () => {
 }
 
 .index-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   padding: 5rem 0;
+
+  .sidebar {
+    display: none;
+    grid-area: sidebar;
+  }
+
+  .main {
+    grid-area: main;
+  }
+
+  .info {
+    display: none;
+    grid-area: info;
+  }
+}
+@media (min-width: $breakpoint-md-min) {
+  .index-content {
+    display: grid;
+    gap: 3rem;
+    grid-template-areas: "sidebar main";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+
+    .sidebar {
+      display: flex;
+      align-self: start;
+      padding-top: unset;
+    }
+  }
+}
+@media (min-width: $breakpoint-lg-min) {
+  .index-content {
+    gap: 3rem;
+    grid-template-areas: "sidebar main info";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 15rem);
+
+    .info {
+      display: flex;
+      align-self: end;
+    }
+  }
 }
 </style>
