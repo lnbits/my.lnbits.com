@@ -32,17 +32,17 @@
           />
         </template>
       </q-input>
+      <div class="nip-list" v-if="$store.showCard">
+        <CardItem
+          :name="$store.handle"
+          :data="$store.handleData"
+          :close="$store.resetHandle"
+          :action="handleBuy"
+        />
+      </div>
     </div>
-    <div class="nip-list" v-if="$store.showCard">
-      <CardItem
-        :name="$store.handle"
-        :data="$store.handleData"
-        :close="$store.resetHandle"
-        :action="handleBuy"
-      />
-    </div>
-    <section>
-      <div class="container row">
+    <div class="dot-nostr">
+      <div class="container-fluid row">
         <div class="col-12 col-md-7">
           <div class="text-secondary container">
             <h3>A decentralized social network with a chance of working</h3>
@@ -63,10 +63,12 @@
           </div>
         </div>
         <div class="col-12 col-md-5">
-          <q-video
-            :ratio="16 / 9"
-            src="https://www.youtube.com/embed/5W-jtbbh3eA"
-          />
+          <div class="video">
+            <q-video
+              :ratio="16 / 9"
+              src="https://www.youtube.com/embed/5W-jtbbh3eA"
+            />
+          </div>
         </div>
       </div>
       <div class="container-fluid index-content">
@@ -92,7 +94,7 @@
         </div>
         <div class="main">
           <div class="text-grey-5">
-            <h2 id="what-is-nostr">What is Nostr?</h2>
+            <div class="text-h4" id="what-is-nostr">What is Nostr?</div>
             <p>
               Nostr is a protocol, designed for simplicity, that aims to create
               a censorship-resistant global social network. Let's unpack that a
@@ -110,7 +112,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </q-page>
 </template>
 
@@ -167,7 +169,10 @@ const handleBuy = () => {
   flex-direction: column;
   align-items: center;
   padding-top: 5rem;
-  height: 61.8vh;
+  // padding-bottom: 3rem;
+  // min-height: 61.8vh;
+  // height: 100%;
+  box-sizing: content-box;
   // padding: 5rem 0 6.875rem;
 
   .pitch {
@@ -176,16 +181,24 @@ const handleBuy = () => {
   }
 
   .input {
+    margin-bottom: 3rem;
     width: 80%;
     max-width: 800px;
   }
+  .nip-list {
+    width: 80%;
+    max-width: 700px;
+    margin: 0 auto 5rem auto;
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
-.nip-list {
-  margin-top: 2rem;
-  width: 80%;
-  max-width: 700px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.1);
+
+.dot-nostr {
+  margin-top: 8rem;
+
+  .video {
+    display: none;
+  }
 }
 
 .index-content {
@@ -210,6 +223,12 @@ const handleBuy = () => {
   }
 }
 @media (min-width: $breakpoint-md-min) {
+  .dot-nostr {
+    .video {
+      display: block;
+      align-self: center;
+    }
+  }
   .index-content {
     display: grid;
     gap: 3rem;
