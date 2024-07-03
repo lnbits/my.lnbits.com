@@ -304,8 +304,8 @@ const logout = async () => {
   width: 100%;
   margin-right: auto;
   margin-left: auto;
-  padding-right: 1rem;
-  padding-left: 1rem;
+  padding-right: 2rem;
+  padding-left: 2rem;
 }
 
 .container {
@@ -323,40 +323,6 @@ const logout = async () => {
 
   @media (min-width: $breakpoint-xl-min) {
     max-width: 1450px;
-  }
-}
-// .svg {
-//   mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
-// }
-/* FONT AWESOME GENERIC BEAT */
-.fa-beat {
-  animation: fa-beat 5s ease infinite;
-}
-
-@keyframes fa-beat {
-  0% {
-    transform: scale(1);
-  }
-  5% {
-    transform: scale(1.25);
-  }
-  20% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.25);
-  }
-  50% {
-    transform: scale(1);
-  }
-  55% {
-    transform: scale(1.25);
-  }
-  70% {
-    transform: scale(1);
   }
 }
 </style>

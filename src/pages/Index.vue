@@ -71,59 +71,44 @@
       </div>
       <div class="container-fluid index-content">
         <aside class="sidebar">
-          <div class="text-secondary">
-            <h3>What is Nostr?</h3>
-            <p class="text-h6">
-              Nostr is a decentralized social network that enables users to
-              create and manage their own identities.
-            </p>
-          </div>
+          <q-list class="full-width">
+            <q-item to="/" class="text-white">
+              <q-item-section> What is Nostr? </q-item-section>
+            </q-item>
+            <q-item to="/" class="text-white">
+              <q-item-section> Get Started </q-item-section>
+            </q-item>
+          </q-list>
         </aside>
         <div class="info">
-          <div class="text-secondary">
-            <h3>Get Started</h3>
-            <p class="text-h6">
-              Get your own Nostr identity and start using the Nostr protocol.
-            </p>
-            <div class="q-mb-lg">
-              <q-btn
-                rounded
-                unelevated
-                text-color="primary"
-                color="secondary"
-                label="Get Started"
-                class="text-capitalize"
-              />
-            </div>
-          </div>
+          <q-list class="full-width">
+            <q-item to="/" class="text-white">
+              <q-item-section> What is Nostr? </q-item-section>
+            </q-item>
+            <q-item to="/" class="text-white">
+              <q-item-section> Get Started </q-item-section>
+            </q-item>
+          </q-list>
         </div>
         <div class="main">
-          <div class="text-secondary">
-            <h3>Why Nostr?</h3>
-            <p class="text-h6">
-              Nostr is a simple, open protocol that enables a truly
-              censorship-resistant and global social network.
+          <div class="text-grey-5">
+            <h2 id="what-is-nostr">What is Nostr?</h2>
+            <p>
+              Nostr is a protocol, designed for simplicity, that aims to create
+              a censorship-resistant global social network. Let's unpack that a
+              little:
+            </p>
+            <h3 id="simple">Simple</h3>
+            <p>
+              The protocol is based on very simple &amp; flexible
+              <code>event</code> objects (which are passed around as plain JSON)
+              and uses standard elliptic-curve cryptography for keys and
+              signing. The only supported transport is websockets connections
+              from clients to relays. This makes it easy to write clients and
+              relays and promotes software diversity.
             </p>
           </div>
         </div>
-        <!-- <q-layout view="hHh lpr fFf">
-          <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
-            navigation from nostr.com
-          </q-drawer>
-
-          <q-drawer
-            show-if-above
-            v-model="rightDrawerOpen"
-            side="right"
-            bordered
-          >
-            anouncments and stuff
-          </q-drawer>
-
-          <q-page-container class="text-grey-4">
-            actual content, possibly from the .md files
-          </q-page-container>
-        </q-layout> -->
       </div>
     </section>
   </q-page>
@@ -207,7 +192,7 @@ const handleBuy = () => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 5rem 0;
+  padding-top: 5rem;
 
   .sidebar {
     display: none;
@@ -216,6 +201,7 @@ const handleBuy = () => {
 
   .main {
     grid-area: main;
+    width: 100%;
   }
 
   .info {
@@ -245,7 +231,7 @@ const handleBuy = () => {
 
     .info {
       display: flex;
-      align-self: end;
+      align-self: start;
     }
   }
 }
