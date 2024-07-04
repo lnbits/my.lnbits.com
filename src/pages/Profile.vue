@@ -33,7 +33,8 @@
                 label="Add Photo"
                 class="text-capitalize"
                 rounded
-                color="info"
+                color="secondary"
+                text-color="primary"
                 style="max-width: 120px"
               ></q-btn>
             </q-item-section>
@@ -88,10 +89,14 @@
           </q-item>
         </q-list>
       </q-card-section>
-      <q-card-actions align="right">
-        <q-btn class="text-capitalize bg-info text-white"
-          >Update User Info</q-btn
-        >
+      <q-card-actions align="right" class="q-ma-md">
+        <q-btn
+          rounded
+          class="text-capitalize"
+          color="secondary"
+          text-color="primary"
+          label="Update User Info"
+        />
       </q-card-actions>
     </q-card>
   </q-page>

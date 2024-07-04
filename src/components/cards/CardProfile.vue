@@ -2,17 +2,17 @@
   <a :href="`/identities/${name}`">
     <q-card class="nostr-card no-shadow" bordered>
       <q-card-section class="text-center">
-        <q-avatar size="100px" class="shadow-10">
-          <NostrHeadIcon color="blue-grey-4" />
+        <q-avatar color="blue-grey-4" size="100px" class="shadow-10">
+          <NostrHeadIcon color="primary" />
           <!-- <img :src="avatar"> -->
         </q-avatar>
       </q-card-section>
 
-      <q-card-section class="q-pt-none text-center">
-        <div class="text-h6 text-grey-8">
+      <q-card-section class="q-pt-none text-center text-white">
+        <div class="text-h6">
           {{ name }}
         </div>
-        <div class="text-caption text-grey-8 ellipsis">
+        <div class="text-caption ellipsis">
           {{ pubkey }}
         </div>
       </q-card-section>

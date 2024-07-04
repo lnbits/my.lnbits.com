@@ -57,7 +57,6 @@
     <q-card
       class="q-mt-lg no-shadow"
       :class="identitiesDisplay ? 'transparent' : ''"
-      bordered
     >
       <q-card-section class="row bg-white">
         <div class="text-h6 text-weight-bolder text-grey-8">My Identities</div>
@@ -258,7 +257,7 @@ const columns = [
 const getIdentities = async () => {
   try {
     const { data } = await saas.getUsrIdentities();
-    identities.value = [...data];
+    identities.value = data.filter((i) => i.active);
     console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);

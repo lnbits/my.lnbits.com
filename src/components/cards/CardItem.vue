@@ -17,7 +17,7 @@
     <q-card-section class="text-grey-5 q-mb-sm">
       <div v-if="data.available" class="text-h6">
         <q-badge class="text-h6 q-mr-sm" color="secondary" text-color="primary">
-          {{ data.identifier }}
+          {{ name }}
         </q-badge>
         <span>is available!</span>
         &nbsp;Get it now for
