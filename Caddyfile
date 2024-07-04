@@ -1,21 +1,17 @@
 {
-	debug
+        debug
 }
 
 localhost:9090
 
 handle /api/* {
-	reverse_proxy localhost:5000
+        reverse_proxy localhost:5000
 }
 
 handle /nostrnip5/* {
-	reverse_proxy localhost:5000
+        reverse_proxy localhost:5000
 }
 
 handle /* {
-<<<<<<< Updated upstream
         reverse_proxy localhost:8080
-=======
-	reverse_proxy localhost:8080
->>>>>>> Stashed changes
 }
