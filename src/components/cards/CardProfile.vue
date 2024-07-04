@@ -1,6 +1,6 @@
 <template tag="a" :href="`/identities/${name}`">
   <a :href="`/identities/${name}`">
-    <q-card class="id-card no-shadow" bordered>
+    <q-card class="nostr-card no-shadow" bordered>
       <q-card-section class="text-center">
         <q-avatar size="100px" class="shadow-10">
           <NostrHeadIcon color="blue-grey-4" />

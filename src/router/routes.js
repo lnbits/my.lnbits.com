@@ -12,7 +12,7 @@ const routes = [
       {
         name: "Identities",
         path: "/identities",
-        component: () => import("src/pages/Indentities.vue"),
+        component: () => import("pages/Indentities.vue"),
       },
       {
         name: "Profile",
