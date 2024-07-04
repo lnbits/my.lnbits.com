@@ -1,8 +1,8 @@
 {
   "name": "my-nostr-ui",
   "version": "0.0.1",
-  "description": "My Nostr",
-  "productName": "My Nostr",
+  "description": "A guide to the simplest decentralized protocol that isn't peer-to-peer, therefore works.",
+  "productName": "Nostr",
   "private": true,
   "type": "module",
   "scripts": {
