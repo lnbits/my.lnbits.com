@@ -152,7 +152,6 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to login!",
-          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
