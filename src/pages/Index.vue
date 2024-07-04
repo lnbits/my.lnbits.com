@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-sm">
-    <div class="hero" :class="$store.showCard ? 'hero-result': 'hero-empty'">
+    <div class="hero" :class="$store.showCard ? 'hero-result' : 'hero-empty'">
       <div class="pitch text-center text-secondary">
         <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
         <p class="text-h6">
@@ -18,6 +18,7 @@
         v-model.trim="handle"
         class="input q-pa-lg"
         placeholder="@nostr.com"
+        hint="Powered by LNbits"
         label-color="blue-grey-4"
         :input-style="{ fontSize: '22px' }"
         @keydown.enter.prevent="handleSearch"
@@ -214,7 +215,6 @@ const handleBuy = () => {
 }
 
 .dot-nostr {
-
   .video {
     display: none;
   }
