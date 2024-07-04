@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-sm">
-    <div class="hero">
+    <div class="hero" :class="$store.showCard ? 'hero-result': 'hero-empty'">
       <div class="pitch text-center text-secondary">
         <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
         <p class="text-h6">
@@ -178,6 +178,12 @@ const handleBuy = () => {
   max-width: 800px;
   margin: 0 auto;
 }
+.hero-empty {
+  margin-bottom: 8rem;
+}
+.hero-result {
+  margin-bottom: 2rem;
+}
 .hero {
   display: flex;
   flex-direction: column;
@@ -201,14 +207,13 @@ const handleBuy = () => {
   }
   .nip-list {
     width: 80%;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto 5rem auto;
     background: rgba(255, 255, 255, 0.1);
   }
 }
 
 .dot-nostr {
-  margin-top: 8rem;
 
   .video {
     display: none;

@@ -16,20 +16,19 @@
     </q-card-section>
     <q-card-section class="text-grey-5 q-mb-sm">
       <div v-if="data.available" class="text-h6">
-        <span
-          >Identity
-          {{
-            data.available
-              ? `'${name}' is available!`
-              : `'${name}' is not available!`
-          }}
-        </span>
+        <q-badge class="text-h6 q-mr-sm" color="secondary" text-color="primary">
+          {{ data.identifier }}
+        </q-badge>
+        <span>is available!</span>
         &nbsp;Get it now for
-        <span>{{
-          data.currency != "sats"
-            ? formatCurrency(data.price, data.currency)
-            : formatSat(data.price)
-        }}</span>
+        <span
+          >{{
+            data.currency !== "sats"
+              ? formatCurrency(data.price, data.currency)
+              : formatSat(data.price)
+          }}.</span
+        >
+
         <q-btn
           color="secondary"
           text-color="primary"
@@ -57,7 +56,7 @@ const formatCurrency = (value, currency) => {
   }).format(value);
 };
 const formatSat = (value) => {
-  return new Intl.NumberFormat(window.LOCALE).format(value);
+  return new Intl.NumberFormat(window.LOCALE).format(value) + " sats";
 };
 </script>
 
