@@ -2,7 +2,7 @@
   <q-card class="no-shadow q-pa-md nostr-card" bordered>
     <q-card-section class="row items-center q-pb-none">
       <div class="text-h6 text-white">
-        {{ data.available ? "Great News" : "Oh... Try again!" }}
+        {{ data.available ? "Great News!" : "Oh... Try again!" }}
       </div>
       <q-btn
         class="q-ml-auto"
@@ -14,22 +14,28 @@
         @click="close"
       />
     </q-card-section>
-    <q-card-section class="text-grey-5 q-mb-lg">
+    <q-card-section class="text-grey-5 q-mb-sm">
       <div v-if="data.available" class="text-h6">
-        <span
-          >Identity
-          {{
-            data.available
-              ? `'${name}' is available!`
-              : `'${name}' is not available!`
-          }}
-        </span>
+        <q-badge class="text-h6 q-mr-sm" color="secondary" text-color="primary">
+          {{ data.identifier }}
+        </q-badge>
+        <span>is available!</span>
         &nbsp;Get it now for
-        <span>{{
-          data.currency != "sats"
-            ? formatCurrency(data.price, data.currency)
-            : formatSat(data.price)
-        }}</span>
+        <span
+          >{{
+            data.currency !== "sats"
+              ? formatCurrency(data.price, data.currency)
+              : formatSat(data.price)
+          }}.</span
+        >
+
+        <q-btn
+          color="secondary"
+          text-color="primary"
+          label="Buy now"
+          class="text-capitalize q-ml-auto float-right"
+          @click="action"
+        />
       </div>
       <div v-else class="text-h6">
         <span>
@@ -37,15 +43,6 @@
         </span>
       </div>
     </q-card-section>
-    <q-card-actions v-if="data.available">
-      <q-btn
-        color="secondary"
-        text-color="primary"
-        label="Buy now"
-        class="text-capitalize q-ml-auto"
-        @click="action"
-      />
-    </q-card-actions>
   </q-card>
 </template>
 
@@ -59,7 +56,7 @@ const formatCurrency = (value, currency) => {
   }).format(value);
 };
 const formatSat = (value) => {
-  return new Intl.NumberFormat(window.LOCALE).format(value);
+  return new Intl.NumberFormat(window.LOCALE).format(value) + " sats";
 };
 </script>
 
