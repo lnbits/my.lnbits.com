@@ -87,6 +87,7 @@
               :name="identity.local_part"
               :pubkey="identity.pubkey"
               :time="identity.time"
+              :profile="$nostr.profiles.get(identity.pubkey)"
             ></CardProfile>
           </div>
         </div>
@@ -197,9 +198,11 @@
 <script setup>
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
+import { useNostrStore } from "src/stores/nostr";
 import { onMounted, ref, computed } from "vue";
 import { saas } from "boot/saas";
-import { timeFromNow } from "src/boot/utils";
+import { timeFromNow, getTagValues } from "src/boot/utils";
+import { SimplePool } from "nostr-tools/pool";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
@@ -207,6 +210,8 @@ import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 const $q = useQuasar();
 const $store = useAppStore();
+const $nostr = useNostrStore();
+
 let paymentCheckInterval;
 
 const handle = ref("");
@@ -258,6 +263,9 @@ const getIdentities = async () => {
   try {
     const { data } = await saas.getUsrIdentities();
     identities.value = data.filter((i) => i.active);
+    data.forEach((i) => {
+      $nostr.addPubkey(i.pubkey);
+    });
     console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);
@@ -368,6 +376,29 @@ const handleBuy = () => {
   showSearch.value = false;
 };
 
+// NOSTR
+// TODO: MOVE/ABSTRACT TO OTHER FILE
+
+const pool = new SimplePool();
+
+// let h = pool.subscribeMany(
+//   $nostr.relays,
+//   [
+//     {
+//       authors: $nostr.pubkeys,
+//       kinds: [0],
+//     },
+//   ],
+//   {
+//     onevent(event) {
+//       console.log("event", event);
+//     },
+//     // oneose() {
+//     //   h.close();
+//     // },
+//   }
+// );
+
 onMounted(async () => {
   if ($store.buying) {
     dataDialog.value = true;
@@ -375,6 +406,26 @@ onMounted(async () => {
     dialogHandleReadonly.value = true;
   }
   await getIdentities();
+  const events = await pool.querySync([...$nostr.relays], {
+    authors: [...$nostr.pubkeys],
+    kinds: [0, 10002],
+  });
+  console.log("events", events);
+  events.forEach((event) => {
+    switch (event.kind) {
+      case 0:
+        $nostr.addProfile(event);
+        break;
+      case 10002:
+        getTagValues(event, "r").forEach((r) => {
+          $nostr.addRelay(r);
+        });
+        // $nostr.addRelays(event.pubkey);
+        break;
+      default:
+        break;
+    }
+  });
 });
 </script>
 

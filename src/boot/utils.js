@@ -65,5 +65,18 @@ function timeFromNow(time) {
   // Return time from now data
   return `${tfn.time} ${tfn.unitOfTime} ago`;
 }
+let tags = [
+  ["r", "wss://relay.damus.io"],
+  ["r", "wss://nostr-pub.wellorder.net"],
+  ["client", "coracle"],
+];
 
-export { secondsToDhm, timeFromNow };
+function getTagValues(event, tag) {
+  return event.tags.filter(([k, v]) => k == tag).map(([k, v]) => v);
+}
+
+function getTagValue(event, tag) {
+  return event.tags.find(([k, v]) => k == tag)?.[1];
+}
+
+export { secondsToDhm, timeFromNow, getTagValues };

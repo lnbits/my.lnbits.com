@@ -1,10 +1,16 @@
-<template tag="a" :href="`/identities/${name}`">
-  <a :href="`/identities/${name}`">
+<template>
+  <router-link
+    :to="{
+      path: `/identities/${name}`,
+      query: { pubkey },
+    }"
+  >
+    <!-- <a :href="`/identities/${name}`"> -->
     <q-card class="nostr-card no-shadow" bordered>
       <q-card-section class="text-center">
         <q-avatar color="blue-grey-4" size="100px" class="shadow-10">
-          <NostrHeadIcon color="primary" />
-          <!-- <img :src="avatar"> -->
+          <img v-if="profile && profile.picture" :src="profile.picture" />
+          <NostrHeadIcon v-else color="primary" />
         </q-avatar>
       </q-card-section>
 
@@ -17,13 +23,19 @@
         </div>
       </q-card-section>
     </q-card>
-  </a>
+    <!-- </a> -->
+  </router-link>
 </template>
 
 <script setup>
+// import { useNostrStore } from "src/stores/nostr";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
-defineProps(["name", "pubkey", "time"]);
+// const $nostr = useNostrStore();
+
+const props = defineProps(["name", "pubkey", "time", "profile"]);
+
+// const userProfile = $nostr.profiles.get(props.pubkey) || null;
 </script>
 
 <style scoped lang="scss">
