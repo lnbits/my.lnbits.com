@@ -8,7 +8,8 @@
           @click="home"
           clickable
         >
-          <b>Nostr</b>
+          <span class="text-weight-light" style="font-size: 0.75em">my</span
+          ><b>Nostr</b>
         </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
@@ -251,14 +252,40 @@ import { useRouter } from "vue-router";
 import { saas } from "boot/saas";
 import { onMounted } from "vue";
 import { useAppStore } from "src/stores/store";
+import { useNostrStore } from "src/stores/nostr";
+import { getTagValues } from "src/boot/utils";
 
 const $q = useQuasar();
 const $router = useRouter();
 const $store = useAppStore();
+const $nostr = useNostrStore();
 
-onMounted(() => {
+onMounted(async () => {
   if (saas.username) {
     $store.username = saas.username;
+    await getIdentities();
+
+    const events = await $nostr.pool.querySync([...$nostr.relays], {
+      authors: [...$nostr.pubkeys],
+      kinds: [0, 10002],
+    });
+    events.forEach((event) => {
+      switch (event.kind) {
+        case 0:
+          $nostr.addProfile(event);
+          break;
+        case 10002:
+          const relays = getTagValues(event, "r");
+          $nostr.addRelaysToProfile(event.pubkey, relays);
+          relays.forEach((r) => {
+            $nostr.addRelay(r);
+          });
+
+          break;
+        default:
+          break;
+      }
+    });
   }
 });
 
@@ -292,6 +319,20 @@ const logout = async () => {
     });
   }
 };
+
+async function getIdentities() {
+  try {
+    const { data } = await saas.getUsrIdentities();
+    let identities = data.filter((i) => i.active);
+    identities.forEach((i) => {
+      $nostr.addPubkey(i.pubkey);
+      $store.addIdentity(i);
+    });
+    console.log("Identities: ", identities);
+  } catch (error) {
+    console.error("error", error);
+  }
+}
 </script>
 
 <style lang="scss">

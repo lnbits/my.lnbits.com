@@ -6,6 +6,7 @@ export const useAppStore = defineStore("store", {
     handle: "",
     handleData: {},
     buying: false,
+    identities: new Map(),
   }),
   getters: {
     showCard: (state) => {
@@ -20,6 +21,9 @@ export const useAppStore = defineStore("store", {
       this.handle = "";
       this.handleData = {};
       this.buying = false;
+    },
+    addIdentity(identity) {
+      this.identities.set(identity.id, identity);
     },
   },
 });

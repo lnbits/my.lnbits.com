@@ -1,4 +1,7 @@
 import { defineStore } from "pinia";
+import { SimplePool } from "nostr-tools/pool";
+
+const pool = new SimplePool();
 
 const defaultRelays = [
   "wss://relay.damus.io/",
@@ -12,6 +15,7 @@ export const useNostrStore = defineStore("nostr", {
     relays: new Set(defaultRelays),
     pubkeys: new Set(),
     profiles: new Map(),
+    pool: pool,
   }),
   getters: {
     // showCard: (state) => {
@@ -43,6 +47,11 @@ export const useNostrStore = defineStore("nostr", {
         this.profiles.get(event.pubkey).created_at < event.created_at
       ) {
         this.profiles.set(event.pubkey, profile);
+      }
+    },
+    addRelaysToProfile(pubkey, relays) {
+      if (this.profiles.has(pubkey)) {
+        this.profiles.get(pubkey).relays = relays;
       }
     },
   },

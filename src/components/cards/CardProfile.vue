@@ -9,7 +9,14 @@
     <q-card class="nostr-card no-shadow" bordered>
       <q-card-section class="text-center">
         <q-avatar color="blue-grey-4" size="100px" class="shadow-10">
-          <img v-if="profile && profile.picture" :src="profile.picture" />
+          <q-img
+            v-if="profile && profile.picture"
+            :src="profile.picture"
+            spinner-color="secondary"
+            spinner-size="52px"
+            :ratio="1"
+          />
+          <!-- <img v-if="profile && profile.picture" :src="profile.picture" /> -->
           <NostrHeadIcon v-else color="primary" />
         </q-avatar>
       </q-card-section>

@@ -8,7 +8,7 @@
           icon="alternate_email"
           to="/identities"
         />
-        <q-breadcrumbs-el :label="name" />
+        <q-breadcrumbs-el :label="user_details.name" />
       </q-breadcrumbs>
     </div>
     <q-card class="nostr-card text-white no-shadow" bordered>
@@ -21,12 +21,19 @@
           <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <q-item-section side>
               <q-avatar size="100px">
-                <img v-if="user_details.picture" :src="user_details.picture" />
+                <q-img
+                  v-if="user_details.picture"
+                  :src="user_details.picture"
+                  spinner-color="secondary"
+                  spinner-size="52px"
+                  :ratio="1"
+                />
+                <!-- <img v-if="user_details.picture" :src="user_details.picture" /> -->
                 <NostrHeadIcon v-else color="secondary" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
-              <q-item-label>{{ profile }}</q-item-label>
+              <q-item-label>{{ user_details.name }}</q-item-label>
               <q-item-label caption>{{ user_details.pubkey }}</q-item-label>
             </q-item-section>
             <q-item-section side>
@@ -106,11 +113,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNostrStore } from "src/stores/nostr";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $nostr = useNostrStore();
 const $route = useRoute();
+const $router = useRouter();
 
 const props = defineProps(["name"]);
 
@@ -131,14 +139,19 @@ const removeRelayFn = (relay) => {
 };
 
 onMounted(() => {
+  if ($nostr.profiles.size === 0) {
+    return $router.push({ path: "/identities" });
+  }
+
   const $profile = $nostr.profiles.get($route.query.pubkey);
+  $router.replace({ query: null });
   user_details.value = {
     name: $profile.name,
     pubkey: $route.query.pubkey,
     picture: $profile.picture ?? null,
     website: $profile.website ?? null,
     about: $profile.about ?? null,
-    relays: [...$nostr.relays],
+    relays: [...$profile.relays],
   };
 });
 </script>

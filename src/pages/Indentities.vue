@@ -101,7 +101,17 @@
           >
             <q-item-section avatar>
               <q-avatar>
-                <NostrHeadIcon color="blue-grey-4" />
+                <q-img
+                  v-if="
+                    $nostr.profiles.has(identity.pubkey) &&
+                    $nostr.profiles.get(identity.pubkey).picture
+                  "
+                  :src="$nostr.profiles.get(identity.pubkey).picture"
+                  spinner-color="secondary"
+                  spinner-size="52px"
+                  :ratio="1"
+                />
+                <NostrHeadIcon v-else color="blue-grey-4" />
               </q-avatar>
             </q-item-section>
 
@@ -202,7 +212,7 @@ import { useNostrStore } from "src/stores/nostr";
 import { onMounted, ref, computed } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow, getTagValues } from "src/boot/utils";
-import { SimplePool } from "nostr-tools/pool";
+// import { SimplePool } from "nostr-tools/pool";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
@@ -234,30 +244,6 @@ const dialogPubkey = ref("");
 const dialogHandleReadonly = ref(false);
 
 const paymentDetails = ref({});
-
-const columns = [
-  {
-    name: "Name",
-    label: "Name",
-    field: "local_part",
-    sortable: true,
-    align: "left",
-  },
-  {
-    name: "Pubkey",
-    label: "Pubkey",
-    field: "pubkey",
-    sortable: true,
-    align: "left",
-  },
-  {
-    name: "Created",
-    label: "Created",
-    field: "time",
-    sortable: true,
-    align: "left",
-  },
-];
 
 const getIdentities = async () => {
   try {
@@ -379,7 +365,7 @@ const handleBuy = () => {
 // NOSTR
 // TODO: MOVE/ABSTRACT TO OTHER FILE
 
-const pool = new SimplePool();
+// const pool = new SimplePool();
 
 // let h = pool.subscribeMany(
 //   $nostr.relays,
@@ -405,27 +391,29 @@ onMounted(async () => {
     dialogHandle.value = $store.handle;
     dialogHandleReadonly.value = true;
   }
-  await getIdentities();
-  const events = await pool.querySync([...$nostr.relays], {
-    authors: [...$nostr.pubkeys],
-    kinds: [0, 10002],
-  });
-  console.log("events", events);
-  events.forEach((event) => {
-    switch (event.kind) {
-      case 0:
-        $nostr.addProfile(event);
-        break;
-      case 10002:
-        getTagValues(event, "r").forEach((r) => {
-          $nostr.addRelay(r);
-        });
-        // $nostr.addRelays(event.pubkey);
-        break;
-      default:
-        break;
-    }
-  });
+  identities.value = [...$store.identities.values()];
+  // await getIdentities();
+  // const events = await $nostr.pool.querySync([...$nostr.relays], {
+  //   authors: [...$nostr.pubkeys],
+  //   kinds: [0, 10002],
+  // });
+  // events.forEach((event) => {
+  //   switch (event.kind) {
+  //     case 0:
+  //       $nostr.addProfile(event);
+  //       break;
+  //     case 10002:
+  //       const relays = getTagValues(event, "r");
+  //       $nostr.addRelaysToProfile(event.pubkey, relays);
+  //       relays.forEach((r) => {
+  //         $nostr.addRelay(r);
+  //       });
+
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // });
 });
 </script>
 
