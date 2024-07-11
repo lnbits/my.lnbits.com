@@ -1,6 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
-$primary   : rgba(15, 23, 42, 0.89);
-$secondary : #26A69A;
+$primary   : rgba(15, 23, 42, 1);
+$secondary : rgba(125, 211, 252, 1);
 $accent    : #dd4b39;
 
 $dark      : #1D1D1D;
@@ -9,3 +10,12 @@ $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
+
+$body-font-size : 16px !default;
+$generic-border-radius : 10px !default;
+$typography-font-family: Inter, sans-serif !default;
+
+.nostr-card {
+    background: lighten($primary, 5%);
+    border: 1px solid $secondary;
+}
