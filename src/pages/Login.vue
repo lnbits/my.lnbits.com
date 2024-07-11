@@ -1,121 +1,117 @@
 <template>
-  <q-page class="flex flex-center">
-    <q-card
-      v-bind:style="
-        q.screen.lt.sm
-          ? { width: '80%' }
-          : { width: '30%', minWidth: '350px', maxWidth: '400px' }
-      "
-    >
-      <q-card-section class="q-mb-md">
-        <q-avatar
-          size="150px"
-          class="absolute-center shadow-10"
-          color="primary"
+  <q-layout>
+    <q-page-container>
+      <q-page class="flex bg-image flex-center">
+        <q-card
+          v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
         >
-          <img src="~assets/nostrich-head-32.svg" class="q-pa-md" />
-        </q-avatar>
-      </q-card-section>
-      <q-card-section>
-        <div class="text-center q-mt-lg q-pt-lg">
-          <div v-if="isSignupRequest" class="col text-h6 ellipsis">
-            Register
-          </div>
-          <div v-else class="col text-h6 ellipsis">Login</div>
-        </div>
-        <div class="text-center q-pt-lg">
-          <div class="col ellipsis">
-            Manage your <strong>Nostr</strong> accounts.
-          </div>
-        </div>
-      </q-card-section>
-      <q-card-section>
-        <q-form @submit="onSubmit">
-          <q-input
-            filled
-            v-model="username"
-            :rules="[checkUsername]"
-            label="Username"
-            lazy-rules
-          />
+          <q-card-section class="q-mb-md">
+            <q-avatar
+              size="150px"
+              class="absolute-center shadow-10"
+              color="primary"
+            >
+              <img src="profile.svg" class="q-pa-sm" />
+            </q-avatar>
+          </q-card-section>
+          <q-card-section>
+            <div class="text-center q-mt-lg q-pt-lg">
+              <div v-if="isSignupRequest" class="col text-h6 ellipsis">
+                Register
+              </div>
+              <div v-else class="col text-h6 ellipsis">Login</div>
+            </div>
+            <div class="text-center q-pt-lg">
+              <div class="col ellipsis">
+                Manage your <strong>LNbits</strong> instances in the cloud.
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-section>
+            <q-form @submit="onSubmit">
+              <q-input
+                filled
+                v-model="username"
+                :rules="[checkUsername]"
+                label="Username"
+                lazy-rules
+              />
 
-          <q-input
-            type="password"
-            filled
-            v-model="password"
-            :rules="[checkPassword]"
-            label="Password"
-            lazy-rules
-          />
+              <q-input
+                type="password"
+                filled
+                v-model="password"
+                :rules="[checkPassword]"
+                label="Password"
+                lazy-rules
+              />
 
-          <q-input
-            v-if="isSignupRequest"
-            type="password"
-            filled
-            v-model="passwordRepeat"
-            :rules="[checkPassword]"
-            label="Confirm password"
-            lazy-rules
-          />
-          <q-linear-progress
-            v-if="inProgress"
-            indeterminate
-            color="secondary"
-            class="q-mt-sm"
-          />
+              <q-input
+                v-if="isSignupRequest"
+                type="password"
+                filled
+                v-model="passwordRepeat"
+                :rules="[checkPassword]"
+                label="Confirm password"
+                lazy-rules
+              />
+              <q-linear-progress
+                v-if="inProgress"
+                indeterminate
+                color="secondary"
+                class="q-mt-sm"
+              />
 
-          <q-btn
-            v-if="!this.isSignupRequest"
-            label="Login"
-            @click="login"
-            type="submit"
-            color="primary"
-            class="full-width"
-            :disable="inProgress"
-          />
+              <q-btn
+                v-if="!this.isSignupRequest"
+                label="Login"
+                @click="login"
+                type="submit"
+                color="primary"
+                class="full-width"
+                :disable="inProgress"
+              />
 
-          <div v-if="!this.isSignupRequest" class="q-mt-sm text-center">
-            <span>or</span>
-          </div>
+              <div v-if="!this.isSignupRequest" class="q-mt-sm text-center">
+                <span>or</span>
+              </div>
 
-          <q-btn
-            label="Register"
-            @click="signup"
-            type="submit"
-            color="secondary"
-            class="full-width q-mt-sm"
-            :disable="inProgress"
-          />
-          <q-btn
-            v-if="this.isSignupRequest"
-            @click="this.isSignupRequest = false"
-            label="Back"
-            type="button"
-            class="full-width q-mt-md"
-            color="grey"
-          />
-        </q-form>
-      </q-card-section>
-    </q-card>
-  </q-page>
+              <q-btn
+                label="Register"
+                @click="signup"
+                type="submit"
+                color="secondary"
+                class="full-width q-mt-sm"
+                :disable="inProgress"
+              />
+              <q-btn
+                v-if="this.isSignupRequest"
+                @click="this.isSignupRequest = false"
+                label="Back"
+                type="button"
+                class="full-width q-mt-md"
+                color="grey"
+              />
+            </q-form>
+          </q-card-section>
+        </q-card>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script>
 import { defineComponent } from "vue";
 import { ref } from "vue";
 import { useQuasar } from "quasar";
-import { useAppStore } from "src/stores/store";
 
 import { saas } from "boot/saas";
 
 export default defineComponent({
   setup() {
     const $q = useQuasar();
-    const $store = useAppStore();
-
     return {
       q: $q,
-      store: $store,
       username: ref(""),
       password: ref(""),
       passwordRepeat: ref(""),
@@ -123,11 +119,7 @@ export default defineComponent({
       inProgress: ref(false),
     };
   },
-  created() {
-    if (this.$route.query.signup) {
-      this.isSignupRequest = true;
-    }
-  },
+
   methods: {
     async login() {
       try {
@@ -146,12 +138,12 @@ export default defineComponent({
           message: "Logged in!",
           color: "positive",
         });
-        this.store.username = this.username;
-        setTimeout(() => this.$router.push("/"), 500);
+        setTimeout(() => (window.location.href = "/"), 500);
       } catch (error) {
         console.warn(error);
         this.q.notify({
           message: "Failed to login!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });
@@ -226,8 +218,7 @@ export default defineComponent({
           message: "Signed Up!",
           color: "positive",
         });
-        this.store.username = this.username;
-        setTimeout(() => this.$router.push("/"), 500);
+        setTimeout(() => (window.location.href = "/"), 500);
       } catch (error) {
         console.warn(error);
         this.q.notify({
@@ -245,18 +236,8 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style>
 .bg-image {
-  background: $primary;
-  background: linear-gradient(
-    142deg,
-    $primary 0%,
-    $primary 75%,
-    $secondary 120%
-  );
-
-  svg {
-    opacity: 50%;
-  }
+  background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
 }
 </style>

@@ -3,23 +3,9 @@ const routes = [
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
     children: [
-      { name: "Index", path: "", component: () => import("pages/Index.vue") },
-      {
-        name: "Login",
-        path: "/login",
-        component: () => import("pages/Login.vue"),
-      },
-      {
-        name: "Identities",
-        path: "/identities",
-        component: () => import("pages/Indentities.vue"),
-      },
-      {
-        name: "Profile",
-        path: "/identities/:name",
-        component: () => import("pages/Profile.vue"),
-        props: true,
-      },
+      { path: "", component: () => import("pages/Instances.vue") },
+      { path: "/instances", component: () => import("pages/Instances.vue") },
+      { path: "/activity", component: () => import("pages/Activity.vue") },
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
@@ -31,6 +17,14 @@ const routes = [
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/Error404.vue"),
+  },
+  {
+    path: "/pricing",
+    component: () => import("pages/Pricing.vue"),
+  },
+  {
+    path: "/login",
+    component: () => import("pages/Login.vue"),
   },
 ];
 
