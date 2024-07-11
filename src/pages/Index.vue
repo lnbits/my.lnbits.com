@@ -47,78 +47,7 @@
         />
       </div>
     </div>
-    <div class="dot-nostr">
-      <div class="container-fluid row">
-        <div class="col-12 col-md-7">
-          <div class="text-secondary container">
-            <h3>A decentralized social network with a chance of working</h3>
-            <p class="text-h6 text-secondary q-mb-md">
-              Learn about Nostr: A simple, open protocol that enables a truly
-              censorship-resistant and global social network.
-            </p>
-            <div class="q-mb-lg">
-              <q-btn
-                rounded
-                unelevated
-                text-color="primary"
-                color="secondary"
-                label="Learn More"
-                class="text-capitalize"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-5">
-          <div class="video">
-            <q-video
-              :ratio="16 / 9"
-              src="https://www.youtube.com/embed/5W-jtbbh3eA"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="container-fluid index-content">
-        <aside class="sidebar">
-          <q-list class="full-width">
-            <q-item to="/" class="text-white">
-              <q-item-section> What is Nostr? </q-item-section>
-            </q-item>
-            <q-item to="/" class="text-white">
-              <q-item-section> Get Started </q-item-section>
-            </q-item>
-          </q-list>
-        </aside>
-        <div class="info">
-          <q-list class="full-width">
-            <q-item to="/" class="text-white">
-              <q-item-section> What is Nostr? </q-item-section>
-            </q-item>
-            <q-item to="/" class="text-white">
-              <q-item-section> Get Started </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
-        <div class="main">
-          <div class="text-grey-5">
-            <div class="text-h4" id="what-is-nostr">What is Nostr?</div>
-            <p>
-              Nostr is a protocol, designed for simplicity, that aims to create
-              a censorship-resistant global social network. Let's unpack that a
-              little:
-            </p>
-            <h3 id="simple">Simple</h3>
-            <p>
-              The protocol is based on very simple &amp; flexible
-              <code>event</code> objects (which are passed around as plain JSON)
-              and uses standard elliptic-curve cryptography for keys and
-              signing. The only supported transport is websockets connections
-              from clients to relays. This makes it easy to write clients and
-              relays and promotes software diversity.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+
   </q-page>
 </template>
 
