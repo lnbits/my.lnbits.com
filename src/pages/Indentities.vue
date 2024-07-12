@@ -3,136 +3,111 @@
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
-        <q-breadcrumbs-el label="Indentities" icon="alternate_email" />
+        <q-breadcrumbs-el label="Indentities" />
       </q-breadcrumbs>
     </div>
     <q-input
-      v-if="showSearch"
       dark
       standout
-      autofocus
       rounded
-      v-model.trim="handle"
-      class="input q-pa-lg"
-      placeholder="@nostr.com"
+      v-model.trim="filterText"
+      class="input q-mb-lg"
+      placeholder="Filter by identifier or public key"
       label-color="blue-grey-4"
       :input-style="{ fontSize: '22px' }"
       @keydown.enter.prevent="handleSearch"
-      bottom-slots
-      :hint="isValid"
     >
       <template v-slot:prepend>
         <NostrHeadIcon color="blue-grey-4" />
       </template>
+
       <template v-slot:append>
         <q-btn
-          v-if="
-            handleData.available == undefined ||
-            !handleData.available ||
-            dialogHandle != handle
-          "
+          v-if="filterText && identityNotOwned"
           rounded
           unelevated
           text-color="primary"
           color="secondary"
-          label="Search"
+          label="Check Identity"
           @click="handleSearch"
           class="text-capitalize"
         />
+      </template>
+
+      <template v-slot:after>
         <q-btn
-          v-else
-          rounded
+          @click="identitiesDisplay = !identitiesDisplay"
           unelevated
-          text-color="primary"
-          color="secondary"
-          label="Buy"
-          @click="handleBuy"
-          class="text-capitalize"
-        />
-      </template>
-      <template v-slot:error>
-        Identity is not available. Try another.
-      </template>
-    </q-input>
-    <q-card
-      class="q-mt-lg no-shadow"
-      :class="identitiesDisplay ? 'transparent' : ''"
-    >
-      <q-card-section class="row bg-white">
-        <div class="text-h6 text-weight-bolder text-grey-8">My Identities</div>
-        <q-space></q-space>
-        <q-checkbox
-          class="q-mr-lg"
-          left-label
-          v-model="identitiesDisplay"
-          checked-icon="list"
-          unchecked-icon="grid_view"
-        />
-        <q-btn
-          class="text-capitalize"
-          outline
-          :label="showSearch ? 'Close Search' : 'Add Identity'"
+          text-color="secondary"
           color="primary"
-          @click="showSearch = !showSearch"
-        ></q-btn>
-      </q-card-section>
-      <q-separator></q-separator>
-      <q-card-section>
-        <div v-if="identitiesDisplay" class="id-card row q-mt-md">
-          <div
-            v-for="identity in identities"
-            class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
-          >
-            <CardProfile
-              :name="identity.local_part"
-              :pubkey="identity.pubkey"
-              :time="identity.time"
-              :profile="$nostr.profiles.get(identity.pubkey)"
-            ></CardProfile>
-          </div>
-        </div>
-        <q-list v-else>
-          <q-item
-            clickable
-            v-ripple
-            v-for="identity in identities"
-            tag="a"
-            :href="`/identities/${identity.local_part}`"
-          >
-            <q-item-section avatar>
-              <q-avatar>
-                <q-img
-                  v-if="
-                    $nostr.profiles.has(identity.pubkey) &&
-                    $nostr.profiles.get(identity.pubkey).picture
-                  "
-                  :src="$nostr.profiles.get(identity.pubkey).picture"
-                  spinner-color="secondary"
-                  spinner-size="52px"
-                  :ratio="1"
-                />
-                <NostrHeadIcon v-else color="blue-grey-4" />
-              </q-avatar>
-            </q-item-section>
+          :icon="identitiesDisplay ? 'list' : 'grid_view'"
+        />
+      </template>
 
-            <q-item-section class="ellipsis">
-              <q-item-label lines="1"
-                >{{ identity.local_part }}@nostr.com</q-item-label
-              >
-              <q-item-label caption lines="2">
-                <span class="text-weight-bold">Pubkey:</span>
-                &nbsp;
-                <span>{{ identity.pubkey }}</span>
-              </q-item-label>
-            </q-item-section>
+      <template v-slot:error> Failed to filer. </template>
+    </q-input>
 
-            <q-item-section side top>
-              {{ timeFromNow(identity.time * 1000) }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
-    </q-card>
+    <div v-if="identitiesDisplay" class="id-card row q-mt-md">
+      <div
+        v-for="identity in filteredIdentities"
+        class="q-pa-sm col-xs-12 col-sm-6 col-md-4 col-lg-3"
+      >
+        <CardProfile
+          :name="identity.local_part"
+          :pubkey="identity.pubkey"
+          :time="identity.time"
+          :profile="$nostr.profiles.get(identity.pubkey)"
+        ></CardProfile>
+      </div>
+    </div>
+    <div v-else>
+      <q-list
+        v-for="identity in filteredIdentities"
+        class="nostr-card no-shadow q-ma-sm"
+        bordered
+      >
+        <q-item
+          clickable
+          v-ripple
+          tag="a"
+          :href="`/identities/${identity.local_part}`"
+        >
+          <q-item-section avatar>
+            <q-avatar>
+              <q-img
+                v-if="
+                  $nostr.profiles.has(identity.pubkey) &&
+                  $nostr.profiles.get(identity.pubkey).picture
+                "
+                :src="$nostr.profiles.get(identity.pubkey).picture"
+                spinner-color="secondary"
+                spinner-size="52px"
+                :ratio="1"
+              />
+              <NostrHeadIcon v-else color="blue-grey-4" />
+            </q-avatar>
+          </q-item-section>
+
+          <q-item-section class="ellipsis">
+            <q-item-label
+              lines="1"
+              class="text-weight-bold text-white q-mb-md"
+              >{{ identity.local_part }}</q-item-label
+            >
+            <q-item-label caption lines="2">
+              <span class="text-weight-bold text-white">Pubkey:</span>
+              &nbsp;
+              <span class="text-white">{{ identity.pubkey }}</span>
+            </q-item-label>
+          </q-item-section>
+
+          <q-item-section side top>
+            {{ timeFromNow(identity.time * 1000) }}
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+
     <q-dialog
       v-model="dataDialog"
       :backdrop-filter="'blur(4px) saturate(150%)'"
@@ -209,7 +184,7 @@
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow, getTagValues } from "src/boot/utils";
 // import { SimplePool } from "nostr-tools/pool";
@@ -224,18 +199,13 @@ const $nostr = useNostrStore();
 
 let paymentCheckInterval;
 
-const handle = ref("");
+const filterText = ref("");
 const handleData = ref({});
 const showSearch = ref(false);
 
-const isValid = computed(() => {
-  if (handleData.value.available === undefined) return "";
-  return handleData.value.available
-    ? `Identity is available`
-    : `Identity is not available`;
-});
-
 const identities = ref([]);
+const filteredIdentities = ref([]);
+const identityNotOwned = ref(true);
 const identitiesDisplay = ref(true);
 
 const dataDialog = ref(false);
@@ -252,6 +222,7 @@ const getIdentities = async () => {
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
     });
+    filteredIdentities.value = identities.value;
     console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);
@@ -290,7 +261,7 @@ const resetDataDialog = () => {
   dataDialog.value = false;
   paymentDetails.value = {};
   $store.buying = false;
-  $store.handle = "";
+  $store.filterText = "";
   if (paymentCheckInterval) {
     clearInterval(paymentCheckInterval);
     paymentCheckInterval = null;
@@ -329,24 +300,44 @@ const copyData = (data) => {
   });
 };
 
+const filterIdentifier = (id, filter) => {
+  if (!filterText.value) {
+    return true;
+  }
+  if (id.local_part.toLowerCase().indexOf(filter) !== -1) {
+    return true;
+  }
+  if (id.pubkey.toLowerCase().indexOf(filter) !== -1) {
+    return true;
+  }
+  return false;
+};
+
+watch(filterText, (n, o) => {
+  const filter = filterText.value.toLocaleLowerCase();
+  filteredIdentities.value = identities.value.filter((id) =>
+    filterIdentifier(id, filter)
+  );
+  identityNotOwned.value = !identities.value.find(
+    (id) => id.local_part.toLowerCase() === filter
+  );
+});
+
 const handleSearch = async () => {
   try {
-    const { data } = await saas.queryIdentifier(handle.value);
-    dialogHandle.value = handle.value;
+    const { data } = await saas.queryIdentifier(filterText.value);
+    dialogHandle.value = filterText.value;
     handleData.value = data;
     if (data.available) {
       $q.notify({
         message: "Identity available",
         color: "positive",
-        position: "top",
-        timeout: 2000,
+        caption: "Todo: details on price",
       });
     } else {
       $q.notify({
         message: "Identity not available",
         color: "negative",
-        position: "top",
-        timeout: 2000,
       });
     }
   } catch (error) {
@@ -356,9 +347,9 @@ const handleSearch = async () => {
 
 const handleBuy = () => {
   dataDialog.value = true;
-  dialogHandle.value = handle.value;
+  dialogHandle.value = filterText.value;
   dialogHandleReadonly.value = true;
-  handle.value = "";
+  filterText.value = "";
   showSearch.value = false;
 };
 
@@ -388,11 +379,11 @@ const handleBuy = () => {
 onMounted(async () => {
   if ($store.buying) {
     dataDialog.value = true;
-    dialogHandle.value = $store.handle;
+    dialogHandle.value = $store.filterText;
     dialogHandleReadonly.value = true;
   }
   identities.value = [...$store.identities.values()];
-  // await getIdentities();
+  await getIdentities();
   // const events = await $nostr.pool.querySync([...$nostr.relays], {
   //   authors: [...$nostr.pubkeys],
   //   kinds: [0, 10002],
@@ -425,6 +416,7 @@ onMounted(async () => {
     object-fit: contain;
   }
 }
+
 .id-card a {
   text-decoration: none;
 }

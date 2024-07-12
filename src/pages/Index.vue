@@ -56,7 +56,7 @@ import { ref } from "vue";
 import { saas } from "src/boot/saas";
 import { useQuasar } from "quasar";
 import { useAppStore } from "src/stores/store";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardItem from "components/cards/CardItem.vue";
@@ -64,6 +64,7 @@ import CardItem from "components/cards/CardItem.vue";
 const $q = useQuasar();
 const $store = useAppStore();
 const $router = useRouter();
+const $route = useRoute()
 
 const handle = ref("");
 
@@ -84,7 +85,7 @@ const handleSearch = async () => {
       timeout: 2000,
     });
   } finally {
-    handle.value = "";
+    $router.push({ query: { q: handle.value }})
   }
 };
 const handleBuy = () => {
@@ -101,6 +102,11 @@ const handleBuy = () => {
     $router.push({ path: "/identities" });
   }, 500);
 };
+
+if ($route.query["q"]) {
+  handle.value = $route.query["q"]
+  handleSearch()
+}
 </script>
 
 <style lang="scss">

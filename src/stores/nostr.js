@@ -14,7 +14,7 @@ export const useNostrStore = defineStore("nostr", {
   state: () => ({
     relays: new Set(defaultRelays),
     pubkeys: new Set(),
-    profiles: new Map(),
+    profiles: new Map(), // there can be more profiles for the same public key
     pool: pool,
   }),
   getters: {
