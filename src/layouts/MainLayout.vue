@@ -22,10 +22,11 @@
                 <q-item clickable v-close-popup to="/identities">
                   <q-item-section>Identities</q-item-section>
                 </q-item>
-                <!-- <q-separator />
-                <q-item clickable v-close-popup>
-                  <q-item-section>Recent tabs</q-item-section>
+                <q-separator />
+                <q-item clickable v-close-popup to="/account">
+                  <q-item-section>Account</q-item-section>
                 </q-item>
+                <!-- 
                 <q-item clickable v-close-popup>
                   <q-item-section>History</q-item-section>
                 </q-item>
@@ -263,29 +264,34 @@ const $nostr = useNostrStore();
 onMounted(async () => {
   if (saas.username) {
     $store.username = saas.username;
-    await getIdentities();
+    try {
+      await getIdentities();
 
-    const events = await $nostr.pool.querySync([...$nostr.relays], {
-      authors: [...$nostr.pubkeys],
-      kinds: [0, 10002],
-    });
-    events.forEach((event) => {
-      switch (event.kind) {
-        case 0:
-          $nostr.addProfile(event);
-          break;
-        case 10002:
-          const relays = getTagValues(event, "r");
-          $nostr.addRelaysToProfile(event.pubkey, relays);
-          relays.forEach((r) => {
-            $nostr.addRelay(r);
-          });
+      const events = await $nostr.pool.querySync([...$nostr.relays], {
+        authors: [...$nostr.pubkeys],
+        kinds: [0, 10002],
+      });
+      events.forEach((event) => {
+        switch (event.kind) {
+          case 0:
+            $nostr.addProfile(event);
+            break;
+          case 10002:
+            const relays = getTagValues(event, "r");
+            $nostr.addRelaysToProfile(event.pubkey, relays);
+            relays.forEach((r) => {
+              $nostr.addRelay(r);
+            });
 
-          break;
-        default:
-          break;
-      }
-    });
+            break;
+          default:
+            break;
+        }
+      });
+      $nostr.initiated = true;
+    } catch (error) {
+      console.error("MainLayout Error", error);
+    }
   }
 });
 
@@ -329,6 +335,7 @@ async function getIdentities() {
       $store.addIdentity(i);
     });
     console.log("Identities: ", identities);
+    return;
   } catch (error) {
     console.error("error", error);
   }

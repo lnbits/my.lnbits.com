@@ -1,5 +1,8 @@
 import { defineStore } from "pinia";
 import { SimplePool } from "nostr-tools/pool";
+import { useAppStore } from "./store";
+
+const appStore = useAppStore();
 
 const pool = new SimplePool();
 
@@ -16,8 +19,16 @@ export const useNostrStore = defineStore("nostr", {
     pubkeys: new Set(),
     profiles: new Map(), // there can be more profiles for the same public key
     pool: pool,
+    initiated: false,
   }),
   getters: {
+    getPubkeyById: () => {
+      return (identity) => {
+        let ids = [...appStore.identities.values()];
+        let id = ids.find((id) => id.local_part === identity);
+        return id.pubkey;
+      };
+    },
     // showCard: (state) => {
     //   return state.handle.length > 0;
     // },

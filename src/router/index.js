@@ -49,7 +49,7 @@ export default route(function (/* { store, ssrContext } */) {
       return { name: "Login" };
     }
     if (to.name == "Login" && saas.username) {
-      return { name: "Identities" };
+      return { name: "Account" };
     }
   });
 

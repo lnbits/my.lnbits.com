@@ -18,4 +18,9 @@ $typography-font-family: Inter, sans-serif !default;
 .nostr-card {
     background: lighten($primary, 5%);
     border: 1px solid $secondary;
+    border-radius: $generic-border-radius;
+
+    .q-field__control {
+        color: $secondary;
+    }
 }

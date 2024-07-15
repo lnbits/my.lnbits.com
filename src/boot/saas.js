@@ -51,6 +51,23 @@ const saas = {
     localStorage.clear();
     return response;
   },
+  getAuthenticatedUser: async function () {
+    const response = await axios({
+      method: "GET",
+      url: `${this.url}/api/v1/auth`,
+    });
+
+    return response;
+  },
+  updateUserPassword: async function (data) {
+    const response = await axios({
+      method: "PUT",
+      url: `${this.url}/api/v1/auth/password`,
+      data: { ...data },
+    });
+    return response;
+  },
+
   // NIP05
   queryIdentifier: async function (identifier) {
     const response = await axios({

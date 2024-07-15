@@ -2,7 +2,6 @@
   <router-link
     :to="{
       path: `/identities/${name}`,
-      query: { },
     }"
   >
     <!-- <a :href="`/identities/${name}`"> -->

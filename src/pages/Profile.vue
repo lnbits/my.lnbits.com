@@ -1,4 +1,4 @@
-<template>
+<template v-if="loaded">
   <q-page class="q-pa-sm container">
     <div class="q-gutter-md">
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
@@ -7,10 +7,28 @@
         <q-breadcrumbs-el :label="user_details.name" />
       </q-breadcrumbs>
     </div>
-    <q-card class="nostr-card text-white no-shadow" bordered>
+    <q-card class="nostr-card" bordered v-if="!user_details.name">
+      <q-item>
+        <q-item-section avatar>
+          <q-skeleton type="QAvatar" />
+        </q-item-section>
+
+        <q-item-section>
+          <q-item-label>
+            <q-skeleton type="text" />
+          </q-item-label>
+          <q-item-label caption>
+            <q-skeleton type="text" />
+          </q-item-label>
+        </q-item-section>
+      </q-item>
+
+      <q-skeleton height="200px" square />
+    </q-card>
+    <q-card v-else class="nostr-card text-white no-shadow" bordered>
       <q-card-section>
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <div>
                 <div class="text-h6">Identifier</div>
@@ -36,7 +54,7 @@
       </q-card-section>
       <q-card-section class="q-pa-sm">
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section side>
               <q-avatar size="100px">
                 <q-img
@@ -46,17 +64,18 @@
                   spinner-size="52px"
                   :ratio="1"
                 />
-                <!-- <img v-if="user_details.picture" :src="user_details.picture" /> -->
                 <NostrHeadIcon v-else color="secondary" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ user_details.name }}</q-item-label>
-              <q-item-label caption>{{ user_details.pubkey }}</q-item-label>
+              <q-item-label caption class="ellipsis">{{
+                user_details.pubkey
+              }}</q-item-label>
             </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <q-input
                 dark
@@ -68,7 +87,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12 q-mt-lg">
+          <q-item class="col-12 q-mt-lg">
             <q-item-section>
               <q-input
                 dark
@@ -102,7 +121,7 @@
       </q-card-section>
       <q-card-actions align="right" class="q-ma-md">
         <q-list dark class="row">
-          <q-item class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <q-item class="col-12">
             <q-item-section>
               <q-btn
                 @click="updateUserIdentifier"
@@ -122,22 +141,27 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
 import { useNostrStore } from "src/stores/nostr";
+
 import { saas } from "boot/saas";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();
-const $route = useRoute();
 const $router = useRouter();
-
+const $route = useRoute();
 const $nostr = useNostrStore();
+
 const props = defineProps(["name"]);
 
 const user_details = ref({});
 const addRelayValue = ref("");
+
+watch(
+  () => $nostr.initiated,
+  () => refreshFromNostr()
+);
 
 const addRelayFn = () => {
   if (!addRelayValue.value) return;
@@ -188,12 +212,24 @@ const getUserIdentifier = async (id) => {
   }
 };
 
+function refreshFromNostr() {
+  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  if (profile) {
+    user_details.value.picture = profile.picture;
+    user_details.value.relays = [
+      ...user_details.value.relays,
+      ...profile.relays,
+    ];
+  }
+}
+
 onMounted(async () => {
-  const name = $route.params["name"];
+  const name = props.name || $route.params.name;
   if (name) {
     const identifier = await getUserIdentifier(name);
     if (identifier) {
       user_details.value = identifier;
+      refreshFromNostr();
       return;
     }
   }
