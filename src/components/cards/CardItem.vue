@@ -32,7 +32,7 @@
         <q-btn
           color="secondary"
           text-color="primary"
-          label="Buy now"
+          label="Add to Cart"
           class="text-capitalize q-ml-auto float-right"
           @click="action"
         />

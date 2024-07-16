@@ -147,7 +147,8 @@ export default defineComponent({
           color: "positive",
         });
         this.store.username = this.username;
-        setTimeout(() => this.$router.push("/"), 500);
+        const path = this.store.newCartIdentifier ? '/cart' : '/'
+        setTimeout(() => this.$router.push(path), 500);
       } catch (error) {
         console.warn(error);
         this.q.notify({

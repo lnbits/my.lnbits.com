@@ -76,14 +76,16 @@ const saas = {
     });
     return response;
   },
-  getUsrIdentities: async function (localPart) {
+  getUsrIdentities: async function ({ localPart, active } = {}) {
     let url = `${this.url}/nostrnip5/api/v1/addresses/user`;
-    if (localPart) {
-      url += `?local_part=${localPart}`;
-    }
+
     const response = await axios({
       method: "GET",
       url,
+      params: {
+        local_part: localPart,
+        active,
+      },
     });
 
     return response;
@@ -97,7 +99,16 @@ const saas = {
 
     return response;
   },
-  createIdentity: async function (identifier, pubkey) {
+  deleteIdentity: async function (addressId) {
+    const response = await axios({
+      method: "DELETE",
+      url: `${this.url}/nostrnip5/api/v1/address/${this.domain}/${addressId}`,
+    });
+
+    return response;
+  },
+  createIdentity: async function (identifier, pubkey, years, createInvoice) {
+    // todo: extract object
     const response = await axios({
       method: "POST",
       url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address`,
@@ -105,6 +116,8 @@ const saas = {
         domain_id: this.domain,
         local_part: identifier,
         pubkey: pubkey,
+        years: years,
+        create_invoice: createInvoice
       },
     });
 
@@ -119,12 +132,14 @@ const saas = {
     return response;
   },
 
-  mapAddressToProfile(address){
+  mapAddressToProfile(address) {
     return {
       id: address.id,
+      active: address.active,
       name: address.local_part,
       pubkey: address.pubkey,
       relays: address.config.relays,
+      expiresAt: address.expires_at,
     };
   },
 

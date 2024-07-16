@@ -218,7 +218,7 @@ const paymentDetails = ref({});
 
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUsrIdentities();
+    const { data } = await saas.getUsrIdentities({active: true});
     identities.value = data.filter((i) => i.active);
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
@@ -378,11 +378,7 @@ const handleBuy = () => {
 // );
 
 onMounted(async () => {
-  if ($store.buying) {
-    dataDialog.value = true;
-    dialogHandle.value = $store.filterText;
-    dialogHandleReadonly.value = true;
-  }
+
   identities.value = [...$store.identities.values()];
   await getIdentities();
   // const events = await $nostr.pool.querySync([...$nostr.relays], {

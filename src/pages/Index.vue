@@ -47,7 +47,6 @@
         />
       </div>
     </div>
-
   </q-page>
 </template>
 
@@ -64,7 +63,7 @@ import CardItem from "components/cards/CardItem.vue";
 const $q = useQuasar();
 const $store = useAppStore();
 const $router = useRouter();
-const $route = useRoute()
+const $route = useRoute();
 
 const handle = ref("");
 
@@ -85,27 +84,26 @@ const handleSearch = async () => {
       timeout: 2000,
     });
   } finally {
-    $router.push({ query: { q: handle.value }})
+    $router.push({ query: { q: handle.value } });
   }
 };
 const handleBuy = () => {
   if (!$store.isLoggedIn) {
     $q.notify({
       message: "Please login to buy",
-      color: "negative",
-      position: "top",
-      timeout: 2000,
+      color: "warning",
     });
   }
   $store.buying = true;
+  $store.newCartIdentifier = handle;
   setTimeout(() => {
-    $router.push({ path: "/identities" });
+    $router.push({ path: "/cart" });
   }, 500);
 };
 
 if ($route.query["q"]) {
-  handle.value = $route.query["q"]
-  handleSearch()
+  handle.value = $route.query["q"];
+  handleSearch();
 }
 </script>
 

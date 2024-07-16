@@ -31,9 +31,27 @@
           <q-item class="col-12">
             <q-item-section>
               <div>
-                <div class="text-h6">Identifier</div>
-                <div class="text-subtitle2">
-                  Edit your NIP05 identifier for nostr.com
+                <div class="text-h6">
+                  Identifier
+                  <q-badge
+                    class="nostr-card"
+                    removable
+                    color="primary"
+                    text-color="white"
+                    ><span v-if="user_details.active">Active</span>
+                    <span v-else>Inactive</span>
+                  </q-badge>
+                </div>
+
+                <div v-if="user_details.expiresAt" class="text-caption">
+                  Expires in
+                  <span
+                    v-text="
+                      new Date(
+                        user_details.expiresAt * 1000
+                      ).toLocaleDateString()
+                    "
+                  ></span>
                 </div>
               </div>
             </q-item-section>
@@ -119,7 +137,7 @@
           </q-chip>
         </div>
       </q-card-section>
-      <q-card-actions align="right" class="q-ma-md">
+      <q-card-actions>
         <q-list dark class="row">
           <q-item class="col-12">
             <q-item-section>
@@ -146,6 +164,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useNostrStore } from "src/stores/nostr";
 
 import { saas } from "boot/saas";
+import { secondsToDhm } from "src/boot/utils";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();
@@ -199,7 +218,7 @@ const updateUserIdentifier = async () => {
 
 const getUserIdentifier = async (id) => {
   try {
-    const { data } = await saas.getUsrIdentities(id);
+    const { data } = await saas.getUsrIdentities({ localPart: id });
 
     if (data.length !== 1) {
       return;
