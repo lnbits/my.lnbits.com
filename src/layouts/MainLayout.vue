@@ -13,47 +13,32 @@
         </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn flat v-if="$store.isLoggedIn">
-            <q-avatar size="26px" class="q-ml-sm">
-              <img src="~assets/nostrich-head-32.svg" />
-            </q-avatar>
-            <q-menu>
-              <q-list style="min-width: 100px">
-                <q-item clickable v-close-popup to="/identities">
-                  <q-item-section>Identities</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup to="/account">
-                  <q-item-section>Account</q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup to="/cart">
-                  <q-item-section>Cart</q-item-section>
-                </q-item>
-                <!-- <q-separator />
-                <q-item clickable v-close-popup>
-                  <q-item-section>Recent tabs</q-item-section>
-                </q-item>
-                <!--
-                <q-item clickable v-close-popup>
-                  <q-item-section>History</q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup>
-                  <q-item-section>Downloads</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup>
-                  <q-item-section>Settings</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup>
-                  <q-item-section>Help &amp; Feedback</q-item-section>
-                </q-item> -->
-                <q-item clickable v-close-popup @click="logout">
-                  <q-item-section>Logout</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
+          <q-btn-dropdown flat v-if="$store.isLoggedIn">
+            <template v-slot:label>
+              <div class="row items-center no-wrap">
+                <q-avatar size="26px" class="q-ml-sm">
+                  <img src="~assets/nostrich-head-32.svg" />
+                </q-avatar>
+              </div>
+            </template>
+            <q-list style="min-width: 100px">
+              <q-item clickable v-close-popup to="/account">
+                <q-item-section>Account</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup to="/identities">
+                <q-item-section>Identities</q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup to="/cart">
+                <q-item-section>Cart</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup @click="logout">
+                <q-item-section>Logout</q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
           <template v-else>
             <q-btn to="/login" flat label="sign in" class="text-capitalize" />
             <q-btn
