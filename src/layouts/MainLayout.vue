@@ -295,9 +295,10 @@ onMounted(async () => {
             break;
         }
       });
-      $nostr.initiated = true;
     } catch (error) {
       console.error("MainLayout Error", error);
+    } finally {
+      $nostr.initiated = true;
     }
   }
 });
@@ -305,14 +306,6 @@ onMounted(async () => {
 const home = () => {
   $router.push("/");
 };
-
-// const goToLogin = () => {
-//   $router.push("/login");
-// };
-
-// const goToRegister = () => {
-//   $router.push("/login");
-// };
 
 const logout = async () => {
   try {

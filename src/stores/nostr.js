@@ -29,6 +29,12 @@ export const useNostrStore = defineStore("nostr", {
         return id.pubkey;
       };
     },
+    getIdsFromPubkey: () => {
+      return (pubkey) => {
+        let ids = [...appStore.identities.values()];
+        return ids.filter((id) => id.pubkey === pubkey);
+      };
+    },
     // showCard: (state) => {
     //   return state.handle.length > 0;
     // },

@@ -185,10 +185,9 @@
 import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { saas } from "boot/saas";
-import { timeFromNow, getTagValues } from "src/boot/utils";
-// import { SimplePool } from "nostr-tools/pool";
+import { timeFromNow } from "src/boot/utils";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
@@ -237,8 +236,7 @@ const submitIdentityBuy = async () => {
       dialogPubkey.value
     );
     console.log("Identity created: ", data);
-    // resetDataDialog();
-    // await getIdentities();
+
     if (data.payment_request) {
       paymentDetails.value = { ...data };
       paymentCheckInterval = setInterval(
@@ -354,54 +352,10 @@ const handleBuy = () => {
   showSearch.value = false;
 };
 
-// NOSTR
-// TODO: MOVE/ABSTRACT TO OTHER FILE
-
-// const pool = new SimplePool();
-
-// let h = pool.subscribeMany(
-//   $nostr.relays,
-//   [
-//     {
-//       authors: $nostr.pubkeys,
-//       kinds: [0],
-//     },
-//   ],
-//   {
-//     onevent(event) {
-//       console.log("event", event);
-//     },
-//     // oneose() {
-//     //   h.close();
-//     // },
-//   }
-// );
-
 onMounted(async () => {
 
   identities.value = [...$store.identities.values()];
   await getIdentities();
-  // const events = await $nostr.pool.querySync([...$nostr.relays], {
-  //   authors: [...$nostr.pubkeys],
-  //   kinds: [0, 10002],
-  // });
-  // events.forEach((event) => {
-  //   switch (event.kind) {
-  //     case 0:
-  //       $nostr.addProfile(event);
-  //       break;
-  //     case 10002:
-  //       const relays = getTagValues(event, "r");
-  //       $nostr.addRelaysToProfile(event.pubkey, relays);
-  //       relays.forEach((r) => {
-  //         $nostr.addRelay(r);
-  //       });
-
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // });
 });
 </script>
 

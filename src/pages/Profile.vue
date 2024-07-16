@@ -87,15 +87,31 @@
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ user_details.name }}</q-item-label>
-              <q-item-label caption class="ellipsis">{{
-                user_details.pubkey
-              }}</q-item-label>
+              <q-item-label caption class="ellipsis"
+                >{{ user_details.pubkey }}
+              </q-item-label>
+              <q-item-label>
+                <q-btn
+                  :to="`/pubkey/${user_details.pubkey}`"
+                  rounded
+                  class="text-capitalize q-mt-sm"
+                  color="secondary"
+                  text-color="primary"
+                  label="View all"
+                  size="sm"
+                  ><q-tooltip
+                    >View all NIP05 identities associated with this public
+                    key</q-tooltip
+                  ></q-btn
+                >
+              </q-item-label>
             </q-item-section>
           </q-item>
 
           <q-item class="col-12">
             <q-item-section>
               <q-input
+                class=""
                 dark
                 standout
                 v-model="user_details.pubkey"
@@ -104,7 +120,6 @@
               />
             </q-item-section>
           </q-item>
-
           <q-item class="col-12 q-mt-lg">
             <q-item-section>
               <q-input
@@ -237,7 +252,7 @@ function refreshFromNostr() {
     user_details.value.picture = profile.picture;
     user_details.value.relays = [
       ...user_details.value.relays,
-      ...profile.relays,
+      ...(profile.relays ? profile.relays : []),
     ];
   }
 }

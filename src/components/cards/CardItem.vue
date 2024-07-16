@@ -60,9 +60,4 @@ const formatSat = (value) => {
 };
 </script>
 
-<style lang="scss">
-// .nostr-card {
-//   background: lighten($primary, 5%);
-//   border: 1px solid $secondary;
-// }
-</style>
+<style lang="scss"></style>
