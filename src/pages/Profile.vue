@@ -239,8 +239,8 @@ const updateUserIdentifier = async () => {
     console.error(error);
     $q.notify({
       message: "Failed to update identifer!",
+      caption: error.response?.data?.detail,
       color: "negative",
-      icon: "warning",
     });
   }
 };
