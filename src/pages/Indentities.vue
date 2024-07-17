@@ -47,6 +47,18 @@
       <template v-slot:error> Failed to filer. </template>
     </q-input>
 
+    <div
+      v-if="handleData && handleData.identifier === filterText"
+      class="nip-list"
+    >
+      <CardItem
+        :name="handleData.identifier"
+        :data="handleData"
+        :action="handleBuy"
+        :close="(handleData.value = null)"
+      />
+    </div>
+
     <div v-if="identitiesDisplay" class="id-card row q-mt-md">
       <div
         v-for="identity in filteredIdentities"
@@ -108,76 +120,6 @@
         </q-item>
       </q-list>
     </div>
-
-    <q-dialog
-      v-model="dataDialog"
-      :backdrop-filter="'blur(4px) saturate(150%)'"
-      @hide="resetDataDialog"
-    >
-      <q-card
-        v-if="paymentDetails?.payment_request"
-        style="width: 350px"
-        class="q-pa-md text-center"
-      >
-        <h6><span>Identity: </span><span v-text="dialogHandle"></span></h6>
-        <p class="caption">
-          Scan the QR code below using a lightning wallet to secure your Nostr
-          identity.
-        </p>
-        <div class="responsive">
-          <a :href="'lightning:' + paymentDetails.payment_request">
-            <vue-qrcode
-              :value="paymentDetails.payment_request"
-              :options="{ width: 500 }"
-            ></vue-qrcode>
-          </a>
-        </div>
-        <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
-        <div class="row q-mt-md">
-          <q-btn
-            rounded
-            unelevated
-            text-color="primary"
-            color="secondary"
-            @click="copyData(paymentDetails.payment_request)"
-            label="Copy Invoice"
-            class="text-capitalize"
-          ></q-btn>
-          <q-btn
-            @click="resetDataDialog"
-            flat
-            color="grey"
-            class="q-ml-auto text-capitalize"
-            label="Close"
-          ></q-btn>
-        </div>
-      </q-card>
-      <q-card v-else style="min-width: 350px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Buy Identity</div>
-          <q-space />
-          <q-btn icon="close" flat round dense @click="resetDataDialog" />
-        </q-card-section>
-
-        <q-card-section>
-          <q-input
-            v-model.trim="dialogHandle"
-            label="Identity"
-            :readonly="dialogHandleReadonly"
-          />
-          <q-input v-model.trim="dialogPubkey" label="Nostr Public Key" />
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="Submit"
-            color="primary"
-            @click="submitIdentityBuy"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
@@ -186,38 +128,31 @@ import { useQuasar, copyToClipboard } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
 import { onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+
+const $router = useRouter();
 import { saas } from "boot/saas";
 import { timeFromNow } from "src/boot/utils";
+import CardItem from "components/cards/CardItem.vue";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 import CardProfile from "components/cards/CardProfile.vue";
-import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 const $q = useQuasar();
 const $store = useAppStore();
 const $nostr = useNostrStore();
 
-let paymentCheckInterval;
-
 const filterText = ref("");
 const handleData = ref({});
-const showSearch = ref(false);
 
 const identities = ref([]);
 const filteredIdentities = ref([]);
 const identityNotOwned = ref(true);
 const identitiesDisplay = ref(true);
 
-const dataDialog = ref(false);
-const dialogHandle = ref("");
-const dialogPubkey = ref("");
-const dialogHandleReadonly = ref(false);
-
-const paymentDetails = ref({});
-
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUsrIdentities({active: true});
+    const { data } = await saas.getUsrIdentities({ active: true });
     identities.value = data.filter((i) => i.active);
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
@@ -227,76 +162,6 @@ const getIdentities = async () => {
   } catch (error) {
     console.error("error", error);
   }
-};
-
-const submitIdentityBuy = async () => {
-  try {
-    const { data } = await saas.createIdentity(
-      dialogHandle.value,
-      dialogPubkey.value
-    );
-    console.log("Identity created: ", data);
-
-    if (data.payment_request) {
-      paymentDetails.value = { ...data };
-      paymentCheckInterval = setInterval(
-        async () => await paymentChecker(),
-        5000
-      );
-      $q.notify({
-        message: "Pay the invoice to complete the purchase",
-        color: "positive",
-        position: "top",
-        timeout: 5000,
-      });
-    }
-  } catch (error) {
-    console.error("Error buying identifier: ", error);
-  }
-};
-
-const resetDataDialog = () => {
-  dialogHandle.value = dialogPubkey.value = "";
-  dataDialog.value = false;
-  paymentDetails.value = {};
-  $store.buying = false;
-  $store.filterText = "";
-  if (paymentCheckInterval) {
-    clearInterval(paymentCheckInterval);
-    paymentCheckInterval = null;
-  }
-};
-
-const paymentChecker = async () => {
-  try {
-    const { data } = await saas.checkIdentityPayment(
-      paymentDetails.value.payment_hash
-    );
-    console.log("Payment status: ", data);
-    if (data.paid) {
-      clearInterval(paymentCheckInterval);
-      paymentCheckInterval = null;
-      $q.notify({
-        message: "Payment successful",
-        color: "positive",
-        position: "top",
-        timeout: 2000,
-      });
-      resetDataDialog();
-      await getIdentities();
-    }
-  } catch (error) {
-    console.error("Error checking payment: ", error);
-  }
-};
-
-const copyData = (data) => {
-  copyToClipboard(data);
-
-  $q.notify({
-    message: "Copied",
-    color: "grey",
-  });
 };
 
 const filterIdentifier = (id, filter) => {
@@ -325,18 +190,16 @@ watch(filterText, (n, o) => {
 const handleSearch = async () => {
   try {
     const { data } = await saas.queryIdentifier(filterText.value);
-    dialogHandle.value = filterText.value;
     handleData.value = data;
     if (data.available) {
       $q.notify({
-        message: "Identity available",
+        message: `${data.identifier} available`,
         color: "positive",
-        caption: "Todo: details on price",
       });
     } else {
       $q.notify({
-        message: "Identity not available",
-        color: "negative",
+        message: `${data.identifier} not available`,
+        color: "warning",
       });
     }
   } catch (error) {
@@ -345,15 +208,13 @@ const handleSearch = async () => {
 };
 
 const handleBuy = () => {
-  dataDialog.value = true;
-  dialogHandle.value = filterText.value;
-  dialogHandleReadonly.value = true;
-  filterText.value = "";
-  showSearch.value = false;
+  $store.newCartIdentifier = filterText;
+  setTimeout(() => {
+    $router.push({ path: "/cart" });
+  }, 500);
 };
 
 onMounted(async () => {
-
   identities.value = [...$store.identities.values()];
   await getIdentities();
 });
