@@ -48,14 +48,14 @@
     </q-input>
 
     <div
-      v-if="handleData && handleData.identifier === filterText"
+      v-if="newIdentity && newIdentity.identifier === filterText"
       class="nip-list"
     >
       <CardItem
-        :name="handleData.identifier"
-        :data="handleData"
+        :name="newIdentity.identifier"
+        :data="newIdentity"
         :action="handleBuy"
-        :close="(handleData.value = null)"
+        :close="(newIdentity.value = null)"
       />
     </div>
 
@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { useQuasar, copyToClipboard } from "quasar";
+import { useQuasar } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useNostrStore } from "src/stores/nostr";
 import { onMounted, ref, watch } from "vue";
@@ -143,7 +143,7 @@ const $store = useAppStore();
 const $nostr = useNostrStore();
 
 const filterText = ref("");
-const handleData = ref({});
+const newIdentity = ref({});
 
 const identities = ref([]);
 const filteredIdentities = ref([]);
@@ -158,7 +158,6 @@ const getIdentities = async () => {
       $nostr.addPubkey(i.pubkey);
     });
     filteredIdentities.value = identities.value;
-    console.log("Identities: ", data);
   } catch (error) {
     console.error("error", error);
   }
@@ -190,7 +189,7 @@ watch(filterText, (n, o) => {
 const handleSearch = async () => {
   try {
     const { data } = await saas.queryIdentifier(filterText.value);
-    handleData.value = data;
+    newIdentity.value = data;
     if (data.available) {
       $q.notify({
         message: `${data.identifier} available`,
