@@ -262,6 +262,8 @@ const submitIdentityBuy = async (cartItem) => {
       cartItem.config?.years,
       true
     );
+    // npub to hex
+    cartItem.pubkey = data.pubkey
 
     if (data.payment_request) {
       paymentDetails.value = { ...data };
@@ -277,6 +279,7 @@ const submitIdentityBuy = async (cartItem) => {
     return data;
   } catch (error) {
     console.error(error);
+    dataDialog.value = false;
     $q.notify({
       message: "Failed to generate invoice",
       caption: error.response?.data?.detail,
