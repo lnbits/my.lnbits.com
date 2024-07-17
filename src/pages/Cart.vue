@@ -137,6 +137,9 @@
             Scan the QR code below using a lightning wallet to secure your Nostr
             identity.
           </p>
+          <div class="text-h6">
+            <span v-text="paymentDetails.local_part"></span>
+          </div>
           <div class="responsive">
             <a :href="'lightning:' + paymentDetails.payment_request">
               <vue-qrcode
@@ -252,13 +255,15 @@ const submitIdentityBuy = async (cartItem) => {
   try {
     dataDialog.value = true;
 
-    paymentDetails.value = {};
+    paymentDetails.value = { local_part: cartItem.local_part };
     const { data } = await saas.createIdentity(
       cartItem.local_part,
       cartItem.pubkey,
       cartItem.config?.years,
       true
     );
+    // npub to hex
+    cartItem.pubkey = data.pubkey
 
     if (data.payment_request) {
       paymentDetails.value = { ...data };
@@ -274,6 +279,7 @@ const submitIdentityBuy = async (cartItem) => {
     return data;
   } catch (error) {
     console.error(error);
+    dataDialog.value = false;
     $q.notify({
       message: "Failed to generate invoice",
       caption: error.response?.data?.detail,
@@ -295,6 +301,7 @@ const subscribeToPaylinkWs = (payment_hash) => {
         message: "Invoice Paid!",
       });
       resetDataDialog();
+      await getIdentities();
       ws.close();
     }
   });
