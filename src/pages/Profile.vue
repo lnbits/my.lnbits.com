@@ -127,7 +127,7 @@
                 standout
                 v-model="addRelayValue"
                 @keydown.enter="addRelayFn"
-                type="text"
+                type="url"
                 label="wss://relay....."
                 hint="Add a relay"
               >
@@ -200,8 +200,22 @@ watch(
 const addRelayFn = () => {
   if (!addRelayValue.value) return;
   if (user_details.value.relays.includes(addRelayValue.value)) return;
-  user_details.value.relays.push(addRelayValue.value);
-  addRelayValue.value = "";
+  try {
+    const url = new URL(addRelayValue.value);
+
+    if (url.protocol !== "ws:" && url.protocol !== "wss:") {
+      throw new Error("Protocol must be 'ws://' or 'wss://'");
+    }
+    user_details.value.relays.push(addRelayValue.value);
+    addRelayValue.value = "";
+  } catch (error) {
+    $q.notify({
+      message: "Invalid relay URL",
+      caption: `${error}`,
+      textColor: "black",
+      color: "warning",
+    });
+  }
 };
 
 const removeRelayFn = (relay) => {

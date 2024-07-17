@@ -92,6 +92,7 @@ const handleBuy = () => {
     $q.notify({
       message: "Please login to buy",
       color: "warning",
+      textColor: "black",
     });
   }
   $store.buying = true;

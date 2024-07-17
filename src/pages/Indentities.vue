@@ -199,6 +199,7 @@ const handleSearch = async () => {
       $q.notify({
         message: `${data.identifier} not available`,
         color: "warning",
+        textColor: "black",
       });
     }
   } catch (error) {
