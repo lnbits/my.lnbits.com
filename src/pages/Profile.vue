@@ -25,7 +25,7 @@
 
       <q-skeleton height="200px" square />
     </q-card>
-    <q-card v-else class="nostr-card text-white no-shadow" bordered>
+    <q-card v-else class="nostr-card text-white no-shadow q-mb-xl" bordered>
       <q-card-section>
         <q-list dark class="row">
           <q-item class="col-12">
@@ -44,7 +44,7 @@
                 </div>
 
                 <div v-if="user_details.expiresAt" class="text-caption">
-                  Expires in
+                  Expires at
                   <span
                     v-text="
                       new Date(
@@ -144,7 +144,7 @@
         </q-list>
       </q-card-section>
       <q-card-section class="q-ml-sm">
-        <div >
+        <div>
           <q-btn
             @click="refreshRelaysFromNostr"
             rounded
@@ -171,6 +171,9 @@
         </div>
       </q-card-section>
 
+      <q-separator color="secondary"></q-separator>
+
+
       <q-card-actions>
         <q-list dark class="row">
           <q-item class="col-12">
@@ -183,6 +186,22 @@
                 text-color="primary"
                 label="Update NIP05"
               />
+            </q-item-section>
+
+            <q-item-section side>
+              <q-btn
+                disabled
+                label="Renew"
+                class="text-capitalize"
+                rounded
+                color="secondary"
+                text-color="primary"
+              >
+                <!-- todo: make this true -->
+                <q-tooltip
+                  >Can renew six months before expiration date.</q-tooltip
+                >
+              </q-btn>
             </q-item-section>
           </q-item>
         </q-list>
