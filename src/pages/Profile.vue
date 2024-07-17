@@ -126,16 +126,34 @@
                 dark
                 standout
                 v-model="addRelayValue"
-                @keydown.enter="addRelayFn"
+                @keydown.enter="addRelayFn(addRelayValue)"
                 type="url"
                 label="wss://relay....."
                 hint="Add a relay"
               >
-                <q-btn @click="addRelayFn" dense flat icon="add"></q-btn>
+                <q-btn
+                  @click="addRelayFn(addRelayValue)"
+                  dense
+                  flat
+                  icon="add"
+                ></q-btn>
+                <template v-slot:after> </template>
               </q-input>
             </q-item-section>
           </q-item>
         </q-list>
+      </q-card-section>
+      <q-card-section class="q-ml-sm">
+        <div >
+          <q-btn
+            @click="refreshRelaysFromNostr"
+            rounded
+            color="secondary"
+            text-color="primary"
+            size="sm"
+            >Add Relays from Nostr Profile</q-btn
+          >
+        </div>
       </q-card-section>
       <q-card-section>
         <div class="q-mt-md">
@@ -152,6 +170,7 @@
           </q-chip>
         </div>
       </q-card-section>
+
       <q-card-actions>
         <q-list dark class="row">
           <q-item class="col-12">
@@ -179,7 +198,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useNostrStore } from "src/stores/nostr";
 
 import { saas } from "boot/saas";
-import { secondsToDhm } from "src/boot/utils";
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
 
 const $q = useQuasar();
@@ -194,19 +212,19 @@ const addRelayValue = ref("");
 
 watch(
   () => $nostr.initiated,
-  () => refreshFromNostr()
+  () => refreshProfileFromNostr()
 );
 
-const addRelayFn = () => {
-  if (!addRelayValue.value) return;
-  if (user_details.value.relays.includes(addRelayValue.value)) return;
+const addRelayFn = (relay) => {
+  if (!relay) return;
+  if (user_details.value.relays.includes(relay)) return;
   try {
-    const url = new URL(addRelayValue.value);
+    const url = new URL(relay);
 
     if (url.protocol !== "ws:" && url.protocol !== "wss:") {
       throw new Error("Protocol must be 'ws://' or 'wss://'");
     }
-    user_details.value.relays.push(addRelayValue.value);
+    user_details.value.relays.push(relay);
     addRelayValue.value = "";
   } catch (error) {
     $q.notify({
@@ -260,14 +278,18 @@ const getUserIdentifier = async (id) => {
   }
 };
 
-function refreshFromNostr() {
+function refreshRelaysFromNostr() {
   const profile = $nostr.profiles.get(user_details.value.pubkey);
   if (profile) {
     user_details.value.picture = profile.picture;
-    user_details.value.relays = [
-      ...user_details.value.relays,
-      ...(profile.relays ? profile.relays : []),
-    ];
+    (profile.relays || []).forEach((r) => addRelayFn(r));
+  }
+}
+
+function refreshProfileFromNostr() {
+  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  if (profile) {
+    user_details.value.picture = profile.picture;
   }
 }
 
@@ -277,7 +299,7 @@ onMounted(async () => {
     const identifier = await getUserIdentifier(name);
     if (identifier) {
       user_details.value = identifier;
-      refreshFromNostr();
+      refreshProfileFromNostr();
       return;
     }
   }
