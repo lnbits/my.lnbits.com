@@ -244,7 +244,7 @@ const getPriceByYear = async (cartItem, year) => {
 
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUsrIdentities({ active: false });
+    const { data } = await saas.getUserIdentities({ active: false });
     identities.value = data;
   } catch (error) {
     console.error("error", error);

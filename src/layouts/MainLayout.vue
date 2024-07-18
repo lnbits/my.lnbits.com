@@ -313,7 +313,7 @@ const logout = async () => {
 
 async function getIdentities() {
   try {
-    const { data } = await saas.getUsrIdentities();
+    const { data } = await saas.getUserIdentities();
     let identities = data.filter((i) => i.active);
     identities.forEach((i) => {
       $nostr.addPubkey(i.pubkey);

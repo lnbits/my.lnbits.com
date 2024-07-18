@@ -152,7 +152,7 @@ const identitiesDisplay = ref(true);
 
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUsrIdentities({ active: true });
+    const { data } = await saas.getUserIdentities({ active: true });
     identities.value = data.filter((i) => i.active);
     data.forEach((i) => {
       $nostr.addPubkey(i.pubkey);
