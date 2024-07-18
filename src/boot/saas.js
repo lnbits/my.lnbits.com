@@ -76,8 +76,8 @@ const saas = {
     });
     return response;
   },
-  getUsrIdentities: async function ({ localPart, active } = {}) {
-    let url = `${this.url}/nostrnip5/api/v1/addresses/user`;
+  getUserIdentities: async function ({ localPart, active } = {}) {
+    let url = `${this.url}/nostrnip5/api/v1/user/addresses`;
 
     const response = await axios({
       method: "GET",
@@ -93,7 +93,7 @@ const saas = {
   updateIdentity: async function (addressId, data) {
     const response = await axios({
       method: "PUT",
-      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address/${addressId}`,
+      url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address/${addressId}`,
       data,
     });
 
@@ -102,7 +102,7 @@ const saas = {
   deleteIdentity: async function (addressId) {
     const response = await axios({
       method: "DELETE",
-      url: `${this.url}/nostrnip5/api/v1/address/${this.domain}/${addressId}`,
+      url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address/${addressId}`,
     });
 
     return response;
@@ -111,13 +111,13 @@ const saas = {
     // todo: extract object
     const response = await axios({
       method: "POST",
-      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address`,
+      url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address`,
       data: {
         domain_id: this.domain,
         local_part: identifier,
         pubkey: pubkey,
         years: years,
-        create_invoice: createInvoice
+        create_invoice: createInvoice,
       },
     });
 
@@ -126,7 +126,7 @@ const saas = {
   checkIdentityPayment: async function (paymentHash) {
     const response = await axios({
       method: "GET",
-      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/payments/${paymentHash}`,
+      url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/payments/${paymentHash}`,
     });
 
     return response;

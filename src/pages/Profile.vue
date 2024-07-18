@@ -284,7 +284,7 @@ const updateUserIdentifier = async () => {
 
 const getUserIdentifier = async (id) => {
   try {
-    const { data } = await saas.getUsrIdentities({ localPart: id });
+    const { data } = await saas.getUserIdentities({ localPart: id });
 
     if (data.length !== 1) {
       return;
