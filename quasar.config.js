@@ -54,8 +54,8 @@ export default configure((/* ctx */) => {
       // publicPath: '/',
       // analyze: true,
       env: {
-        apiUrl: "",
-        domainID: "QC86K9k2DFmHbM9XuatBt7",
+        apiUrl: "https://nostr.lnbits.com",
+        domainID: "3dYkq5gtM4bEipi62KFAUf",
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
