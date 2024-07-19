@@ -40,14 +40,12 @@
             </q-list>
           </q-btn-dropdown>
           <template v-else>
-            <q-btn to="/login" flat label="sign in" class="text-capitalize" />
             <q-btn
-              to="/login?signup=true"
-              unelevated
+              to="/login"
               rounded
               color="secondary"
-              label="sign up"
-              class="text-capitalize"
+              text-color="primary"
+              label="Account"
             />
           </template>
         </div>
