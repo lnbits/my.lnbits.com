@@ -1,17 +1,25 @@
 {
-        debug
+  debug
 }
 
-localhost:9090
+localhost:9090 {
+  handle /api/* {
+          reverse_proxy localhost:5000
+  }
 
-handle /api/* {
-        reverse_proxy localhost:5000
+  handle /nostrnip5/* {
+          reverse_proxy localhost:5000
+  }
+
+  handle /* {
+          reverse_proxy localhost:8080
+  }
 }
 
-handle /nostrnip5/* {
-        reverse_proxy localhost:5000
-}
+localhost:9000 {
 
-handle /* {
-        reverse_proxy localhost:8081
+  reverse_proxy localhost:5000 {
+          header_down Access-Control-Allow-Credentials true
+          header_down Access-Control-Allow-Origin https://localhost:9090
+  }
 }
