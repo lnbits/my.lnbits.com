@@ -4,14 +4,14 @@
       <q-toolbar class="container-fluid q-py-md">
         <q-toolbar-title
           class="text-h2"
-          style="font-size: 2rem; font-weight: 700; cursor: pointer"
+          style="font-size: 1.5rem; font-weight: 700; cursor: pointer"
           @click="home"
           clickable
         >
           <span class="text-weight-light" style="font-size: 0.75em">my</span
           ><b>Nostr</b>
         </q-toolbar-title>
-        <q-space />
+        <!-- <q-space /> -->
         <div class="q-gutter-sm row items-center no-wrap">
           <q-btn-dropdown flat v-if="$store.isLoggedIn">
             <template v-slot:label>
@@ -53,7 +53,7 @@
         </div>
       </q-toolbar>
     </q-header>
-    <q-page-container class="bg-image">
+    <q-page-container class="bg-image q-pb-xl">
       <svg
         aria-hidden="true"
         viewBox="0 0 668 1069"
@@ -342,8 +342,8 @@ async function getIdentities() {
   width: 100%;
   margin-right: auto;
   margin-left: auto;
-  padding-right: 2rem;
-  padding-left: 2rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
 }
 
 .container {

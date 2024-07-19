@@ -28,14 +28,6 @@
               : formatSat(data.price)
           }}.</span
         >
-
-        <q-btn
-          color="secondary"
-          text-color="primary"
-          label="Add to Cart"
-          class="text-capitalize q-ml-auto float-right"
-          @click="action"
-        />
       </div>
       <div v-else class="text-h6">
         <span>
@@ -43,6 +35,16 @@
         </span>
       </div>
     </q-card-section>
+    <q-card-actions v-if="data.available">
+      <q-btn
+        rounded
+        color="secondary"
+        text-color="primary"
+        label="Add to Cart"
+        class="text-capitalize q-ml-auto float-right"
+        @click="action"
+      />
+    </q-card-actions>
   </q-card>
 </template>
 

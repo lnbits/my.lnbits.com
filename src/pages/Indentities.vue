@@ -14,7 +14,7 @@
       class="input q-mb-lg"
       placeholder="Filter by identifier or public key"
       label-color="blue-grey-4"
-      :input-style="{ fontSize: '22px' }"
+      :input-style="{ fontSize: $q.screen.gt.sm ? '22px' : null }"
       @keydown.enter.prevent="handleSearch"
     >
       <template v-slot:prepend>

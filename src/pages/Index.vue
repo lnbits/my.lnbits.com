@@ -2,7 +2,9 @@
   <q-page class="q-pa-sm">
     <div class="hero" :class="$store.showCard ? 'hero-result' : 'hero-empty'">
       <div class="pitch text-center text-secondary">
-        <h1 class="text-h2 text-bold">Your @nostr.com Identity</h1>
+        <h1 class="text-bold" :class="$q.screen.gt.sm ? 'text-h2' : 'text-h3'">
+          Your @nostr.com Identity
+        </h1>
         <p class="text-h6">
           <span>Nostr Identifier</span> |
           <span class="cursor-pointer">Nostr Market</span> |
@@ -38,13 +40,15 @@
           />
         </template>
       </q-input>
-      <div class="nip-list" v-if="$store.showCard">
-        <CardItem
-          :name="$store.handle"
-          :data="$store.handleData"
-          :close="$store.resetHandle"
-          :action="handleBuy"
-        />
+      <div ref="nipCard">
+        <div class="nip-list" v-if="$store.showCard">
+          <CardItem
+            :name="$store.handle"
+            :data="$store.handleData"
+            :close="closeCard"
+            :action="handleBuy"
+          />
+        </div>
       </div>
     </div>
   </q-page>
@@ -53,7 +57,7 @@
 <script setup>
 import { ref } from "vue";
 import { saas } from "src/boot/saas";
-import { useQuasar } from "quasar";
+import { useQuasar, scroll } from "quasar";
 import { useAppStore } from "src/stores/store";
 import { useRouter, useRoute } from "vue-router";
 
@@ -64,14 +68,16 @@ const $q = useQuasar();
 const $store = useAppStore();
 const $router = useRouter();
 const $route = useRoute();
+const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const handle = ref("");
+const nipCard = ref(null);
 
 const handleSearch = async () => {
+  if (!handle.value) {
+    return;
+  }
   try {
-    if (!handle.value) {
-      return;
-    }
     const { data } = await saas.queryIdentifier(handle.value);
     $store.handle = handle.value;
     $store.handleData = data;
@@ -85,6 +91,8 @@ const handleSearch = async () => {
     });
   } finally {
     $router.push({ query: { q: handle.value } });
+    const element = nipCard.value;
+    scrollToElement(element);
   }
 };
 const handleBuy = () => {
@@ -97,6 +105,7 @@ const handleBuy = () => {
   }
   $store.buying = true;
   $store.newCartIdentifier = handle;
+  $store.handle = "";
   setTimeout(() => {
     $router.push({ path: "/cart" });
   }, 500);
@@ -105,6 +114,19 @@ const handleBuy = () => {
 if ($route.query["q"]) {
   handle.value = $route.query["q"];
   handleSearch();
+}
+
+function scrollToElement(el) {
+  const target = getScrollTarget(el);
+  const offset = el.offsetTop;
+  const duration = 500;
+  setVerticalScrollPosition(target, offset, duration);
+}
+
+function closeCard() {
+  $store.resetHandle();
+  handle.value = "";
+  $router.replace({ query: null });
 }
 </script>
 
@@ -123,7 +145,7 @@ if ($route.query["q"]) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 5rem;
+  padding-top: 2.5rem;
   // padding-bottom: 3rem;
   // min-height: 61.8vh;
   // height: 100%;
@@ -182,6 +204,7 @@ if ($route.query["q"]) {
       align-self: center;
     }
   }
+
   .index-content {
     display: grid;
     gap: 3rem;

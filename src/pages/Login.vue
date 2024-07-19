@@ -3,13 +3,13 @@
     <q-card
       v-bind:style="
         q.screen.lt.sm
-          ? { width: '80%' }
+          ? { width: '80%', marginTop: '3.5rem' }
           : { width: '30%', minWidth: '350px', maxWidth: '400px' }
       "
     >
       <q-card-section class="q-mb-md">
         <q-avatar
-          size="150px"
+          :size="$q.screen.gt.sm ? '150px' : '100px'"
           class="absolute-center shadow-10"
           color="primary"
         >
@@ -17,7 +17,10 @@
         </q-avatar>
       </q-card-section>
       <q-card-section>
-        <div class="text-center q-mt-lg q-pt-lg">
+        <div
+          class="text-center"
+          :style="{ marginTop: q.screen.gt.sm ? '3rem' : '1rem' }"
+        >
           <div v-if="isSignupRequest" class="col text-h6 ellipsis">
             Register
           </div>
@@ -147,7 +150,7 @@ export default defineComponent({
           color: "positive",
         });
         this.store.username = this.username;
-        const path = this.store.newCartIdentifier ? '/cart' : '/'
+        const path = this.store.newCartIdentifier ? "/cart" : "/";
         setTimeout(() => this.$router.push(path), 500);
       } catch (error) {
         console.warn(error);
