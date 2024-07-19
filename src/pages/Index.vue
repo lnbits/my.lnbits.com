@@ -19,10 +19,13 @@
         rounded
         v-model.trim="handle"
         class="input q-pa-lg"
+        :style="{ width: $q.screen.gt.sm ? '100%' : null }"
         placeholder="@nostr.com"
         hint="Powered by LNbits"
         label-color="blue-grey-4"
-        :input-style="{ fontSize: '22px' }"
+        :input-style="{
+          fontSize: '22px',
+        }"
         @keydown.enter.prevent="handleSearch"
       >
         <template v-slot:prepend>
@@ -40,8 +43,8 @@
           />
         </template>
       </q-input>
-      <div ref="nipCard">
-        <div class="nip-list" v-if="$store.showCard">
+      <div class="flex full-width justify-center" ref="nipCard">
+        <div class="nip-list q-pa-lg" v-if="$store.showCard">
           <CardItem
             :name="$store.handle"
             :data="$store.handleData"
@@ -146,11 +149,7 @@ function closeCard() {
   flex-direction: column;
   align-items: center;
   padding-top: 2.5rem;
-  // padding-bottom: 3rem;
-  // min-height: 61.8vh;
-  // height: 100%;
   box-sizing: content-box;
-  // padding: 5rem 0 6.875rem;
 
   .pitch {
     width: 80%;
@@ -159,14 +158,11 @@ function closeCard() {
 
   .input {
     margin-bottom: 3rem;
-    width: 80%;
     max-width: 800px;
   }
   .nip-list {
-    width: 80%;
+    width: 100%;
     max-width: 800px;
-    margin: 0 auto 5rem auto;
-    background: rgba(255, 255, 255, 0.1);
   }
 }
 
