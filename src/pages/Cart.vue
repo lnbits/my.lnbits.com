@@ -194,16 +194,19 @@
 
 <script setup>
 import { useQuasar, copyToClipboard } from "quasar";
+import { useRouter } from "vue-router";
+import VueQrcode from "@chenfengyuan/vue-qrcode";
+
 import { useAppStore } from "src/stores/store";
 import { onMounted, ref } from "vue";
 import { saas } from "boot/saas";
 import { timeFromNow } from "src/boot/utils";
 
 import NostrHeadIcon from "components/NostrHeadIcon.vue";
-import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 const $q = useQuasar();
 const $store = useAppStore();
+const $router = useRouter();
 
 const identities = ref([]);
 
@@ -256,7 +259,7 @@ const submitIdentityBuy = async (cartItem) => {
     if (data.payment_request) {
       paymentDetails.value = { ...data };
 
-      subscribeToPaylinkWs(data.payment_hash);
+      subscribeToPaylinkWs(data.payment_hash, data.local_part);
       $q.notify({
         message: "Pay the invoice to complete the purchase",
         color: "positive",
@@ -276,7 +279,7 @@ const submitIdentityBuy = async (cartItem) => {
   }
 };
 
-const subscribeToPaylinkWs = (payment_hash) => {
+const subscribeToPaylinkWs = (payment_hash, identity) => {
   const url = new URL(process.env.apiUrl);
   url.protocol = url.protocol === "https:" ? "wss" : "ws";
   url.pathname = `/api/v1/ws/${payment_hash}`;
@@ -289,8 +292,8 @@ const subscribeToPaylinkWs = (payment_hash) => {
         message: "Invoice Paid!",
       });
       resetDataDialog();
-      await getIdentities();
       ws.close();
+      setTimeout(() => $router.push(`/identities/${identity}`), 500);
     }
   });
 };
@@ -317,6 +320,9 @@ const removeCartItem = async () => {
       message: "Item removed",
       color: "positive",
     });
+    if (!identities.value.length) {
+      setTimeout(() => $router.push("/"), 500);
+    }
   } catch (error) {
     console.error(error);
     $q.notify({

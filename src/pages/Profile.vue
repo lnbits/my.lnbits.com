@@ -222,17 +222,32 @@ watch(
   () => refreshProfileFromNostr()
 );
 
+const validateWsURL = (wsUrl) => {
+  let url = null;
+  try {
+    url = new URL(wsUrl);
+  } catch {}
+  if (!url) {
+    try {
+      wsUrl = `wss://${wsUrl}`;
+      url = new URL(wsUrl);
+    } catch {}
+  }
+  if (!url || (url.protocol !== "ws:" && url.protocol !== "wss:")) {
+    throw new Error("Protocol must be 'ws://' or 'wss://'");
+  }
+
+  return wsUrl;
+};
+
 const addRelayFn = (relay) => {
   if (!relay) return;
-  if (user_details.value.relays.includes(relay)) return;
-  try {
-    const url = new URL(relay);
 
-    if (url.protocol !== "ws:" && url.protocol !== "wss:") {
-      throw new Error("Protocol must be 'ws://' or 'wss://'");
-    }
-    user_details.value.relays.push(relay);
-    addRelayValue.value = "";
+  try {
+    const wsUrl = validateWsURL(relay);
+    if (user_details.value.relays.includes(wsUrl)) return;
+
+    user_details.value.relays.push(wsUrl);
   } catch (error) {
     $q.notify({
       message: "Invalid relay URL",
@@ -240,6 +255,8 @@ const addRelayFn = (relay) => {
       textColor: "black",
       color: "warning",
     });
+  } finally {
+    addRelayValue.value = "";
   }
 };
 
