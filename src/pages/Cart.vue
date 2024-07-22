@@ -280,7 +280,7 @@ const submitIdentityBuy = async (cartItem) => {
 };
 
 const subscribeToPaylinkWs = (payment_hash, identity) => {
-  const url = new URL(process.env.apiUrl);
+  const url = new URL(process.env.apiUrl || window.location);
   url.protocol = url.protocol === "https:" ? "wss" : "ws";
   url.pathname = `/api/v1/ws/${payment_hash}`;
   const ws = new WebSocket(url);
