@@ -1,3 +1,6 @@
+import axios from "axios";
+import { Converter } from "showdown";
+
 function secondsToDhm(seconds) {
   seconds = Number(seconds);
   const d = Math.floor(seconds / (3600 * 24));
@@ -79,4 +82,17 @@ function getTagValue(event, tag) {
   return event.tags.find(([k, v]) => k == tag)?.[1];
 }
 
-export { secondsToDhm, timeFromNow, getTagValues };
+async function markdownToHTML(url) {
+  const response = await axios({
+    method: "GET",
+    withCredentials: false,
+    url,
+  });
+
+  const converter = new Converter();
+  converter.setFlavor("github");
+  converter.setOption("simpleLineBreaks", true);
+  return converter.makeHtml(response.data);
+}
+
+export { secondsToDhm, timeFromNow, getTagValues, markdownToHTML };

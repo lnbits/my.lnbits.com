@@ -43,6 +43,7 @@
             <q-btn
               to="/login"
               rounded
+              class="text-capitalize"
               color="secondary"
               text-color="primary"
               label="Account"

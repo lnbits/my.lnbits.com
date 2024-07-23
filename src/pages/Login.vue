@@ -1,6 +1,39 @@
 <template>
   <q-page class="flex flex-center">
     <q-card
+      v-if="isTermsAndConditionsRequest"
+      v-bind:style="
+        q.screen.lt.sm
+          ? { width: '80%', marginTop: '3.5rem' }
+          : { width: '70%', minWidth: '350px' }
+      "
+    >
+      <q-card-section v-if="termsAndConditions">
+        <div v-html="termsAndConditions"></div>
+        <q-separator></q-separator>
+        <q-btn
+          label="Agree and Register"
+          @click="register"
+          type="submit"
+          color="secondary"
+          class="full-width q-mt-sm text-capitalize"
+          :disable="inProgress"
+        />
+        <q-btn
+
+            @click="isTermsAndConditionsRequest = false"
+            label="Back"
+            type="button"
+            class="full-width q-mt-md"
+            color="grey"
+          />
+      </q-card-section>
+      <q-card-section v-else class="q-ma-xl q-pa-md"
+        >Terms and Conditions loading....
+      </q-card-section>
+    </q-card>
+    <q-card
+      v-else
       v-bind:style="
         q.screen.lt.sm
           ? { width: '80%', marginTop: '3.5rem' }
@@ -73,7 +106,7 @@
             @click="login"
             type="submit"
             color="primary"
-            class="full-width"
+            class="full-width text-capitalize"
             :disable="inProgress"
           />
 
@@ -86,7 +119,7 @@
             @click="signup"
             type="submit"
             color="secondary"
-            class="full-width q-mt-sm"
+            class="full-width q-mt-sm text-capitalize"
             :disable="inProgress"
           />
           <q-btn
@@ -109,6 +142,7 @@ import { ref } from "vue";
 import { useQuasar } from "quasar";
 import { useAppStore } from "src/stores/store";
 
+import { markdownToHTML } from "boot/utils";
 import { saas } from "boot/saas";
 
 export default defineComponent({
@@ -123,10 +157,12 @@ export default defineComponent({
       password: ref(""),
       passwordRepeat: ref(""),
       isSignupRequest: ref(false),
+      isTermsAndConditionsRequest: ref(false),
       inProgress: ref(false),
+      termsAndConditions: ref(""),
     };
   },
-  created() {
+  async created() {
     if (this.$route.query.signup) {
       this.isSignupRequest = true;
     }
@@ -208,6 +244,10 @@ export default defineComponent({
         await this.login();
       }
     },
+    async showTermsAndConditions() {
+      this.isTermsAndConditionsRequest = true;
+      this.termsAndConditions = await markdownToHTML(process.env.termsAndConditionsUrl);
+    },
     async signup() {
       if (!this.isSignupRequest) {
         this.isSignupRequest = true;
@@ -222,7 +262,9 @@ export default defineComponent({
         });
         return;
       }
-
+      this.showTermsAndConditions();
+    },
+    async register() {
       try {
         this.inProgress = true;
         await saas.signup(this.username, this.password, this.passwordRepeat);
@@ -236,7 +278,7 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to register!",
-          caption: saas.mapErrorToString(error),
+          caption: error.response?.data?.detail,
           color: "negative",
           icon: "warning",
         });
