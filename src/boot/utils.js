@@ -82,18 +82,17 @@ function getTagValue(event, tag) {
   return event.tags.find(([k, v]) => k == tag)?.[1];
 }
 
-async function markdownToHTML(url){
+async function markdownToHTML(url) {
   const response = await axios({
     method: "GET",
     withCredentials: false,
-    url
+    url,
   });
-  console.log("### showdown", Converter);
+
   const converter = new Converter();
   converter.setFlavor("github");
   converter.setOption("simpleLineBreaks", true);
-  const x = converter.makeHtml(response.data);
-  console.log("### xd", x)
+  return converter.makeHtml(response.data);
 }
 
 export { secondsToDhm, timeFromNow, getTagValues, markdownToHTML };

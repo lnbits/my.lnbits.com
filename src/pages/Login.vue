@@ -1,6 +1,39 @@
 <template>
   <q-page class="flex flex-center">
     <q-card
+      v-if="isTermsAndConditionsRequest"
+      v-bind:style="
+        q.screen.lt.sm
+          ? { width: '80%', marginTop: '3.5rem' }
+          : { width: '70%', minWidth: '350px' }
+      "
+    >
+      <q-card-section v-if="termsAndConditions">
+        <div v-html="termsAndConditions"></div>
+        <q-separator></q-separator>
+        <q-btn
+          label="Agree and Register"
+          @click="register"
+          type="submit"
+          color="secondary"
+          class="full-width q-mt-sm text-capitalize"
+          :disable="inProgress"
+        />
+        <q-btn
+
+            @click="isTermsAndConditionsRequest = false"
+            label="Back"
+            type="button"
+            class="full-width q-mt-md"
+            color="grey"
+          />
+      </q-card-section>
+      <q-card-section v-else class="q-ma-xl q-pa-md"
+        >Terms and Conditions loading....
+      </q-card-section>
+    </q-card>
+    <q-card
+      v-else
       v-bind:style="
         q.screen.lt.sm
           ? { width: '80%', marginTop: '3.5rem' }
@@ -73,7 +106,7 @@
             @click="login"
             type="submit"
             color="primary"
-            class="full-width"
+            class="full-width text-capitalize"
             :disable="inProgress"
           />
 
@@ -86,7 +119,7 @@
             @click="signup"
             type="submit"
             color="secondary"
-            class="full-width q-mt-sm"
+            class="full-width q-mt-sm text-capitalize"
             :disable="inProgress"
           />
           <q-btn
@@ -124,11 +157,12 @@ export default defineComponent({
       password: ref(""),
       passwordRepeat: ref(""),
       isSignupRequest: ref(false),
+      isTermsAndConditionsRequest: ref(false),
       inProgress: ref(false),
+      termsAndConditions: ref(""),
     };
   },
-  created() {
-    markdownToHTML("https://raw.githubusercontent.com/lnbits/my.nostr.com/terms_and_conditions/terms_and_conditions.md");
+  async created() {
     if (this.$route.query.signup) {
       this.isSignupRequest = true;
     }
@@ -206,9 +240,16 @@ export default defineComponent({
     async onSubmit() {
       if (this.isSignupRequest) {
         await this.signup();
+        isTermsAndConditionsRequest;
       } else {
         await this.login();
       }
+    },
+    async showTermsAndConditions() {
+      this.isTermsAndConditionsRequest = true;
+      this.termsAndConditions = await markdownToHTML(
+        "https://raw.githubusercontent.com/lnbits/my.nostr.com/terms_and_conditions/terms_and_conditions.md"
+      );
     },
     async signup() {
       if (!this.isSignupRequest) {
@@ -224,7 +265,9 @@ export default defineComponent({
         });
         return;
       }
-
+      this.showTermsAndConditions();
+    },
+    async register() {
       try {
         this.inProgress = true;
         await saas.signup(this.username, this.password, this.passwordRepeat);
