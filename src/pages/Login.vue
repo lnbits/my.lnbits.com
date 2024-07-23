@@ -109,6 +109,7 @@ import { ref } from "vue";
 import { useQuasar } from "quasar";
 import { useAppStore } from "src/stores/store";
 
+import { markdownToHTML } from "boot/utils";
 import { saas } from "boot/saas";
 
 export default defineComponent({
@@ -127,6 +128,7 @@ export default defineComponent({
     };
   },
   created() {
+    markdownToHTML("https://raw.githubusercontent.com/lnbits/my.nostr.com/terms_and_conditions/terms_and_conditions.md");
     if (this.$route.query.signup) {
       this.isSignupRequest = true;
     }
@@ -236,7 +238,7 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to register!",
-          caption: saas.mapErrorToString(error),
+          caption: error.response?.data?.detail,
           color: "negative",
           icon: "warning",
         });
