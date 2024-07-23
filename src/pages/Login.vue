@@ -240,16 +240,13 @@ export default defineComponent({
     async onSubmit() {
       if (this.isSignupRequest) {
         await this.signup();
-        isTermsAndConditionsRequest;
       } else {
         await this.login();
       }
     },
     async showTermsAndConditions() {
       this.isTermsAndConditionsRequest = true;
-      this.termsAndConditions = await markdownToHTML(
-        "https://raw.githubusercontent.com/lnbits/my.nostr.com/terms_and_conditions/terms_and_conditions.md"
-      );
+      this.termsAndConditions = await markdownToHTML(process.env.termsAndConditionsUrl);
     },
     async signup() {
       if (!this.isSignupRequest) {

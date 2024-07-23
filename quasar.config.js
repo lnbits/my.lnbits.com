@@ -54,8 +54,10 @@ export default configure((/* ctx */) => {
       // publicPath: '/',
       // analyze: true,
       env: {
-        apiUrl: "https://nostr.lnbits.com",
+        apiUrl: "",
         domainID: "3dYkq5gtM4bEipi62KFAUf",
+        termsAndConditionsUrl:
+          "https://raw.githubusercontent.com/lnbits/my.nostr.com/terms_and_conditions/terms_and_conditions.md",
         // dev vars:
         // apiUrl: "https://localhost:9000",
         // domainID: "gUpdtMxSAzdWfB9PnyxGRM",
