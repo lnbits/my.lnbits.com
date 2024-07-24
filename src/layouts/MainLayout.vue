@@ -13,7 +13,7 @@
         <q-toolbar-title> My Bits </q-toolbar-title>
         <q-space />
         <div class="q-gutter-sm row items-center no-wrap">
-          <span v-text="userEmail"></span>
+          <span v-text="username"></span>
 
           <q-btn
             round
@@ -50,9 +50,17 @@
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item to="/activity" active-class="q-item-no-link-highlighting">
+          <q-item-section avatar>
+            <q-icon name="manage_history" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Activity</q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item to="/pricing" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="list" />
+            <q-icon name="currency_bitcoin" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Pricing</q-item-label>
@@ -94,8 +102,8 @@ export default defineComponent({
     };
   },
   computed: {
-    userEmail: function () {
-      return saas.email;
+    username: function () {
+      return saas.username;
     },
   },
   methods: {
@@ -110,6 +118,7 @@ export default defineComponent({
       } catch (error) {
         this.q.notify({
           message: "Failed to logout!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
           icon: "warning",
         });

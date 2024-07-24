@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-sm">
-    <instances-table></instances-table>
+    <activity-table></activity-table>
   </q-page>
 </template>
 
@@ -8,10 +8,10 @@
 import { defineComponent, defineAsyncComponent } from "vue";
 
 export default defineComponent({
-  name: "Instances",
+  name: "Activity",
   components: {
-    InstancesTable: defineAsyncComponent(() =>
-      import("components/tables/InstancesTable.vue")
+    ActivityTable: defineAsyncComponent(() =>
+      import("components/tables/ActivityTable.vue")
     ),
   },
   data() {

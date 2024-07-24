@@ -1,31 +1,32 @@
 import axios from "axios";
+import { secondsToDhm } from "src/boot/utils";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
   serverTime: null,
 
-  email: localStorage.getItem("email"),
+  username: localStorage.getItem("username"),
 
-  signup: async function (email, password, password2) {
+  signup: async function (username, password, password2) {
     const { data } = await axios({
       method: "POST",
       url: this.url + "/signup",
       withCredentials: true,
       data: {
-        email,
+        username,
         password,
         password_repeat: password2,
       },
     });
 
-    localStorage.setItem("email", email);
+    localStorage.setItem("username", username);
 
     return data;
   },
-  login: async function (email, password) {
+  login: async function (username, password) {
     const formData = new FormData();
-    formData.append("username", email);
+    formData.append("username", username);
     formData.append("password", password);
     const { data } = await axios({
       method: "POST",
@@ -36,7 +37,7 @@ var saas = {
         "Content-Type": "multipart/form-data",
       },
     });
-    localStorage.setItem("email", email);
+    localStorage.setItem("username", username);
 
     return data;
   },
@@ -69,6 +70,24 @@ var saas = {
 
     return response;
   },
+  getUserInstancesLogs: async function () {
+    const response = await axios({
+      method: "GET",
+      url: this.url + "/instance/logs",
+      withCredentials: true,
+    });
+
+    return response;
+  },
+  getInstancesLogs: async function (id) {
+    const response = await axios({
+      method: "GET",
+      url: this.url + `/instance/${id}/logs`,
+      withCredentials: true,
+    });
+
+    return response;
+  },
   status: async function () {
     const response = await axios({
       method: "GET",
@@ -86,8 +105,7 @@ var saas = {
       url: this.url + "/logout",
       withCredentials: true,
     });
-    console.log('### response', response)
-    this.email = null;
+    this.username = null;
     localStorage.clear();
     return response;
   },
@@ -103,8 +121,22 @@ var saas = {
 
       const percentage = (1 - (stop - serverTime) / (stop - start)) * 100;
 
-      return Math.round(percentage);
+      return Math.floor(percentage);
     };
+
+    const status = (active, enabled) => {
+      if (!active){
+        return "Not Paid"
+      }
+      if (!enabled) {
+        return "Disabled"
+      }
+      return "Runnning"
+    }
+
+    const timeLeft = Math.floor(
+      Math.max(instance.timestamp_stop - this.serverTime, 0)
+    );
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -116,15 +148,28 @@ var saas = {
       createdDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       timestamp: instance.timestamp,
+      timestampStart: instance.timestamp_start,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-
+      timeLeft: timeLeft,
+      timeLeftFormatted: secondsToDhm(timeLeft),
+      statusText: status(instance.is_active, instance.is_enabled),
       progress: progress(
-        instance.timestamp,
+        instance.timestamp_start || instance.timestamp,
         instance.timestamp_stop,
         this.serverTime
       ),
     };
+  },
+  mapErrorToString(error) {
+    const data = error.response?.data;
+    if (!data) {
+      return;
+    }
+    if (typeof data === "string") {
+      return data;
+    }
+    return data?.detail?.map((d) => d.msg).join(", ");
   },
 };
 
@@ -134,7 +179,9 @@ var saas = {
     (err) => {
       if (err?.response?.status === 401) {
         saas.logout();
-        window.location.href = "/login";
+        if (window.location.pathname !==  "/login") {
+          setTimeout(() => (window.location.href = "/login"), 500);
+        }
       }
       return Promise.reject(err);
     }

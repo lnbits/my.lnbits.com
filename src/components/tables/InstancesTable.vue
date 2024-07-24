@@ -1,4 +1,31 @@
 <template>
+  <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
+    <q-card-section class="q-pa-none">
+      <div class="row q-col-gutter-sm">
+        <div
+          v-for="(item, index) in activityStats"
+          :key="index"
+          class="col-md-3 col-sm-12 col-xs-12"
+        >
+          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
+            <q-item-section
+              side
+              :style="`background-color: ${item.color2}`"
+              class="q-pa-lg q-mr-none text-white"
+            >
+              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
+            </q-item-section>
+            <q-item-section class="q-pa-md q-ml-none text-white">
+              <q-item-label class="text-white text-h6 text-weight-bolder">{{
+                item.value
+              }}</q-item-label>
+              <q-item-label>{{ item.title }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </div>
+      </div>
+    </q-card-section>
+  </q-card>
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
       <div class="text-h6 text-white">
@@ -65,7 +92,6 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Download Backup.
-                <span v-text="props.row.active"></span>
               </q-tooltip>
             </q-btn>
 
@@ -96,6 +122,7 @@
             </q-btn>
             <q-btn
               v-else
+              :disable="props.row.expired"
               @click="enableInstance(props.row.id)"
               icon="play_circle_outline"
               size="sm"
@@ -127,19 +154,38 @@
             <q-tooltip
               ><span v-text="props.row.progress + '%'"></span
             ></q-tooltip>
-
+            <span
+              v-text="props.row.timeLeftFormatted"
+              class="float-right"
+            ></span>
             <q-linear-progress
               dark
               :color="getColor(props.row.progress)"
               :value="props.row.progress / 100"
-              class="q-mt-md"
+              class="q-mt-sm"
             />
+          </q-td>
+        </template>
+
+        <template v-slot:body-cell-id="props">
+          <q-td :props="props">
+            <q-btn
+              type="a"
+              :href="`/activity?instance_id=${props.row.id}`"
+              :label="props.row.id"
+              no-caps
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <span> Show activity for this instance. </span>
+              </q-tooltip>
+            </q-btn>
           </q-td>
         </template>
 
         <template v-slot:body-cell-name="props">
           <q-td :props="props">
-            <!-- <span v-text="props.row.name"></span> -->
             <q-btn
               type="a"
               :href="props.row.instanceLink"
@@ -160,6 +206,28 @@
             </q-btn>
           </q-td>
         </template>
+        <template v-slot:body-cell-enabled="props">
+          <q-td :props="props">
+            <q-icon
+              v-if="props.row.enabled"
+              name="done"
+              size="sm"
+              color="green"
+            ></q-icon>
+            <q-icon v-else name="close" size="sm" color="grey"></q-icon>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-active="props">
+          <q-td :props="props">
+            <q-icon
+              v-if="props.row.active"
+              name="cloud_done"
+              size="sm"
+              color="green"
+            ></q-icon>
+            <q-icon v-else name="cloud_off" size="sm" color="grey"></q-icon>
+          </q-td>
+        </template>
       </q-table>
     </q-card-section>
   </q-card>
@@ -168,6 +236,10 @@
       <h3>
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
       </h3>
+      <p>
+        Scan the QR code below using a lightning wallet to add credit to your
+        balance for this instance.
+      </p>
 
       <p style="color: white">
         <q-img
@@ -183,7 +255,7 @@
         <q-btn
           color="deep-purple"
           @click="copyData"
-          v-text="'Copy LNURL'"
+          v-text="'Copy'"
         ></q-btn>
         <q-btn
           v-close-popup
@@ -202,6 +274,7 @@ import { defineComponent } from "vue";
 
 import { useQuasar, copyToClipboard } from "quasar";
 import { saas } from "src/boot/saas";
+import { secondsToDhm } from "src/boot/utils";
 
 export default defineComponent({
   name: "TableDarkMode",
@@ -239,26 +312,32 @@ export default defineComponent({
           align: "left",
         },
         {
+          name: "status",
+          label: "Status",
+          field: "statusText",
+          sortable: true,
+          align: "left",
+        },
+        {
           name: "progress",
-          label: "Progress",
-          field: "Progress",
-          sortable: true,
+          label: "Time Left",
+          field: "progress",
           align: "left",
         },
-        {
-          name: "enabled",
-          label: "Enabled",
-          field: "enabled",
-          sortable: true,
-          align: "left",
-        },
-        {
-          name: "active",
-          label: "Active",
-          field: "active",
-          sortable: true,
-          align: "left",
-        },
+        // {
+        //   name: "enabled",
+        //   label: "Enabled",
+        //   field: "enabled",
+        //   sortable: true,
+        //   align: "left",
+        // },
+        // {
+        //   name: "active",
+        //   label: "Deployed",
+        //   field: "active",
+        //   sortable: true,
+        //   align: "left",
+        // },
 
         {
           name: "Created Date",
@@ -273,6 +352,37 @@ export default defineComponent({
           field: "stopDate",
           sortable: true,
           align: "left",
+        },
+      ],
+
+      activityStats: [
+        {
+          title: "Instances",
+          icon: "dns",
+          value: 0,
+          color1: "#546bfa",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Enabled",
+          icon: "power_settings_new",
+          value: "0",
+          color1: "#3a9688",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Deployed",
+          icon: "cloud_done",
+          value: "0",
+          color1: "#7cb342",
+          color2: "#3e51b5",
+        },
+        {
+          title: "Total Time Left",
+          icon: "running_with_errors",
+          value: "0",
+          color1: "#f88c2b",
+          color2: "#3e51b5",
         },
       ],
     };
@@ -309,7 +419,9 @@ export default defineComponent({
       this.confirm(
         "Create New Instance",
         "You are about the create a new LNbits instance." +
-          " You will be propmpted with a Payment Request QR Code."
+          " You will be shown a payment request QR code." +
+          " Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance." +
+          " It costs 21 sats to run an instance for one hour."
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -321,6 +433,7 @@ export default defineComponent({
           console.warn(error);
           this.q.notify({
             message: "Failed to create instance",
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -341,10 +454,12 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
             message: `Failed to reset instance ${id}.`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -356,7 +471,8 @@ export default defineComponent({
       this.confirm(
         `Disable ${id}`,
         "Are you sure you want to disable?" +
-          " Disabling will make your instance unavailable."
+          " Disabling will make your instance unavailable." +
+          " The clock is still ticking!"
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -366,10 +482,12 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
             message: `Failed to disable instance ${id}.`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -378,34 +496,35 @@ export default defineComponent({
       });
     },
     enableInstance: function (id) {
-      this.confirm(
-        `Enable ${id}`,
-        "Are you sure you want to enable?"
-      ).onOk(async () => {
-        try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "enable");
+      this.confirm(`Enable ${id}`, "Are you sure you want to enable?").onOk(
+        async () => {
+          try {
+            this.inProgress = true;
+            const { data } = await saas.updateInstance(id, "enable");
 
-          this.q.notify({
-            message: data.message || `${data}`,
-            color: "positive",
-          });
-        } catch (error) {
-          console.warn(error);
-          this.q.notify({
-            message: `Failed to enable instance ${id}.`,
-            color: "negative",
-          });
-        } finally {
-          this.inProgress = false;
+            this.q.notify({
+              message: data.message || `${data}`,
+              color: "positive",
+            });
+            await this.refreshState();
+          } catch (error) {
+            console.warn(error);
+            this.q.notify({
+              message: `Failed to enable instance ${id}.`,
+              caption: saas.mapErrorToString(error),
+              color: "negative",
+            });
+          } finally {
+            this.inProgress = false;
+          }
         }
-      });
+      );
     },
     destroyInstance: function (id) {
       this.confirm(
         `Destroy ${id}`,
         "Are you sure you want to destroy?" +
-          " destroying will delete your instance and every bit of data."
+          " This action will delete all data and is not recoverable."
       ).onOk(async () => {
         try {
           this.inProgress = true;
@@ -418,10 +537,12 @@ export default defineComponent({
             message: data.message || `${data}`,
             color: "positive",
           });
+          await this.refreshState();
         } catch (error) {
           console.warn(error);
           this.q.notify({
             message: `Failed to destroy instance '${id}'`,
+            caption: saas.mapErrorToString(error),
             color: "negative",
           });
         } finally {
@@ -447,6 +568,7 @@ export default defineComponent({
             });
           }
           if (!this.showPaymentQrDialog) {
+            await this.refreshState();
             clearInterval(retryId);
           }
         } catch (error) {
@@ -461,6 +583,7 @@ export default defineComponent({
         console.warn(error);
         this.q.notify({
           message: "Failed to check SaaS Server status!",
+          caption: saas.mapErrorToString(error),
           color: "negative",
         });
       }
@@ -481,16 +604,37 @@ export default defineComponent({
         color: "grey",
       });
     },
+    refreshState: async function () {
+      try {
+        const { data } = await saas.getInstances();
+        await this.serverStatus();
+        const tableData = (data || []).map((i) => saas.mapInstance(i));
+
+        this.activityStats[0].value = tableData.length;
+        this.activityStats[1].value = tableData.filter(
+          (i) => i.enabled === true
+        ).length;
+        this.activityStats[2].value = tableData.filter(
+          (i) => i.active === true
+        ).length;
+        this.activityStats[3].value = secondsToDhm(
+          tableData.reduce((t, i) => t + i.timeLeft, 0)
+        );
+
+        this.data = tableData;
+      } catch (error) {
+        console.warn(error);
+      }
+    },
   },
   async created() {
     try {
-      const { data } = await saas.getInstances();
-      await this.serverStatus();
-      const tableData = (data || []).map((i) => saas.mapInstance(i));
-
-      this.data = tableData;
+      this.inProgress = true;
+      await this.refreshState();
     } catch (error) {
       console.warn(error);
+    } finally {
+      this.inProgress = false;
     }
   },
 });
