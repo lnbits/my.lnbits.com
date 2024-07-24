@@ -5,11 +5,16 @@
         <h1 class="text-bold" :class="$q.screen.gt.sm ? 'text-h2' : 'text-h3'">
           Your @nostr.com Identity
         </h1>
-        <p class="text-h6">
-          <span>Nostr Identifier</span> |
-          <span class="cursor-pointer">Nostr Market</span> |
-          <span>Nostr Relay</span> |
-          <span> LN Address</span>
+        <p class="text-h6 hero-links">
+          <a href="/"><span>Nostr Identifier</span></a> |
+          <a
+            href="https://market.nostr.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><span>Nostr Market</span></a
+          >
+          | <span>Nostr Relay<q-tooltip>Available soon...</q-tooltip></span> |
+          <span> LN Address<q-tooltip>Available soon...</q-tooltip></span>
         </p>
       </div>
       <q-input
@@ -137,6 +142,12 @@ function closeCard() {
 .my-card {
   max-width: 800px;
   margin: 0 auto;
+}
+.hero-links {
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
 }
 .hero-empty {
   margin-bottom: 8rem;
