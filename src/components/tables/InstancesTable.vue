@@ -30,8 +30,9 @@
     <q-card-section>
       <div class="text-h6 text-white">
         <span>LNbits Instances</span>
+        <!-- @click="createInstance" -->
         <q-btn
-          @click="createInstance"
+          disable
           label="New Instance"
           icon="add_to_queue"
           color="blue"
