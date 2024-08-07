@@ -13,8 +13,16 @@
             rel="noopener noreferrer"
             ><span>Nostr Market</span></a
           >
-          | <span>Nostr Relay<q-tooltip>Available soon...</q-tooltip></span> |
-          <span> LN Address<q-tooltip>Available soon...</q-tooltip></span>
+          |
+          <a href="https://my.nostr.com/identities" rel="noopener noreferrer"
+            ><span>LN Address</span></a
+          >
+          |
+          <a href="https://my.nostr.com/identities" rel="noopener noreferrer"
+            ><span>Zaps</span></a
+          >
+          |
+          <span> Relay<q-tooltip>Available soon...</q-tooltip></span>
         </p>
       </div>
       <q-input
