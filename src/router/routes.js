@@ -26,6 +26,17 @@ const routes = [
         props: true,
       },
       {
+        name: "Wallets",
+        path: "/wallets",
+        component: () => import("pages/Wallets.vue"),
+      },
+      {
+        name: "Wallet",
+        path: "/wallets/:id",
+        component: () => import("pages/Wallet.vue"),
+        props: true,
+      },
+      {
         name: "Pubkey",
         path: "/pubkey/:pubkey",
         component: () => import("pages/IdentifiersByPubkey.vue"),

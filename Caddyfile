@@ -1,25 +1,35 @@
 {
-  debug
+	debug
 }
 
 localhost:9090 {
-  handle /api/* {
-          reverse_proxy localhost:5000
-  }
+	handle /api/v1/ws* {
+		reverse_proxy localhost:5000
+	}
+	handle /api/v1/auth* {
+		reverse_proxy localhost:5000
+	}
 
-  handle /nostrnip5/* {
-          reverse_proxy localhost:5000
-  }
+	handle /nostrnip5/api/v1* {
+		reverse_proxy localhost:5000
+	}
 
-  handle /* {
-          reverse_proxy localhost:8080
-  }
+	handle /lnurlp/api/v1* {
+		reverse_proxy localhost:5000
+	}
+
+	handle /.well-known/lnurlp/* {
+		reverse_proxy 0.0.0.0:5000
+	}
+
+	handle /* {
+		reverse_proxy localhost:8080
+	}
 }
 
 localhost:9000 {
-
-  reverse_proxy localhost:5000 {
-          header_down Access-Control-Allow-Credentials true
-          header_down Access-Control-Allow-Origin https://localhost:9090
-  }
+	reverse_proxy localhost:5000 {
+		header_down Access-Control-Allow-Credentials true
+		header_down Access-Control-Allow-Origin https://localhost:9090
+	}
 }

@@ -20,6 +20,7 @@ export const useNostrStore = defineStore("nostr", {
     profiles: new Map(), // there can be more profiles for the same public key
     pool: pool,
     initiated: false,
+    wallets: []
   }),
   getters: {
     getPubkeyById: () => {
@@ -35,16 +36,8 @@ export const useNostrStore = defineStore("nostr", {
         return ids.filter((id) => id.pubkey === pubkey);
       };
     },
-    // showCard: (state) => {
-    //   return state.handle.length > 0;
-    // },
   },
   actions: {
-    // resetHandle() {
-    //   this.handle = "";
-    //   this.handleData = {};
-    //   this.buying = false;
-    // },
     addRelay(relay) {
       this.relays.add(relay);
     },

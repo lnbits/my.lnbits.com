@@ -51,6 +51,13 @@ const saas = {
     localStorage.clear();
     return response;
   },
+  getAccountDetails: async function () {
+    const response = await axios({
+      method: "GET",
+      url: `${this.url}/api/v1/auth`,
+    });
+    return response;
+  },
   getAuthenticatedUser: async function () {
     const response = await axios({
       method: "GET",
@@ -132,6 +139,16 @@ const saas = {
     return response;
   },
 
+  updateLNaddress: async function (addressId, data) {
+    const response = await axios({
+      method: "PUT",
+      url: `${this.url}/nostrnip5/api/v1/user/domain/${this.domain}/address/${addressId}/lnaddress`,
+      data,
+    });
+
+    return response;
+  },
+
   mapAddressToProfile(address) {
     return {
       id: address.id,
@@ -139,6 +156,7 @@ const saas = {
       name: address.local_part,
       pubkey: address.pubkey,
       relays: address.config.relays,
+      ln_address: address.config.ln_address,
       expiresAt: address.expires_at,
     };
   },

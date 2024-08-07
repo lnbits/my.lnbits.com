@@ -22,16 +22,21 @@
               </div>
             </template>
             <q-list style="min-width: 100px">
-              <q-item clickable v-close-popup to="/account">
-                <q-item-section>Account</q-item-section>
-              </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/identities">
                 <q-item-section>Identities</q-item-section>
               </q-item>
-
+              <q-separator />
+              <q-item clickable v-close-popup to="/wallets">
+                <q-item-section>My Wallets</q-item-section>
+              </q-item>
+              <q-separator />
               <q-item clickable v-close-popup to="/cart">
                 <q-item-section>Cart</q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup to="/account">
+                <q-item-section>Account</q-item-section>
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup @click="logout">

@@ -7,7 +7,7 @@
       </q-breadcrumbs>
     </div>
 
-    <div>
+    <div v-if="identities && identities.length">
       <template v-for="cartItem in identities">
         <q-card class="nostr-card no-shadow text-white q-mb-lg q-pa-sm">
           <q-btn
@@ -113,6 +113,11 @@
           </q-card-actions>
         </q-card>
       </template>
+    </div>
+    <div v-else>
+      <div class="text-h6 text-white text-center q-pa-md">
+        <strong>There are no items in your shopping cart.</strong>
+      </div>
     </div>
 
     <q-dialog

@@ -1,0 +1,75 @@
+{
+	debug
+	email stan.v.vlad@gmail.com
+}
+
+lnbits.link {
+	handle /.well-known/nostr.json {
+		rewrite * /nostrnip5/api/v1/domain/WyRfY5ssWwFqn7BMC98CqN/nostr.json
+		reverse_proxy localhost:5000
+	}
+
+	@lnurlp {
+		path /.well-known/lnurlp/* /lnurlp/api/*
+	}
+	@njump {
+		path /npub* /nevent* /nprofile* /naddr*
+		path /njump/*
+	}
+
+	handle @njump {
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
+	}
+	handle @lnurlp {
+		reverse_proxy localhost:5000
+	}
+
+	handle /* {
+		reverse_proxy https://www.nostr.com {
+			header_up Host www.nostr.com
+			header_down Access-Control-Allow-Credentials true
+			header_down Access-Control-Allow-Origin https://nostr.com
+		}
+	}
+}
+
+my.lnbits.link {
+	@lnbits_backend {
+		path /api/v1/auth* /api/v1/ws/*
+		path /nostrnip5/api/v1* /lnurlp/api/v1*
+		path /lndhub/api/v1* /lndhub/ext/*
+	}
+
+	handle @lnbits_backend {
+		reverse_proxy localhost:5000 {
+			header_up Host my.lnbits.link
+			header_down Access-Control-Allow-Credentials true
+			header_down Access-Control-Allow-Origin https://my.lnbits.link
+		}
+	}
+
+	reverse_proxy localhost:8080 {
+		header_up X-Forwarded-Host my.lnbits.link
+		header_down Access-Control-Allow-Credentials true
+		header_down Access-Control-Allow-Origin https://my.lnbits.link
+	}
+}
+
+nostr.lnbits.link {
+	handle /api/v1/payments/sse* {
+		reverse_proxy localhost:5000 {
+			header_up X-Forwarded-Host nostr.lnbits.link
+			transport http {
+				keepalive off
+				compression off
+			}
+		}
+	}
+	reverse_proxy localhost:5000 {
+		header_up X-Forwarded-Host nostr.lnbits.link
+		header_down Access-Control-Allow-Credentials true
+		header_down Access-Control-Allow-Origin https://nostr.lnbits.link
+	}
+}
