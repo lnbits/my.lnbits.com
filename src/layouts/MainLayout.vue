@@ -11,20 +11,21 @@
           <span class="text-weight-light" style="font-size: 0.75em">my</span
           ><b>Nostr</b>
         </q-toolbar-title>
-        <!-- <q-space /> -->
+
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn-dropdown flat v-if="$store.isLoggedIn">
+          <q-btn-dropdown class="nostr-card" v-if="$store.isLoggedIn">
             <template v-slot:label>
               <div class="row items-center no-wrap">
-                <q-avatar size="26px" class="q-ml-sm">
+                <q-avatar size="26px" class="q-mr-sm">
                   <img src="~assets/nostrich-head-32.svg" />
                 </q-avatar>
+                <span v-text="$store.username"></span>
               </div>
             </template>
-            <q-list style="min-width: 100px">
+            <q-list v-ripple style="min-width: 100px">
               <q-separator />
               <q-item clickable v-close-popup to="/identities">
-                <q-item-section>Identities</q-item-section>
+                <q-item-section> <strong>Identities</strong></q-item-section>
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/wallets">
@@ -32,14 +33,19 @@
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/cart">
-                <q-item-section>Cart</q-item-section>
+                <q-item-section>Shopping Cart</q-item-section>
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/account">
                 <q-item-section>Account</q-item-section>
               </q-item>
               <q-separator />
-              <q-item clickable v-close-popup @click="logout">
+              <q-item
+                clickable
+                v-close-popup
+                @click="logout"
+                class="text-teal-1 bg-grey-8"
+              >
                 <q-item-section>Logout</q-item-section>
               </q-item>
             </q-list>
@@ -48,7 +54,7 @@
             <q-btn
               to="/login"
               rounded
-              class="text-capitalize"
+              class="text-capitalize nostr-card"
               color="secondary"
               text-color="primary"
               label="Account"

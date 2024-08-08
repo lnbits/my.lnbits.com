@@ -6,21 +6,32 @@
           Your @nostr.com Identity
         </h1>
         <p class="text-h6 hero-links">
-          <a href="/"><span>Nostr Identifier</span></a> |
+          <a href="/"
+            ><span>Nostr Identifier</span>
+            <q-tooltip
+              >Start here by searching for your prefered nostr nip5
+              identifier</q-tooltip
+            >
+          </a>
+          |
           <a
             href="https://market.nostr.com"
             target="_blank"
             rel="noopener noreferrer"
-            ><span>Nostr Market</span></a
           >
+            <span>Nostr Market</span>
+            <q-tooltip>Buy products on a nostr decentralized market</q-tooltip>
+          </a>
           |
-          <a href="https://my.nostr.com/identities" rel="noopener noreferrer"
-            ><span>LN Address</span></a
-          >
+          <a href="https://my.nostr.com/identities" rel="noopener noreferrer">
+            <span>LN Address</span>
+            <q-tooltip>Get a @nostr Lightning Address</q-tooltip>
+          </a>
           |
-          <a href="https://my.nostr.com/identities" rel="noopener noreferrer"
-            ><span>Zaps</span></a
-          >
+          <a href="https://my.nostr.com/identities" rel="noopener noreferrer">
+            <span>Zaps</span>
+            <q-tooltip>Receive zaps to your @nostr address</q-tooltip>
+          </a>
           |
           <span> Relay<q-tooltip>Available soon...</q-tooltip></span>
         </p>
