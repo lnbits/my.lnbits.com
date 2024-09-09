@@ -173,20 +173,20 @@ const saas = {
   },
 };
 
-// DISABLED FOR TESTING PURPOSES
-// (async () => {
-//   axios.interceptors.response.use(
-//     (response) => response,
-//     (err) => {
-//       if (err?.response?.status === 401) {
-//         saas.logout();
-//         if (window.location.pathname !== "/login") {
-//           setTimeout(() => (window.location.href = "/login"), 500);
-//         }
-//       }
-//       return Promise.reject(err);
-//     }
-//   );
-// })();
+
+(async () => {
+  axios.interceptors.response.use(
+    (response) => response,
+    (err) => {
+      if (err?.response?.status === 401) {
+        saas.logout();
+        if (window.location.pathname !== "/login") {
+          setTimeout(() => (window.location.href = "/login"), 500);
+        }
+      }
+      return Promise.reject(err);
+    }
+  );
+})();
 
 export { saas };
