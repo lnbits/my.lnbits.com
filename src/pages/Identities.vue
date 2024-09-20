@@ -48,7 +48,7 @@
     </q-input>
 
     <div
-      v-if="newIdentity && newIdentity.identifier === filterText"
+      v-if="newIdentity && compareIgnoreCase(newIdentity.identifier, filterText)"
       class="nip-list"
     >
       <CardItem
@@ -167,6 +167,7 @@ const filterIdentifier = (id, filter) => {
   if (!filterText.value) {
     return true;
   }
+  filter = (filter || "").toLowerCase()
   if (id.local_part.toLowerCase().indexOf(filter) !== -1) {
     return true;
   }
@@ -192,7 +193,7 @@ const handleSearch = async () => {
     newIdentity.value = data;
     if (data.available) {
       $q.notify({
-        message: `${data.identifier} available`,
+        message: `${data.identifier} is available`,
         color: "positive",
       });
     } else {
@@ -206,6 +207,13 @@ const handleSearch = async () => {
     console.error("Error searching for identifier: ", error);
   }
 };
+
+const compareIgnoreCase = (a, b) => {
+  if (!a || !b){
+    return false
+  }
+  return a.toLowerCase() === b.toLowerCase()
+}
 
 const handleBuy = () => {
   $store.newCartIdentifier = filterText;

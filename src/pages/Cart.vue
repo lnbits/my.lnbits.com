@@ -84,6 +84,102 @@
               </template>
             </q-input>
           </q-card-section>
+          <q-card-section>
+            <div>
+              <q-toggle
+                v-model="cartItem.showPromoCode"
+                @update:model-value="togglePromoCode(cartItem)"
+                label="I have a promo code"
+                color="secondary"
+              ></q-toggle>
+            </div>
+            <div v-if="cartItem.showPromoCode" class="row">
+              <div class="col-md-6 col-12 q-mt-md">
+                <q-input
+                  v-model="cartItem.config.promo_code"
+                  @keydown.enter="computeCartItemPrice(cartItem)"
+                  dark
+                  standout
+                  label="Promo Code"
+                  hint="Use this code to get a discount when buying your identifier."
+                >
+                  <template v-slot:before v-if="$q.screen.gt.xs">
+                    <q-avatar>
+                      <q-icon name="discount"></q-icon>
+                    </q-avatar>
+                  </template>
+                  <template v-slot:append>
+                    <q-btn
+                      @click="computeCartItemPrice(cartItem)"
+                      label="Check"
+                      rounded
+                      unelevated
+                      text-color="primary"
+                      color="secondary"
+                    ></q-btn>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-md-6 col-12 q-mt-md">
+                <q-input
+                  v-if="cartItem.promo_code_status.allow_referer"
+                  dark
+                  standout
+                  v-model="cartItem.config.referer"
+                  label="Referer"
+                  hint="Specify a user that will get a share of the payment (optional)."
+                >
+                  <template v-slot:before v-if="$q.screen.gt.xs">
+                    <q-avatar>
+                      <q-icon name="person_pin"></q-icon>
+                    </q-avatar>
+                  </template>
+                </q-input>
+                <q-input
+                  v-else-if="cartItem.promo_code_status.referer"
+                  disable
+                  dark
+                  standout
+                  v-model="cartItem.promo_code_status.referer"
+                  label="Referer"
+                  hint="This user will get a share of the payment."
+                >
+                  <template v-slot:before v-if="$q.screen.gt.xs">
+                    <q-avatar>
+                      <q-icon name="person_pin"></q-icon>
+                    </q-avatar>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div v-if="cartItem.showPromoCode" class="row">
+              <div
+                v-if="cartItem.promo_code_status.buyer_discount"
+                class="col-12"
+              >
+                <div class="text-h5 float-right q-mt-lg">
+                  <span>You have a &nbsp;</span>
+                  <q-badge
+                    color="secondary"
+                    text-color="primary"
+                    class="text-h5"
+                  >
+                    <span
+                      v-text="cartItem.promo_code_status.buyer_discount"
+                    ></span>
+                    %
+                  </q-badge>
+                  <span> &nbsp; discount! </span>
+                </div>
+              </div>
+              <div v-else class="col-12">
+                <div class="text-h5 float-right q-mt-lg">
+                  <span>No discount for this code.</span>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+
           <q-card-actions align="right" class="q-mt-md">
             <q-btn
               @click="submitIdentityBuy(cartItem)"
@@ -93,7 +189,18 @@
               rounded
               color="secondary"
               text-color="primary"
-            ></q-btn>
+            >
+              <q-badge
+                v-if="cartItem.promo_code_status.buyer_discount"
+                color="primary"
+                bordered
+                floating
+                >-<span
+                  v-text="cartItem.promo_code_status.buyer_discount"
+                ></span>
+                %</q-badge
+              >
+            </q-btn>
           </q-card-actions>
         </q-card>
       </template>
@@ -228,11 +335,24 @@ const isSameYear = (y1, y2) => {
 
 const getPriceByYear = async (cartItem, year) => {
   cartItem.config.years = year;
-  const { data } = await saas.createIdentity(
-    cartItem.local_part,
-    cartItem.pubkey,
-    cartItem.config.years
-  );
+  await computeCartItemPrice(cartItem);
+};
+
+const togglePromoCode = async (cartItem) => {
+  if (!cartItem.showPromoCode) {
+    cartItem.config.promo_code = null;
+    await computeCartItemPrice(cartItem);
+  }
+};
+
+const computeCartItemPrice = async (cartItem) => {
+  const { data } = await saas.createIdentity({
+    identifier: cartItem.local_part,
+    pubkey: cartItem.pubkey,
+    years: cartItem.config.years,
+    promo_code: cartItem.config.promo_code,
+    referer: cartItem.config.referer,
+  });
 
   Object.assign(cartItem, data);
 };
@@ -240,7 +360,10 @@ const getPriceByYear = async (cartItem, year) => {
 const getIdentities = async () => {
   try {
     const { data } = await saas.getUserIdentities({ active: false });
-    identities.value = data;
+    identities.value = data.map((a) => ({
+      ...a,
+      showPromoCode: !!a.config.promo_code,
+    }));
     loading.value = false;
   } catch (error) {
     console.error("error", error);
@@ -253,9 +376,13 @@ const submitIdentityBuy = async (cartItem) => {
 
     paymentDetails.value = { local_part: cartItem.local_part };
     const { data } = await saas.createIdentity(
-      cartItem.local_part,
-      cartItem.pubkey,
-      cartItem.config?.years,
+      {
+        identifier: cartItem.local_part,
+        pubkey: cartItem.pubkey,
+        years: cartItem.config.years,
+        promo_code: cartItem.config.promo_code,
+        referer: cartItem.config.referer,
+      },
       true
     );
     // npub to hex
@@ -355,7 +482,9 @@ onMounted(async () => {
   }
   await getIdentities();
   if ($store.newCartIdentifier) {
-    const { data } = await saas.createIdentity($store.newCartIdentifier);
+    const { data } = await saas.createIdentity({
+      identifier: $store.newCartIdentifier,
+    });
     identities.value = identities.value.filter((i) => i.id !== data.id);
     identities.value.unshift(data);
   }

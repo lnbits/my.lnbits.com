@@ -17,13 +17,49 @@ lnbits.link {
 		path /njump/*
 	}
 
+	@nip05 path_regexp nip05 /[a-z0-9_%+\-]+@([a-z0-9.\-]+)\.([a-z0-9.\-]+)(\W|$)
+	@profile {
+		path /p/* /i/*
+	}
+	@note {
+		path /note:*
+	}
+
 	handle @njump {
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
+	}
+
+	handle @nip05 {
 		reverse_proxy https://njump.me {
 			header_up Host njump.me
 		}
 	}
 	handle @lnurlp {
 		reverse_proxy localhost:5000
+	}
+	handle @profile {
+		uri strip_prefix /p
+		uri strip_prefix /i
+		rewrite * {path}@nostr.com
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
+	}
+	handle @note {
+		uri replace /note: /
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
+	}
+
+	handle /@* {
+		uri replace /@ /
+		rewrite * {path}@nostr.com
+		reverse_proxy https://njump.me {
+			header_up Host njump.me
+		}
 	}
 
 	handle /* {
@@ -37,7 +73,7 @@ lnbits.link {
 
 my.lnbits.link {
 	@lnbits_backend {
-		path /api/v1/auth* /api/v1/ws/*
+		path /api/v1/auth* /api/v1/ws*
 		path /nostrnip5/api/v1* /lnurlp/api/v1*
 		path /lndhub/api/v1* /lndhub/ext/*
 	}
@@ -73,3 +109,12 @@ nostr.lnbits.link {
 		header_down Access-Control-Allow-Origin https://nostr.lnbits.link
 	}
 }
+
+#*.lnbits.link {
+#	tls {
+#		on_demand
+#	}
+#	reverse_proxy https://njump.me {
+#		header_up Host njump.me
+#	}
+#}

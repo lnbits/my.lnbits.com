@@ -21,6 +21,10 @@ localhost:9090 {
 	handle /.well-known/lnurlp/* {
 		reverse_proxy 0.0.0.0:5000
 	}
+	handle /.well-known/nostr.json {
+		rewrite * /nostrnip5/api/v1/domain/gUpdtMxSAzdWfB9PnyxGRM/nostr.json
+		reverse_proxy localhost:5000
+	}
 
 	handle /* {
 		reverse_proxy localhost:8080
