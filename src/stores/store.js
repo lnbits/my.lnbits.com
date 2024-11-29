@@ -3,7 +3,9 @@ import { defineStore } from "pinia";
 export const useAppStore = defineStore("store", {
   state: () => ({
     newCartIdentifier: null,
+    freeCartIdentifier: null,
     username: null,
+    pubkey: null,
     handle: "",
     handleData: {},
     buying: false,

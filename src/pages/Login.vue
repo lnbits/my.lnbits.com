@@ -20,13 +20,12 @@
           :disable="inProgress"
         />
         <q-btn
-
-            @click="isTermsAndConditionsRequest = false"
-            label="Back"
-            type="button"
-            class="full-width q-mt-md"
-            color="grey"
-          />
+          @click="isTermsAndConditionsRequest = false"
+          label="Back"
+          type="button"
+          class="full-width q-mt-md"
+          color="grey"
+        />
       </q-card-section>
       <q-card-section v-else class="q-ma-xl q-pa-md"
         >Terms and Conditions loading....
@@ -186,7 +185,13 @@ export default defineComponent({
           color: "positive",
         });
         this.store.username = this.username;
-        const path = this.store.newCartIdentifier ? "/cart" : "/";
+        let path = "/";
+        if (this.store.newCartIdentifier) {
+          path = "/cart";
+        } else if (this.store.freeCartIdentifier) {
+          path = "/identities";
+        }
+
         setTimeout(() => this.$router.push(path), 500);
       } catch (error) {
         console.warn(error);
@@ -246,7 +251,9 @@ export default defineComponent({
     },
     async showTermsAndConditions() {
       this.isTermsAndConditionsRequest = true;
-      this.termsAndConditions = await markdownToHTML(process.env.termsAndConditionsUrl);
+      this.termsAndConditions = await markdownToHTML(
+        process.env.termsAndConditionsUrl
+      );
     },
     async signup() {
       if (!this.isSignupRequest) {

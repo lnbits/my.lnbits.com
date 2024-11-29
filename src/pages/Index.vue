@@ -67,6 +67,7 @@
           />
         </template>
       </q-input>
+
       <div class="flex full-width justify-center" ref="nipCard">
         <div class="nip-list q-pa-lg" v-if="$store.showCard">
           <CardItem
@@ -74,9 +75,32 @@
             :data="$store.handleData"
             :close="closeCard"
             :action="handleBuy"
+            :free="handleFreeId"
           />
         </div>
       </div>
+      <q-badge
+        v-if="$store.pubkey"
+        outline
+        color="secondary"
+        class="q-pt-none q-pb-none"
+        dense
+      >
+        <span
+          v-text="'npub:  ' + $store.pubkey"
+          dense
+          style="white-space: normal; word-break: break-all"
+        ></span>
+        <q-btn
+          @click="$store.pubkey = null"
+          class="q-ml-lg"
+          icon="close"
+          color="white"
+          flat
+          round
+          dense
+        />
+      </q-badge>
     </div>
   </q-page>
 </template>
@@ -107,6 +131,7 @@ const handleSearch = async () => {
   try {
     const { data } = await saas.queryIdentifier(handle.value);
     $store.handle = handle.value;
+    data.hasFreeOption = !!data.free_identifier_number;
     $store.handleData = data;
   } catch (error) {
     console.error("Error searching for identifier: ", error);
@@ -138,6 +163,31 @@ const handleBuy = () => {
   }, 500);
 };
 
+const handleFreeId = () => {
+  if (!$store.isLoggedIn) {
+    $q.notify({
+      message: "Please to get your free identifier",
+      color: "warning",
+      textColor: "black",
+    });
+  }
+  $store.buying = true;
+  if ($store.handleData.hasFreeOption) {
+    $store.freeCartIdentifier =
+      $store.handleData.identifier +
+      "." +
+      $store.handleData.free_identifier_number.padStart(6, "0");
+  }
+
+  $store.handle = "";
+  setTimeout(() => {
+    $router.push({ path: "/identities" });
+  }, 500);
+};
+const pubkey = $route.query["npub"] || $route.query["pubkey"];
+if (pubkey) {
+  $store.pubkey = pubkey;
+}
 if ($route.query["q"]) {
   handle.value = $route.query["q"];
   handleSearch();

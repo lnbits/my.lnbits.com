@@ -484,6 +484,7 @@ onMounted(async () => {
   if ($store.newCartIdentifier) {
     const { data } = await saas.createIdentity({
       identifier: $store.newCartIdentifier,
+      pubkey: $store.pubkey,
     });
     identities.value = identities.value.filter((i) => i.id !== data.id);
     identities.value.unshift(data);

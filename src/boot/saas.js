@@ -122,7 +122,7 @@ const saas = {
       data: {
         domain_id: this.domain,
         local_part: data.identifier,
-        pubkey: data.pubkey,
+        pubkey: data.pubkey || "",
         years: data.years,
         promo_code: data.promo_code,
         referer: data.referer,
@@ -170,6 +170,9 @@ const saas = {
     }
     if (typeof data === "string") {
       return data;
+    }
+    if (typeof data.detail === "string") {
+      return data.detail;
     }
     return data?.detail?.map((d) => d.msg).join(", ");
   },
