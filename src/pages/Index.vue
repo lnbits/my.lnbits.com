@@ -5,7 +5,7 @@
         <h1 class="text-bold" :class="$q.screen.gt.sm ? 'text-h2' : 'text-h3'">
           Your @nostr.com Identity
         </h1>
-        <p class="text-h6 hero-links">
+        <!-- <p class="text-h6 hero-links">
           <a href="/"
             ><span>Nostr Identifier</span>
             <q-tooltip
@@ -34,7 +34,7 @@
           </a>
           |
           <span> Relay<q-tooltip>Available soon...</q-tooltip></span>
-        </p>
+        </p> -->
       </div>
       <q-input
         dark

@@ -74,7 +74,7 @@
                     </div>
                   </q-item-section>
                   <q-item-section side>
-                    <q-btn
+                    <!-- <q-btn
                       type="a"
                       :href="`https://metadata.nostr.com?pubkey=${user_details.pubkey}`"
                       target="_blank"
@@ -83,7 +83,7 @@
                       rounded
                       color="secondary"
                       text-color="primary"
-                    ></q-btn>
+                    ></q-btn> -->
                   </q-item-section>
                 </q-item>
               </q-list>
