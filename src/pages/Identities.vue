@@ -14,7 +14,7 @@
       class="input q-mb-lg"
       placeholder="Filter by identifier or public key"
       label-color="blue-grey-4"
-      :input-style="{ fontSize: $q.screen.gt.sm ? '22px' : null }"
+      :input-style="{fontSize: $q.screen.gt.sm ? '22px' : null}"
       @keydown.enter.prevent="handleSearch"
     >
       <template v-slot:prepend>
@@ -44,7 +44,7 @@
         />
       </template>
 
-      <template v-slot:error> Failed to filer. </template>
+      <template v-slot:error> Failed to filter. </template>
     </q-input>
 
     <div
@@ -126,126 +126,126 @@
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { useAppStore } from "src/stores/store";
-import { useNostrStore } from "src/stores/nostr";
-import { onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import {useQuasar} from 'quasar'
+import {useAppStore} from 'src/stores/store'
+import {useNostrStore} from 'src/stores/nostr'
+import {onMounted, ref, watch} from 'vue'
+import {useRouter} from 'vue-router'
 
-const $router = useRouter();
-import { saas } from "boot/saas";
-import { timeFromNow } from "src/boot/utils";
-import CardItem from "components/cards/CardItem.vue";
+const $router = useRouter()
+import {saas} from 'boot/saas'
+import {timeFromNow} from 'src/boot/utils'
+import CardItem from 'components/cards/CardItem.vue'
 
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
-import CardProfile from "components/cards/CardProfile.vue";
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
+import CardProfile from 'components/cards/CardProfile.vue'
 
-const $q = useQuasar();
-const $store = useAppStore();
-const $nostr = useNostrStore();
+const $q = useQuasar()
+const $store = useAppStore()
+const $nostr = useNostrStore()
 
-const filterText = ref("");
-const newIdentity = ref({});
+const filterText = ref('')
+const newIdentity = ref({})
 
-const identities = ref([]);
-const filteredIdentities = ref([]);
-const identityNotOwned = ref(true);
-const identitiesDisplay = ref(true);
+const identities = ref([])
+const filteredIdentities = ref([])
+const identityNotOwned = ref(true)
+const identitiesDisplay = ref(true)
 
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUserIdentities({ active: true });
-    identities.value = data.filter((i) => i.active);
-    data.forEach((i) => {
-      $nostr.addPubkey(i.pubkey);
-    });
-    filteredIdentities.value = identities.value;
+    const {data} = await saas.getUserIdentities({active: true})
+    identities.value = data.filter(i => i.active)
+    data.forEach(i => {
+      $nostr.addPubkey(i.pubkey)
+    })
+    filteredIdentities.value = identities.value
   } catch (error) {
-    console.error("error", error);
+    console.error('error', error)
   }
-};
+}
 
 const filterIdentifier = (id, filter) => {
   if (!filterText.value) {
-    return true;
+    return true
   }
-  filter = (filter || "").toLowerCase();
+  filter = (filter || '').toLowerCase()
   if (id.local_part.toLowerCase().indexOf(filter) !== -1) {
-    return true;
+    return true
   }
   if (id.pubkey.toLowerCase().indexOf(filter) !== -1) {
-    return true;
+    return true
   }
-  return false;
-};
+  return false
+}
 
 watch(filterText, (n, o) => {
-  const filter = filterText.value.toLocaleLowerCase();
-  filteredIdentities.value = identities.value.filter((id) =>
+  const filter = filterText.value.toLocaleLowerCase()
+  filteredIdentities.value = identities.value.filter(id =>
     filterIdentifier(id, filter)
-  );
+  )
   identityNotOwned.value = !identities.value.find(
-    (id) => id.local_part.toLowerCase() === filter
-  );
-});
+    id => id.local_part.toLowerCase() === filter
+  )
+})
 
 const handleSearch = async () => {
   try {
-    const { data } = await saas.queryIdentifier(filterText.value);
-    newIdentity.value = data;
+    const {data} = await saas.queryIdentifier(filterText.value)
+    newIdentity.value = data
     if (data.available) {
       $q.notify({
         message: `${data.identifier} is available`,
-        color: "positive",
-      });
+        color: 'positive'
+      })
     } else {
       $q.notify({
         message: `${data.identifier} not available`,
-        color: "warning",
-        textColor: "black",
-      });
+        color: 'warning',
+        textColor: 'black'
+      })
     }
   } catch (error) {
-    console.error("Error searching for identifier: ", error);
+    console.error('Error searching for identifier: ', error)
   }
-};
+}
 
 const compareIgnoreCase = (a, b) => {
   if (!a || !b) {
-    return false;
+    return false
   }
-  return a.toLowerCase() === b.toLowerCase();
-};
+  return a.toLowerCase() === b.toLowerCase()
+}
 
 const handleBuy = () => {
-  $store.newCartIdentifier = filterText;
+  $store.newCartIdentifier = filterText
   setTimeout(() => {
-    $router.push({ path: "/cart" });
-  }, 500);
-};
+    $router.push({path: '/cart'})
+  }, 500)
+}
 
 onMounted(async () => {
-  identities.value = [...$store.identities.values()];
-  await getIdentities();
+  identities.value = [...$store.identities.values()]
+  await getIdentities()
   if ($store.freeCartIdentifier) {
     try {
       await saas.createIdentity({
         identifier: $store.freeCartIdentifier,
-        pubkey: $store.pubkey || "",
-      });
+        pubkey: $store.pubkey || ''
+      })
     } catch (error) {
       $q.notify({
-        message: "Failed to create identifier.",
+        message: 'Failed to create identifier.',
         caption: saas.mapErrorToString(error),
-        color: "negative",
-        icon: "warning",
-      });
+        color: 'negative',
+        icon: 'warning'
+      })
     }
     $store.freeCartIdentifier = null
     $store.pubkey = null
-    await getIdentities();
+    await getIdentities()
   }
-});
+})
 </script>
 
 <style lang="scss">
