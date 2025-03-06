@@ -37,9 +37,9 @@
               <q-btn-dropdown
                 class="text-capitalize"
                 :label="
-                  cartItem.config.years +
+                  cartItem.extra.years +
                   ' Year' +
-                  (cartItem.config.years > 1 ? 's' : '')
+                  (cartItem.extra.years > 1 ? 's' : '')
                 "
                 size="md"
                 rounded
@@ -48,7 +48,7 @@
               >
                 <q-list
                   v-for="(year, index) in Array.from(
-                    { length: cartItem.config.max_years },
+                    {length: cartItem.extra.max_years},
                     (_, i) => i + 1
                   )"
                   :key="index"
@@ -57,7 +57,7 @@
                     clickable
                     v-close-popup
                     @click="getPriceByYear(cartItem, year)"
-                    :active="isSameYear(cartItem.config.years, year)"
+                    :active="isSameYear(cartItem.extra.years, year)"
                     active-class="bg-teal-1 text-grey-8"
                     ><q-item-section>
                       <q-item-label
@@ -96,7 +96,7 @@
             <div v-if="cartItem.showPromoCode" class="row">
               <div class="col-md-6 col-12 q-mt-md">
                 <q-input
-                  v-model="cartItem.config.promo_code"
+                  v-model="cartItem.extra.promo_code"
                   @keydown.enter="computeCartItemPrice(cartItem)"
                   dark
                   standout
@@ -125,7 +125,7 @@
                   v-if="cartItem.promo_code_status.allow_referer"
                   dark
                   standout
-                  v-model="cartItem.config.referer"
+                  v-model="cartItem.extra.referer"
                   label="Referer"
                   hint="Specify a user that will get a share of the payment (optional)."
                 >
@@ -183,7 +183,7 @@
           <q-card-actions align="right" class="q-mt-md">
             <q-btn
               @click="submitIdentityBuy(cartItem)"
-              :label="`Buy for ${cartItem.config.price} ${cartItem.config.currency}`"
+              :label="`Buy for ${cartItem.extra.price} ${cartItem.extra.currency}`"
               class="text-capitalize float-left"
               :disabled="!cartItem.pubkey"
               rounded
@@ -244,7 +244,7 @@
             <a :href="'lightning:' + paymentDetails.payment_request">
               <vue-qrcode
                 :value="paymentDetails.payment_request"
-                :options="{ width: 500 }"
+                :options="{width: 500}"
               ></vue-qrcode>
             </a>
           </div>
@@ -305,191 +305,192 @@
 </template>
 
 <script setup>
-import { useQuasar, copyToClipboard } from "quasar";
-import { useRouter } from "vue-router";
-import VueQrcode from "@chenfengyuan/vue-qrcode";
+import {useQuasar, copyToClipboard} from 'quasar'
+import {useRouter} from 'vue-router'
+import VueQrcode from '@chenfengyuan/vue-qrcode'
 
-import { useAppStore } from "src/stores/store";
-import { onMounted, ref } from "vue";
-import { saas } from "boot/saas";
-import { timeFromNow } from "src/boot/utils";
+import {useAppStore} from 'src/stores/store'
+import {onMounted, ref} from 'vue'
+import {saas} from 'boot/saas'
+import {timeFromNow} from 'src/boot/utils'
 
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
-const $q = useQuasar();
-const $store = useAppStore();
-const $router = useRouter();
+const $q = useQuasar()
+const $store = useAppStore()
+const $router = useRouter()
 
-const identities = ref([]);
+const identities = ref([])
 
-const dataDialog = ref(false);
-const showRemoveItemDialog = ref(false);
-const cartItemToRemove = ref(null);
+const dataDialog = ref(false)
+const showRemoveItemDialog = ref(false)
+const cartItemToRemove = ref(null)
 
-const paymentDetails = ref({});
-const loading = ref(true);
+const paymentDetails = ref({})
+const loading = ref(true)
 
 const isSameYear = (y1, y2) => {
-  return y1 === y2;
-};
+  return y1 === y2
+}
 
 const getPriceByYear = async (cartItem, year) => {
-  cartItem.config.years = year;
-  await computeCartItemPrice(cartItem);
-};
+  cartItem.extra.years = year
+  await computeCartItemPrice(cartItem)
+}
 
-const togglePromoCode = async (cartItem) => {
+const togglePromoCode = async cartItem => {
   if (!cartItem.showPromoCode) {
-    cartItem.config.promo_code = null;
-    await computeCartItemPrice(cartItem);
+    cartItem.extra.promo_code = null
+    await computeCartItemPrice(cartItem)
   }
-};
+}
 
-const computeCartItemPrice = async (cartItem) => {
-  const { data } = await saas.createIdentity({
+const computeCartItemPrice = async cartItem => {
+  const {data} = await saas.createIdentity({
     identifier: cartItem.local_part,
     pubkey: cartItem.pubkey,
-    years: cartItem.config.years,
-    promo_code: cartItem.config.promo_code,
-    referer: cartItem.config.referer,
-  });
+    years: cartItem.extra.years,
+    promo_code: cartItem.extra.promo_code,
+    referer: cartItem.extra.referer
+  })
 
-  Object.assign(cartItem, data);
-};
+  Object.assign(cartItem, data)
+}
 
 const getIdentities = async () => {
   try {
-    const { data } = await saas.getUserIdentities({ active: false });
-    identities.value = data.map((a) => ({
+    const {data} = await saas.getUserIdentities({active: false})
+    console.log('data', data)
+    identities.value = data.map(a => ({
       ...a,
-      showPromoCode: !!a.config.promo_code,
-    }));
-    loading.value = false;
+      showPromoCode: !!a.extra.promo_code
+    }))
+    loading.value = false
   } catch (error) {
-    console.error("error", error);
+    console.error('error', error)
   }
-};
+}
 
-const submitIdentityBuy = async (cartItem) => {
+const submitIdentityBuy = async cartItem => {
   try {
-    dataDialog.value = true;
+    dataDialog.value = true
 
-    paymentDetails.value = { local_part: cartItem.local_part };
-    const { data } = await saas.createIdentity(
+    paymentDetails.value = {local_part: cartItem.local_part}
+    const {data} = await saas.createIdentity(
       {
         identifier: cartItem.local_part,
         pubkey: cartItem.pubkey,
-        years: cartItem.config.years,
-        promo_code: cartItem.config.promo_code,
-        referer: cartItem.config.referer,
+        years: cartItem.extra.years,
+        promo_code: cartItem.extra.promo_code,
+        referer: cartItem.extra.referer
       },
       true
-    );
+    )
     // npub to hex
-    cartItem.pubkey = data.pubkey;
+    cartItem.pubkey = data.pubkey
 
     if (data.payment_request) {
-      paymentDetails.value = { ...data };
+      paymentDetails.value = {...data}
 
-      subscribeToPaylinkWs(data.payment_hash, data.local_part);
+      subscribeToPaylinkWs(data.payment_hash, data.local_part)
       $q.notify({
-        message: "Pay the invoice to complete the purchase",
-        color: "positive",
-        position: "bottom",
-        timeout: 5000,
-      });
+        message: 'Pay the invoice to complete the purchase',
+        color: 'positive',
+        position: 'bottom',
+        timeout: 5000
+      })
     }
-    return data;
+    return data
   } catch (error) {
-    console.error(error);
-    dataDialog.value = false;
+    console.error(error)
+    dataDialog.value = false
     $q.notify({
-      message: "Failed to generate invoice",
+      message: 'Failed to generate invoice',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 const subscribeToPaylinkWs = (payment_hash, identity) => {
-  const url = new URL(process.env.apiUrl || window.location);
-  url.protocol = url.protocol === "https:" ? "wss" : "ws";
-  url.pathname = `/api/v1/ws/${payment_hash}`;
-  const ws = new WebSocket(url);
-  ws.addEventListener("message", async ({ data }) => {
-    const resp = JSON.parse(data);
+  const url = new URL(process.env.apiUrl || window.location)
+  url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
+  url.pathname = `/api/v1/ws/${payment_hash}`
+  const ws = new WebSocket(url)
+  ws.addEventListener('message', async ({data}) => {
+    const resp = JSON.parse(data)
     if (!resp.pending || resp.paid) {
       $q.notify({
-        type: "positive",
-        message: "Invoice Paid!",
-      });
-      resetDataDialog();
-      ws.close();
-      setTimeout(() => $router.push(`/identities/${identity}`), 500);
+        type: 'positive',
+        message: 'Invoice Paid!'
+      })
+      resetDataDialog()
+      ws.close()
+      setTimeout(() => $router.push(`/identities/${identity}`), 500)
     }
-  });
-};
+  })
+}
 
 const resetDataDialog = () => {
-  dataDialog.value = false;
-  paymentDetails.value = {};
-};
+  dataDialog.value = false
+  paymentDetails.value = {}
+}
 
-const showRemoveItem = (cartItem) => {
-  cartItemToRemove.value = cartItem;
-  showRemoveItemDialog.value = true;
-};
+const showRemoveItem = cartItem => {
+  cartItemToRemove.value = cartItem
+  showRemoveItemDialog.value = true
+}
 
 const removeCartItem = async () => {
-  showRemoveItemDialog.value = false;
+  showRemoveItemDialog.value = false
   try {
-    await saas.deleteIdentity(cartItemToRemove.value.id);
+    await saas.deleteIdentity(cartItemToRemove.value.id)
 
     identities.value = identities.value.filter(
-      (i) => i.id !== cartItemToRemove.value.id
-    );
+      i => i.id !== cartItemToRemove.value.id
+    )
     $q.notify({
-      message: "Item removed",
-      color: "positive",
-    });
+      message: 'Item removed',
+      color: 'positive'
+    })
     if (!identities.value.length) {
-      setTimeout(() => $router.push("/"), 500);
+      setTimeout(() => $router.push('/'), 500)
     }
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to remove item",
+      message: 'Failed to remove item',
       caption: error.response?.data?.detail,
-      color: "negative",
-      position: "bottom",
-    });
+      color: 'negative',
+      position: 'bottom'
+    })
   }
-};
+}
 
-const copyData = (data) => {
-  copyToClipboard(data);
+const copyData = data => {
+  copyToClipboard(data)
 
   $q.notify({
-    message: "Copied",
-    color: "grey",
-  });
-};
+    message: 'Copied',
+    color: 'grey'
+  })
+}
 
 onMounted(async () => {
-  identities.value = [...$store.identities.values()];
+  identities.value = [...$store.identities.values()]
   if (identities.value.length > 0) {
-    loading.value = false;
+    loading.value = false
   }
-  await getIdentities();
+  await getIdentities()
   if ($store.newCartIdentifier) {
-    const { data } = await saas.createIdentity({
+    const {data} = await saas.createIdentity({
       identifier: $store.newCartIdentifier,
-      pubkey: $store.pubkey,
-    });
-    identities.value = identities.value.filter((i) => i.id !== data.id);
-    identities.value.unshift(data);
+      pubkey: $store.pubkey
+    })
+    identities.value = identities.value.filter(i => i.id !== data.id)
+    identities.value.unshift(data)
   }
-});
+})
 </script>
 
 <style lang="scss">
