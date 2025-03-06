@@ -77,7 +77,7 @@ import {ref} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {useAppStore} from 'src/stores/store'
-import {useRouter, useRoute} from 'vue-router'
+import {useRouter} from 'vue-router'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 import BidList from 'src/components/BidList.vue'
@@ -85,7 +85,6 @@ import BidList from 'src/components/BidList.vue'
 const $q = useQuasar()
 const $store = useAppStore()
 const $router = useRouter()
-const $route = useRoute()
 
 const handle = ref('')
 const nipCard = ref(null)
@@ -114,71 +113,32 @@ const identities = ref([
 ])
 
 const handleSearch = async () => {
-  if (!handle.value) {
-    return
-  }
-  try {
-    const {data} = await saas.queryIdentifier(handle.value)
-    $store.handle = handle.value
-    data.hasFreeOption = !!data.free_identifier_number
-    $store.handleData = data
-  } catch (error) {
-    console.error('Error searching for identifier: ', error)
-    $q.notify({
-      message: 'There was a problem while searching',
-      color: 'negative',
-      position: 'top',
-      timeout: 2000
-    })
-  } finally {
-    $router.push({query: {q: handle.value}})
-    const element = nipCard.value
-    scrollToElement(element)
-  }
+  return
+  // if (!handle.value) {
+  //   return
+  // }
+  // try {
+  //   const {data} = await saas.queryIdentifier(handle.value)
+  //   $store.handle = handle.value
+  //   data.hasFreeOption = !!data.free_identifier_number
+  //   $store.handleData = data
+  // } catch (error) {
+  //   console.error('Error searching for identifier: ', error)
+  //   $q.notify({
+  //     message: 'There was a problem while searching',
+  //     color: 'negative',
+  //     position: 'top',
+  //     timeout: 2000
+  //   })
+  // } finally {
+  //   $router.push({query: {q: handle.value}})
+  //   const element = nipCard.value
+  //   scrollToElement(element)
+  // }
 }
-// const handleBuy = () => {
-//   if (!$store.isLoggedIn) {
-//     $q.notify({
-//       message: "Please login to buy",
-//       color: "warning",
-//       textColor: "black",
-//     });
-//   }
-//   $store.buying = true;
-//   $store.newCartIdentifier = handle;
-//   $store.handle = "";
-//   setTimeout(() => {
-//     $router.push({ path: "/cart" });
-//   }, 500);
-// };
-
-// const pubkey = $route.query["npub"] || $route.query["pubkey"];
-// if (pubkey) {
-//   $store.pubkey = pubkey;
-// }
-// if ($route.query["q"]) {
-//   handle.value = $route.query["q"];
-//   handleSearch();
-// }
 </script>
 
 <style lang="scss">
-.my-card {
-  max-width: 800px;
-  margin: 0 auto;
-}
-.hero-links {
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-}
-.hero-empty {
-  margin-bottom: 8rem;
-}
-.hero-result {
-  margin-bottom: 2rem;
-}
 .hero {
   display: flex;
   flex-direction: column;
@@ -194,71 +154,6 @@ const handleSearch = async () => {
   .input {
     margin-bottom: 3rem;
     max-width: 800px;
-  }
-  .nip-list {
-    width: 100%;
-    max-width: 800px;
-  }
-}
-
-.dot-nostr {
-  .video {
-    display: none;
-  }
-}
-
-.index-content {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding-top: 5rem;
-
-  .sidebar {
-    display: none;
-    grid-area: sidebar;
-  }
-
-  .main {
-    grid-area: main;
-    width: 100%;
-  }
-
-  .info {
-    display: none;
-    grid-area: info;
-  }
-}
-@media (min-width: $breakpoint-md-min) {
-  .dot-nostr {
-    .video {
-      display: block;
-      align-self: center;
-    }
-  }
-
-  .index-content {
-    display: grid;
-    gap: 3rem;
-    grid-template-areas: 'sidebar main';
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
-
-    .sidebar {
-      display: flex;
-      align-self: start;
-      padding-top: unset;
-    }
-  }
-}
-@media (min-width: $breakpoint-lg-min) {
-  .index-content {
-    gap: 3rem;
-    grid-template-areas: 'sidebar main info';
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 15rem);
-
-    .info {
-      display: flex;
-      align-self: start;
-    }
   }
 }
 </style>
