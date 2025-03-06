@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar class="container-fluid q-py-md">
+      <q-toolbar class="container-fluid q-py-sm">
         <q-toolbar-title
           class="text-h2"
           style="font-size: 1.5rem; font-weight: 700; cursor: pointer"
@@ -250,89 +250,89 @@
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
-import { saas } from "boot/saas";
-import { onMounted } from "vue";
-import { useAppStore } from "src/stores/store";
-import { useNostrStore } from "src/stores/nostr";
-import { getTagValues } from "src/boot/utils";
+import {useQuasar} from 'quasar'
+import {useRouter} from 'vue-router'
+import {saas} from 'boot/saas'
+import {onMounted} from 'vue'
+import {useAppStore} from 'src/stores/store'
+import {useNostrStore} from 'src/stores/nostr'
+import {getTagValues} from 'src/boot/utils'
 
-const $q = useQuasar();
-const $router = useRouter();
-const $store = useAppStore();
-const $nostr = useNostrStore();
+const $q = useQuasar()
+const $router = useRouter()
+const $store = useAppStore()
+const $nostr = useNostrStore()
 
 onMounted(async () => {
   if (saas.username) {
-    $store.username = saas.username;
+    $store.username = saas.username
     try {
-      await getIdentities();
+      await getIdentities()
 
       const events = await $nostr.pool.querySync([...$nostr.relays], {
         authors: [...$nostr.pubkeys],
-        kinds: [0, 10002],
-      });
-      events.forEach((event) => {
+        kinds: [0, 10002]
+      })
+      events.forEach(event => {
         switch (event.kind) {
           case 0:
-            $nostr.addProfile(event);
-            break;
+            $nostr.addProfile(event)
+            break
           case 10002:
-            const relays = getTagValues(event, "r");
-            $nostr.addRelaysToProfile(event.pubkey, relays);
-            relays.forEach((r) => {
-              $nostr.addRelay(r);
-            });
+            const relays = getTagValues(event, 'r')
+            $nostr.addRelaysToProfile(event.pubkey, relays)
+            relays.forEach(r => {
+              $nostr.addRelay(r)
+            })
 
-            break;
+            break
           default:
-            break;
+            break
         }
-      });
+      })
     } catch (error) {
-      console.error("MainLayout Error", error);
+      console.error('MainLayout Error', error)
     } finally {
-      $nostr.initiated = true;
+      $nostr.initiated = true
     }
   }
-});
+})
 
 const home = () => {
-  $router.push("/");
-};
+  $router.push('/')
+}
 
 const logout = async () => {
   try {
-    await saas.logout();
+    await saas.logout()
     $q.notify({
-      message: "Logged out!",
-      color: "positive",
-    });
-    $store.$reset();
-    setTimeout(() => $router.push("/"), 500);
+      message: 'Logged out!',
+      color: 'positive'
+    })
+    $store.$reset()
+    setTimeout(() => $router.push('/'), 500)
   } catch (error) {
     $q.notify({
-      message: "Failed to logout!",
+      message: 'Failed to logout!',
       caption: saas.mapErrorToString(error),
-      color: "negative",
-      icon: "warning",
-    });
+      color: 'negative',
+      icon: 'warning'
+    })
   }
-};
+}
 
 async function getIdentities() {
   try {
-    const { data } = await saas.getUserIdentities();
-    let identities = data.filter((i) => i.active);
-    identities.forEach((i) => {
-      $nostr.addPubkey(i.pubkey);
-      $store.addIdentity(i);
-    });
-    console.log("Identities: ", identities);
-    return;
+    const {data} = await saas.getUserIdentities()
+    let identities = data.filter(i => i.active)
+    identities.forEach(i => {
+      $nostr.addPubkey(i.pubkey)
+      $store.addIdentity(i)
+    })
+    console.log('Identities: ', identities)
+    return
   } catch (error) {
-    console.error("error", error);
+    console.error('error', error)
   }
 }
 </script>

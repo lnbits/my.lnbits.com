@@ -122,6 +122,49 @@
         </q-card>
       </div>
     </div>
+    <q-dialog
+      v-model="dataDialog"
+      :backdrop-filter="'blur(4px) saturate(150%)'"
+    >
+      <q-card style="width: 350px" class="q-pa-md text-center">
+        <q-card-section v-if="paymentDetails?.bolt11">
+          <p class="caption">
+            Scan the QR code below using a lightning wallet to secure your Nostr
+            identity.
+          </p>
+          <div class="text-h6">
+            <span v-text="paymentDetails.local_part"></span>
+          </div>
+          <div class="responsive">
+            <a :href="'lightning:' + paymentDetails.bolt11">
+              <vue-qrcode :value="paymentDetails.bolt11"></vue-qrcode>
+            </a>
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
+          <div class="row q-mt-md">
+            <q-btn
+              v-if="paymentDetails?.bolt11"
+              rounded
+              unelevated
+              text-color="primary"
+              color="secondary"
+              @click="copyData(paymentDetails.bolt11)"
+              label="Copy Invoice"
+              class="text-capitalize"
+            ></q-btn>
+            <q-btn
+              @click="resetDataDialog"
+              flat
+              color="grey"
+              class="q-ml-auto text-capitalize"
+              label="Close"
+            ></q-btn>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -131,6 +174,8 @@ import {countDownTimer} from 'src/boot/utils'
 import {useBidStore} from 'src/stores/bids'
 import {useQuasar} from 'quasar'
 import {useAppStore} from 'src/stores/store'
+import {saas} from 'boot/saas'
+import VueQrcode from '@chenfengyuan/vue-qrcode'
 
 const props = defineProps(['id'])
 const $bid = useBidStore()
@@ -140,6 +185,8 @@ const $store = useAppStore()
 const identity = ref({})
 const timeLeft = ref({days: '00', hours: '00', minutes: '00', seconds: '00'})
 const bidOffer = ref(0)
+const dataDialog = ref(false)
+const paymentDetails = ref({})
 
 const columns = [
   {
@@ -247,14 +294,42 @@ async function getIdentifier() {
 async function placeBid() {
   if (!$store.isLoggedIn) {
     $q.notify({
-      message: 'Please login to buy',
+      message: 'Please login to bid',
       color: 'warning',
       textColor: 'black'
     })
     return
   }
-  // place bid
-  console.log('Placing bid', bidOffer.value)
+  try {
+    // place bid
+    console.log('Placing bid', bidOffer.value)
+    dataDialog.value = true
+    // const {data} = await saas.createBid(identity.value.local_part, bidOffer.value)
+    const data = {
+      payment_hash:
+        '99eeaaa3050213bbc78caf1d519f180d2e76e5c07613776ad66fce73d459859f',
+      bolt11:
+        'lnbc12340n1pnunneqdq8d4hkx6cxqz4usp5fu4ksmuaprs6kd988zvl5lkrx055hwedkshdgsxahp5wzjfqrsmspp5n8h24gc9qgfmh3uv4uw4r8ccp5h8dewqwcfhw6kkdl8884zesk0s4fmlcmz4k9ws93rrzgmlx3s03qrn9m7fn8a8fye4yvplmzgqxy2pcz30x5y574c9puwx8afqcwyvcrdtpsul7dwk528ansqpdmd2gggpk2eqr9'
+    }
+    if (data.bolt11) {
+      paymentDetails.value = {...data}
+      subscribeToPaylinkWs(data.payment_hash)
+      $q.notify({
+        message: 'Pay the invoice to complete the purchase',
+        color: 'positive',
+        position: 'bottom',
+        timeout: 5000
+      })
+    }
+  } catch (error) {
+    console.error(error)
+    dataDialog.value = false
+    $q.notify({
+      message: 'Failed to generate invoice',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
+  }
 }
 
 async function handleBuy() {
@@ -268,6 +343,31 @@ async function handleBuy() {
   }
   // buy identity
   console.log('Buying identity')
+}
+
+const subscribeToPaylinkWs = payment_hash => {
+  const url = new URL(process.env.apiUrl || window.location)
+  url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
+  url.pathname = `/api/v1/ws/${payment_hash}`
+  const ws = new WebSocket(url)
+  ws.addEventListener('message', async ({data}) => {
+    const resp = JSON.parse(data)
+    if (!resp.pending || resp.paid) {
+      $q.notify({
+        type: 'positive',
+        message: 'Invoice Paid!'
+      })
+      resetDataDialog()
+      ws.close()
+      // add bid to store/state?
+    }
+  })
+}
+
+const resetDataDialog = () => {
+  console.log('Resetting invoice dialog')
+  dataDialog.value = false
+  paymentDetails.value = {}
 }
 
 onBeforeUnmount(() => {

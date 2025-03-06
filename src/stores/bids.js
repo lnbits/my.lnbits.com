@@ -4,8 +4,14 @@ export const useBidStore = defineStore('bids', {
   state: () => ({
     buying: false,
     identities: new Map(),
-    interval: null
+    interval: null,
+    buyNows: [],
+    auctions: []
   }),
   getters: {},
-  actions: {}
+  actions: {
+    addBid(data, id) {
+      return
+    }
+  }
 })

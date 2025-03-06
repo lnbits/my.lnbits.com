@@ -192,6 +192,17 @@
 
             <q-card-actions align="right" class="q-pa-md">
               <q-btn
+                label="Sell"
+                class="text-capitalize q-mr-auto"
+                rounded
+                outline
+                color="secondary"
+                padding="sm lg"
+                @click="createSellOffer"
+              >
+                <q-tooltip>Sell this identifier.</q-tooltip>
+              </q-btn>
+              <q-btn
                 disabled
                 label="Renew"
                 class="text-capitalize"
@@ -278,201 +289,208 @@
           </q-card-actions>
         </q-tab-panel>
       </q-tab-panels>
+      <q-card-section v-if="isSelling">
+        <h2>Selling</h2>
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { ref, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useNostrStore } from "src/stores/nostr";
+import {useQuasar} from 'quasar'
+import {ref, onMounted, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useNostrStore} from 'src/stores/nostr'
 
-import { saas } from "boot/saas";
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
+import {saas} from 'boot/saas'
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
-const $q = useQuasar();
-const $router = useRouter();
-const $route = useRoute();
-const $nostr = useNostrStore();
+const $q = useQuasar()
+const $router = useRouter()
+const $route = useRoute()
+const $nostr = useNostrStore()
 
-const props = defineProps(["name"]);
+const props = defineProps(['name'])
 
-const tab = ref("identifier");
-const user_details = ref({});
-const userWallets = ref([]);
-const selectedWallet = ref(null);
+const tab = ref('identifier')
+const user_details = ref({})
+const userWallets = ref([])
+const selectedWallet = ref(null)
 
-const addRelayValue = ref("");
+const addRelayValue = ref('')
+
+const isSelling = ref(false)
 
 watch(
   () => $nostr.initiated,
   () => refreshProfileFromNostr()
-);
+)
 
-const validateWsURL = (wsUrl) => {
-  let url = null;
+const validateWsURL = wsUrl => {
+  let url = null
   try {
-    url = new URL(wsUrl);
+    url = new URL(wsUrl)
   } catch {}
   if (!url) {
     try {
-      wsUrl = `wss://${wsUrl}`;
-      url = new URL(wsUrl);
+      wsUrl = `wss://${wsUrl}`
+      url = new URL(wsUrl)
     } catch {}
   }
-  if (!url || (url.protocol !== "ws:" && url.protocol !== "wss:")) {
-    throw new Error("Protocol must be 'ws://' or 'wss://'");
+  if (!url || (url.protocol !== 'ws:' && url.protocol !== 'wss:')) {
+    throw new Error("Protocol must be 'ws://' or 'wss://'")
   }
 
-  return wsUrl;
-};
+  return wsUrl
+}
 
-const addRelayFn = (relay) => {
-  if (!relay) return;
+const addRelayFn = relay => {
+  if (!relay) return
 
   try {
-    const wsUrl = validateWsURL(relay);
-    if (user_details.value.relays.includes(wsUrl)) return;
+    const wsUrl = validateWsURL(relay)
+    if (user_details.value.relays.includes(wsUrl)) return
 
-    user_details.value.relays.push(wsUrl);
+    user_details.value.relays.push(wsUrl)
   } catch (error) {
     $q.notify({
-      message: "Invalid relay URL",
+      message: 'Invalid relay URL',
       caption: `${error}`,
-      textColor: "black",
-      color: "warning",
-    });
+      textColor: 'black',
+      color: 'warning'
+    })
   } finally {
-    addRelayValue.value = "";
+    addRelayValue.value = ''
   }
-};
+}
 
-const removeRelayFn = (relay) => {
-  user_details.value.relays = user_details.value.relays.filter(
-    (r) => r !== relay
-  );
-};
+const removeRelayFn = relay => {
+  user_details.value.relays = user_details.value.relays.filter(r => r !== relay)
+}
 
 const updateUserIdentifier = async () => {
   try {
-    const { data } = await saas.updateIdentity(user_details.value.id, {
+    const {data} = await saas.updateIdentity(user_details.value.id, {
       pubkey: user_details.value.pubkey,
-      relays: user_details.value.relays,
-    });
-    user_details.value = saas.mapAddressToProfile(data);
-    refreshProfileFromNostr();
+      relays: user_details.value.relays
+    })
+    user_details.value = saas.mapAddressToProfile(data)
+    refreshProfileFromNostr()
     $q.notify({
-      message: "Updated Identifier!",
-      color: "positive",
-    });
+      message: 'Updated Identifier!',
+      color: 'positive'
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to update identifer!",
+      message: 'Failed to update identifer!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 const updateUserLNaddress = async () => {
   try {
     if (!selectedWallet.value) {
       $q.notify({
-        message: "Please select an wallet!",
-        color: "warning",
-      });
-      return;
+        message: 'Please select an wallet!',
+        color: 'warning'
+      })
+      return
     }
     await saas.updateLNaddress(user_details.value.id, {
       wallet: selectedWallet.value.value,
       min: user_details.value.ln_address.min,
-      max: user_details.value.ln_address.max,
-    });
+      max: user_details.value.ln_address.max
+    })
 
     $q.notify({
-      message: "Lighting Address updated!",
-      color: "positive",
-    });
+      message: 'Lighting Address updated!',
+      color: 'positive'
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to update Lightning Address!",
+      message: 'Failed to update Lightning Address!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
-const getUserIdentifier = async (id) => {
+const getUserIdentifier = async id => {
   try {
-    const { data } = await saas.getUserIdentities({ localPart: id });
+    const {data} = await saas.getUserIdentities({localPart: id})
 
     if (data.length !== 1) {
-      return;
+      return
     }
-    const address = data[0];
-    return saas.mapAddressToProfile(address);
+    const address = data[0]
+    return saas.mapAddressToProfile(address)
   } catch (error) {
-    console.error("error", error);
+    console.error('error', error)
     $q.notify({
       message: `Failed to fetch identifier '${id}'!`,
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 const getAccountDetails = async () => {
   try {
-    const { data } = await saas.getAccountDetails();
+    const {data} = await saas.getAccountDetails()
 
-    const wallets = data.wallets.map((w) => ({
+    const wallets = data.wallets.map(w => ({
       label: w.name,
-      value: w.id,
-    }));
-    userWallets.value = wallets;
+      value: w.id
+    }))
+    userWallets.value = wallets
   } catch (error) {
-    console.error(error);
+    console.error(error)
     $q.notify({
-      message: "Failed to get user wallets!",
+      message: 'Failed to get user wallets!',
       caption: error.response?.data?.detail,
-      color: "negative",
-    });
+      color: 'negative'
+    })
   }
-};
+}
 
 function refreshRelaysFromNostr() {
-  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  const profile = $nostr.profiles.get(user_details.value.pubkey)
   if (profile) {
-    user_details.value.picture = profile.picture;
-    (profile.relays || []).forEach((r) => addRelayFn(r));
+    user_details.value.picture = profile.picture
+    ;(profile.relays || []).forEach(r => addRelayFn(r))
   }
 }
 
 function refreshProfileFromNostr() {
-  const profile = $nostr.profiles.get(user_details.value.pubkey);
+  const profile = $nostr.profiles.get(user_details.value.pubkey)
   if (profile) {
-    user_details.value.picture = profile.picture;
+    user_details.value.picture = profile.picture
   }
 }
 
-onMounted(async () => {
-  const name = props.name || $route.params.name;
-  if (!name) {
-    return $router.push({ path: "/identities" });
-  }
-  const identifier = await getUserIdentifier(name);
+function createSellOffer() {
+  isSelling.value = !isSelling.value
+}
 
-  await getAccountDetails();
-  if (identifier) {
-    user_details.value = identifier;
-    selectedWallet.value = userWallets.value.find(
-      (w) => w.value === identifier.ln_address.wallet
-    );
-    refreshProfileFromNostr();
-    return;
+onMounted(async () => {
+  const name = props.name || $route.params.name
+  if (!name) {
+    return $router.push({path: '/identities'})
   }
-});
+  const identifier = await getUserIdentifier(name)
+
+  await getAccountDetails()
+  if (identifier) {
+    user_details.value = identifier
+    selectedWallet.value = userWallets.value.find(
+      w => w.value === identifier.ln_address.wallet
+    )
+    refreshProfileFromNostr()
+    return
+  }
+})
 </script>
