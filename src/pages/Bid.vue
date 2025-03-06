@@ -95,7 +95,7 @@
               <q-btn
                 class="text-capitalize"
                 rounded
-                color="accent"
+                color="secondary"
                 text-color="primary"
                 label="Buy"
                 @click="handleBuy"
@@ -129,9 +129,13 @@
 import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
 import {countDownTimer} from 'src/boot/utils'
 import {useBidStore} from 'src/stores/bids'
+import {useQuasar} from 'quasar'
+import {useAppStore} from 'src/stores/store'
 
 const props = defineProps(['id'])
 const $bid = useBidStore()
+const $q = useQuasar()
+const $store = useAppStore()
 
 const identity = ref({})
 const timeLeft = ref({days: '00', hours: '00', minutes: '00', seconds: '00'})
@@ -241,8 +245,29 @@ async function getIdentifier() {
 }
 
 async function placeBid() {
+  if (!$store.isLoggedIn) {
+    $q.notify({
+      message: 'Please login to buy',
+      color: 'warning',
+      textColor: 'black'
+    })
+    return
+  }
   // place bid
   console.log('Placing bid', bidOffer.value)
+}
+
+async function handleBuy() {
+  if (!$store.isLoggedIn) {
+    $q.notify({
+      message: 'Please login to buy',
+      color: 'warning',
+      textColor: 'black'
+    })
+    return
+  }
+  // buy identity
+  console.log('Buying identity')
 }
 
 onBeforeUnmount(() => {
