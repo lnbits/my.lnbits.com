@@ -289,10 +289,53 @@
           </q-card-actions>
         </q-tab-panel>
       </q-tab-panels>
-      <q-card-section v-if="isSelling">
-        <h2>Selling</h2>
-      </q-card-section>
     </q-card>
+    <q-dialog v-model="isSelling" @hide="resetSellData" persistent>
+      <q-card style="min-width: 350px" class="q-pa-md">
+        <q-card-section>
+          <div class="text-h6">Sell your Identifier</div>
+          <div class="text-subtitle2">{{ user_details.name }}</div>
+        </q-card-section>
+        <q-card-section>
+          <div class="q-gutter-sm">
+            <q-radio v-model="sellData.type" val="auction" label="Auction" />
+            <q-radio
+              v-model="sellData.type"
+              val="fixed_price"
+              label="Fixed Price"
+            />
+          </div>
+          <q-input
+            class="q-mt-md"
+            v-model="sellData.price"
+            type="number"
+            :label="sellData.type === 'auction' ? 'Starting Price' : 'Price'"
+            :hint="
+              sellData.type === 'auction'
+                ? 'Starting price for the auction'
+                : 'Price for the identifier'
+            "
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="q-mt-lg">
+          <q-btn
+            flat
+            v-close-popup
+            color="grey"
+            class="q-mr-auto text-capitalize"
+            label="Cancel"
+          ></q-btn>
+          <q-btn
+            label="Sell"
+            rounded
+            color="secondary"
+            text-color="primary"
+            @click="sendSellOffer"
+            :disabled="!sellData.price || !sellData.type"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -320,6 +363,7 @@ const selectedWallet = ref(null)
 const addRelayValue = ref('')
 
 const isSelling = ref(false)
+const sellData = ref({})
 
 watch(
   () => $nostr.initiated,
@@ -474,6 +518,39 @@ function refreshProfileFromNostr() {
 
 function createSellOffer() {
   isSelling.value = !isSelling.value
+}
+
+async function sendSellOffer() {
+  // get transfer_code from API and lock the identifier
+  // for now mock the transfer_code
+  try {
+    const transfer_code = Date.now()
+
+    const {data} = await saas.sellIdentifier({
+      name: user_details.value.name,
+      transfer_code,
+      ...sellData.value
+    })
+
+    if (data.id) {
+      $q.notify({
+        message: 'Identifier sell offer started!',
+        color: 'positive'
+      })
+      isSelling.value = false
+    }
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to start identifier sell offer!',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
+  }
+}
+
+function resetSellData() {
+  sellData.value = {}
 }
 
 onMounted(async () => {

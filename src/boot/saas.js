@@ -6,6 +6,8 @@ axios.defaults.withCredentials = true
 
 const saas = {
   domain: process.env.domainID,
+  auctionID: process.env.auctionID,
+  fixedPriceID: process.env.fixedPriceID,
   url: process.env.apiUrl,
   serverTime: null,
 
@@ -153,7 +155,43 @@ const saas = {
 
   // AUCTIONS
   getAuctions: async function () {
-    return
+    if (!this.auctionID) {
+      return {data: []}
+    }
+    // get auctions
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/auction_house/api/v1/${this.auctionID}/items/paginated`
+    })
+    return response
+  },
+
+  getFixedPrice: async function () {
+    if (!this.fixedPriceID) {
+      return {data: []}
+    }
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/auction_house/api/v1/${this.fixedPriceID}/items/paginated`
+    })
+
+    return response
+  },
+
+  sellIdentifier: async function (data) {
+    // /api/v1/{auction_room_id}/items
+    const roomID = data.type === 'auction' ? this.auctionID : this.fixedPriceID
+    const response = await axios({
+      method: 'POST',
+      url: `${this.url}/auction_house/api/v1/${roomID}/items`,
+      data: {
+        name: data.name,
+        starting_price: data.price,
+        transfer_code: data.transfer_code
+      }
+    })
+
+    return response
   },
 
   createBid: async function (data, create_invoice = false) {

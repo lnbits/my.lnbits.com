@@ -4,17 +4,17 @@
       <q-breadcrumbs class="text-grey-4 q-mb-lg" active-color="secondary">
         <q-breadcrumbs-el icon="home" to="/" />
         <q-breadcrumbs-el label="Bids" to="/bid" />
-        <q-breadcrumbs-el :label="identity.local_part" />
+        <q-breadcrumbs-el :label="identity.name" />
       </q-breadcrumbs>
     </div>
     <div class="row justify-center q-col-gutter-md">
-      <div :class="identity.auction ? 'col-12 col-md-7' : 'col-8'">
+      <div :class="identity.starting_price ? 'col-12 col-md-7' : 'col-8'">
         <q-card class="nostr-card text-white no-shadow" bordered>
           <q-card-section>
-            <div class="text-h6">{{ identity.local_part }}</div>
+            <div class="text-h6">{{ identity.name }}</div>
           </q-card-section>
           <q-separator color="secondary" />
-          <template v-if="identity.auction">
+          <template v-if="identity.starting_price">
             <q-card-section class="row flex">
               <div class="col-12 col-sm-4">
                 <div class="text-h6 text-weight-regular">Time Left</div>
@@ -51,7 +51,7 @@
               <div class="col-12 col-sm-8">
                 <div class="row last-bid">
                   <div class="q-pr-md">
-                    <h4 class="q-my-sm">{{ identity.price }} sats</h4>
+                    <h4 class="q-my-sm">{{ identity.current_price }} sats</h4>
                   </div>
                 </div>
               </div>
@@ -66,11 +66,11 @@
                   label="Place your bid"
                   :rules="[
                     val =>
-                      val > identity.price ||
+                      val > identity.next_min_bid ||
                       'Offer must be higher than current bid'
                   ]"
                   type="number"
-                  :min="identity.price + 1"
+                  :min="identity.next_min_bid"
                 />
                 <q-card-actions class="q-ma-none col-auto">
                   <q-btn
@@ -105,7 +105,7 @@
           </template>
         </q-card>
       </div>
-      <div class="col-12 col-md-5" v-if="identity.auction">
+      <div class="col-12 col-md-5" v-if="identity.starting_price">
         <q-card
           class="nostr-card text-white no-shadow q-mb-xl q-mx-auto"
           bordered
@@ -261,7 +261,7 @@ const rows = [
 ]
 
 const expiresOn = computed(() => {
-  return `Expires on ${new Date(identity.value.expires).toDateString()}`
+  return `Expires on ${new Date(identity.value.expires_at).toDateString()}`
 })
 
 const mockIdentities = [
@@ -285,10 +285,12 @@ const mockIdentities = [
   }
 ]
 
-async function getIdentifier() {
+async function getIdentifier(name) {
   // fetch identity from API or use store
   // for now, mock it
-  return mockIdentities.find(i => i.local_part === props.id)
+  const item = $bid.getItemByName(name)
+  console.log('Item', item)
+  return item
 }
 
 async function placeBid() {
@@ -375,9 +377,9 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async () => {
-  identity.value = await getIdentifier()
-  bidOffer.value = identity.value.price > 0 ? identity.value.price * 1.1 : 100
-  const {expires} = identity.value
+  identity.value = await getIdentifier(props.id)
+  bidOffer.value = identity.value.next_min_bid
+  const expires = new Date(identity.value.expires_at).getTime()
   clearInterval($bid.interval)
   if (expires) {
     $bid.interval = setInterval(() => {

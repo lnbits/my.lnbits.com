@@ -8,7 +8,7 @@
       clickable
       v-ripple
       tag="a"
-      :href="`/bid/${identity.local_part}`"
+      :to="`/bid/${identity.name}`"
       class="q-py-md"
     >
       <q-item-section avatar top>
@@ -19,23 +19,28 @@
 
       <q-item-section top class="ellipsis col-3 justify-center">
         <q-item-label lines="1" class="text-weight-bold text-white">{{
-          identity.local_part
+          identity.name
         }}</q-item-label>
         <q-item-label caption lines="1" class="text-white">
-          {{ `${identity.local_part}@nostr.com` }}
+          {{ `${identity.name}@nostr.com` }}
         </q-item-label>
       </q-item-section>
 
-      <q-item-section v-if="identity.auction" top class="text-white">
+      <q-item-section v-if="identity.starting_price" top class="text-white">
+        <q-item-label lines="1">
+          <span class="text-weight-bold">Initial Price:</span>
+          &nbsp;
+          <span class="text-weight-medium">{{ identity.starting_price }}</span>
+        </q-item-label>
         <q-item-label lines="1">
           <span class="text-weight-bold">Last Bid:</span>
           &nbsp;
-          <span class="text-weight-medium">{{ identity.price }}</span>
+          <span class="text-weight-medium">{{ identity.current_price }}</span>
         </q-item-label>
         <q-item-label lines="1">
           <span class="text-weight-bold">Time Left:</span>
           &nbsp;
-          <span>{{ timeFromNow(identity.expires * 1000) }}</span>
+          <span>{{ timeFromNow(identity.expires_at) }}</span>
         </q-item-label>
       </q-item-section>
 
@@ -52,8 +57,8 @@
           rounded
           color="accent"
           text-color="white"
-          :label="identity.auction ? 'Bid' : 'Buy'"
-          :to="`/bid/${identity.local_part}`"
+          :label="identity.starting_price ? 'Bid' : 'Buy'"
+          :to="`/bid/${identity.name}`"
           class="text-capitalize"
         />
       </q-item-section>

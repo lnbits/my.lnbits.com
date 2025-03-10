@@ -60,11 +60,11 @@
         </q-tabs>
         <q-tab-panels v-model="tab" animated style="background: transparent">
           <q-tab-panel name="buy">
-            <BidList :identities="identities.filter(i => !i.auction)" />
+            <BidList :identities="fixedPrice.data" />
           </q-tab-panel>
 
           <q-tab-panel name="auction">
-            <BidList :identities="identities.filter(i => i.auction)" />
+            <BidList :identities="auctions.data.filter(c => c.active)" />
           </q-tab-panel>
         </q-tab-panels>
       </div>
@@ -73,10 +73,11 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref, onMounted} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {useAppStore} from 'src/stores/store'
+import {useBidStore} from 'src/stores/bids'
 import {useRouter} from 'vue-router'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
@@ -84,33 +85,14 @@ import BidList from 'src/components/BidList.vue'
 
 const $q = useQuasar()
 const $store = useAppStore()
+const $bids = useBidStore()
 const $router = useRouter()
 
 const handle = ref('')
-const nipCard = ref(null)
 const tab = ref('buy')
 
-const identities = ref([
-  // mock a few identities
-  {
-    local_part: 'alice',
-    price: 1000,
-    auction: true,
-    expires: (Date.now() + Math.floor(Math.random() * 86400000)) / 1000
-  },
-  {
-    local_part: 'bob',
-    price: 2000,
-    auction: true,
-    expires: (Date.now() + Math.floor(Math.random() * 86400000)) / 1000
-  },
-  {
-    local_part: 'charlie',
-    price: 3000,
-    auction: false,
-    expires: null
-  }
-])
+const auctions = ref([])
+const fixedPrice = ref([])
 
 const handleSearch = async () => {
   return
@@ -136,6 +118,33 @@ const handleSearch = async () => {
   //   scrollToElement(element)
   // }
 }
+
+async function getAuctions() {
+  try {
+    const {data} = await saas.getAuctions()
+    auctions.value = {...data}
+    console.log('Auctions: ', auctions.value)
+  } catch (error) {
+    console.error('Error getting sell offers: ', error)
+  }
+}
+
+async function getFixedPrice() {
+  try {
+    const {data} = await saas.getFixedPrice()
+    fixedPrice.value = {...data}
+    console.log('Fixed price: ', fixedPrice.value)
+  } catch (error) {
+    console.error('Error getting fixed price offers: ', error)
+  }
+}
+
+onMounted(async () => {
+  await getAuctions()
+  await getFixedPrice()
+  $bids.addAuctions(auctions.value)
+  $bids.addFixedPrice(fixedPrice.value)
+})
 </script>
 
 <style lang="scss">
