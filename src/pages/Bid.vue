@@ -51,7 +51,9 @@
               <div class="col-12 col-sm-8">
                 <div class="row last-bid">
                   <div class="q-pr-md">
-                    <h4 class="q-my-sm">{{ identity.current_price }} sats</h4>
+                    <h4 class="q-my-sm">
+                      {{ `${identity.current_price} ${identity.currency}` }}
+                    </h4>
                   </div>
                 </div>
               </div>
@@ -66,11 +68,12 @@
                   label="Place your bid"
                   :rules="[
                     val =>
-                      val > identity.next_min_bid ||
+                      val >= identity.next_min_bid ||
                       'Offer must be higher than current bid'
                   ]"
                   type="number"
                   :min="identity.next_min_bid"
+                  :hint="`Minimum bid: ${identity.next_min_bid} ${identity.currency}`"
                 />
                 <q-card-actions class="q-ma-none col-auto">
                   <q-btn
@@ -113,7 +116,7 @@
           <q-table
             dark
             title="Bid History"
-            :rows="rows"
+            :rows="bidHistory.data"
             :columns="columns"
             row-key="name"
             color="secondary"
@@ -170,9 +173,9 @@
 
 <script setup>
 import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
-import {countDownTimer} from 'src/boot/utils'
+import {countDownTimer, timeFromNow} from 'src/boot/utils'
 import {useBidStore} from 'src/stores/bids'
-import {useQuasar} from 'quasar'
+import {useQuasar, copyToClipboard} from 'quasar'
 import {useAppStore} from 'src/stores/store'
 import {saas} from 'boot/saas'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
@@ -188,109 +191,68 @@ const bidOffer = ref(0)
 const dataDialog = ref(false)
 const paymentDetails = ref({})
 
+const bidHistory = ref({data: [], total: 0})
+
 const columns = [
   {
     name: 'name',
     required: true,
     label: 'Bidder',
     align: 'left',
-    field: row => row.name,
+    field: val => 'Anon',
     sortable: true
   },
   {
     name: 'bid',
     align: 'center',
-    label: 'Bid (sats)',
-    field: 'bid',
+    label: 'Bid',
+    // field: 'amount_sat',
+    format: (val, row) =>
+      row.currency === 'sat' ? row.amount_sat : row.amount,
     sortable: true
   },
-  {name: 'time', label: 'Time', field: 'time', sortable: true}
-]
-
-const rows = [
-  {name: 'John Doe', bid: 1000, time: '2025-02-01 12:00:00'},
-  {name: 'Jane Doe', bid: 1200, time: '2025-02-01 12:05:00'},
-  {name: 'John Smith', bid: 1500, time: '2025-02-01 12:15:00'},
-  {name: 'Alice Brown', bid: 1800, time: '2025-02-01 12:30:00'},
-  {name: 'Bob Wilson', bid: 2000, time: '2025-02-01 13:00:00'},
-  {name: 'Emma Davis', bid: 2300, time: '2025-02-01 13:20:00'},
-  {name: 'Michael Lee', bid: 2600, time: '2025-02-01 14:00:00'},
-  {name: 'Sarah Kim', bid: 2900, time: '2025-02-01 14:30:00'},
-  {name: 'David Chen', bid: 3200, time: '2025-02-01 15:00:00'},
-  {name: 'Laura Adams', bid: 3500, time: '2025-02-01 15:45:00'},
-  {name: 'Chris Evans', bid: 3800, time: '2025-02-01 16:10:00'},
-  {name: 'Kelly White', bid: 4100, time: '2025-02-01 16:40:00'},
-  {name: 'Tom Harris', bid: 4500, time: '2025-02-01 17:15:00'},
-  {name: 'Rachel Green', bid: 4800, time: '2025-02-01 17:50:00'},
-  {name: 'Peter Parker', bid: 5100, time: '2025-02-01 18:20:00'},
-  {name: 'Mary Johnson', bid: 5500, time: '2025-02-01 19:00:00'},
-  {name: 'James Bond', bid: 5900, time: '2025-02-01 19:35:00'},
-  {name: 'Lisa Taylor', bid: 6200, time: '2025-02-01 20:10:00'},
-  {name: 'Mark Twain', bid: 6500, time: '2025-02-01 20:45:00'},
-  {name: 'Anna Lee', bid: 6800, time: '2025-02-01 21:20:00'},
-  {name: 'Steve Rogers', bid: 7200, time: '2025-02-01 22:00:00'},
-  {name: 'Clara Oswald', bid: 7500, time: '2025-02-01 22:40:00'},
-  {name: 'Tony Stark', bid: 7900, time: '2025-02-01 23:15:00'},
-  {name: 'Ellen Grey', bid: 8200, time: '2025-02-02 00:05:00'},
-  {name: 'Sam Carter', bid: 8500, time: '2025-02-02 01:00:00'},
-  {name: 'Bruce Wayne', bid: 8900, time: '2025-02-02 02:30:00'},
-  {name: 'Diana Prince', bid: 9300, time: '2025-02-02 03:45:00'},
-  {name: 'Clark Kent', bid: 9700, time: '2025-02-02 05:00:00'},
-  {name: 'Natasha Romanov', bid: 10000, time: '2025-02-02 06:15:00'},
-  {name: 'Wade Wilson', bid: 10400, time: '2025-02-02 07:30:00'},
-  {name: 'Carol Danvers', bid: 10800, time: '2025-02-02 08:45:00'},
-  {name: 'Scott Summers', bid: 11200, time: '2025-02-02 09:50:00'},
-  {name: 'Jean Grey', bid: 11600, time: '2025-02-02 10:55:00'},
-  {name: 'Logan Wolf', bid: 12000, time: '2025-02-02 12:00:00'},
-  {name: 'Tina Fey', bid: 12500, time: '2025-02-02 13:10:00'},
-  {name: 'Amy Poehler', bid: 13000, time: '2025-02-02 14:20:00'},
-  {name: 'Will Ferrell', bid: 13500, time: '2025-02-02 15:30:00'},
-  {name: 'Kate McKinnon', bid: 14000, time: '2025-02-02 16:40:00'},
-  {name: 'Bill Murray', bid: 14500, time: '2025-02-02 17:50:00'},
-  {name: 'Dan Aykroyd', bid: 15000, time: '2025-02-02 19:00:00'},
-  {name: 'Eddie Murphy', bid: 15500, time: '2025-02-02 20:15:00'},
-  {name: 'Chris Pratt', bid: 16000, time: '2025-02-02 21:30:00'},
-  {name: 'Zoe Saldana', bid: 16500, time: '2025-02-02 22:45:00'},
-  {name: 'Dave Bautista', bid: 17000, time: '2025-02-03 00:00:00'},
-  {name: 'Vin Diesel', bid: 17500, time: '2025-02-03 01:15:00'},
-  {name: 'Bradley Cooper', bid: 18000, time: '2025-02-03 02:30:00'},
-  {name: 'Karen Gillan', bid: 18500, time: '2025-02-03 03:45:00'},
-  {name: 'Pom Klementieff', bid: 19000, time: '2025-02-03 05:00:00'},
-  {name: 'Chris Hemsworth', bid: 19500, time: '2025-02-03 06:15:00'},
-  {name: 'Tessa Thompson', bid: 20000, time: '2025-02-03 07:30:00'}
+  {
+    name: 'time',
+    label: 'Time',
+    field: 'created_at',
+    format: val => timeFromNow(val),
+    sortable: true
+  }
 ]
 
 const expiresOn = computed(() => {
   return `Expires on ${new Date(identity.value.expires_at).toDateString()}`
 })
 
-const mockIdentities = [
-  {
-    local_part: 'alice',
-    price: 1000,
-    auction: true,
-    expires: Date.now() + Math.floor(Math.random() * 86400000)
-  },
-  {
-    local_part: 'bob',
-    price: 2000,
-    auction: true,
-    expires: Date.now() + Math.floor(Math.random() * 86400000)
-  },
-  {
-    local_part: 'charlie',
-    price: 3000,
-    auction: false,
-    expires: null
-  }
-]
+const copyData = data => {
+  copyToClipboard(data)
 
-async function getIdentifier(name) {
-  // fetch identity from API or use store
-  // for now, mock it
-  const item = $bid.getItemByName(name)
-  console.log('Item', item)
+  $q.notify({
+    message: 'Copied',
+    color: 'grey'
+  })
+}
+
+async function getIdentifier(id) {
+  let item = $bid.getItem(id)
+  if (!item) {
+    // fetch auctions and fixed price from API
+    let {data: auctions} = await saas.getAuctions()
+    let {data: fixed} = await saas.getFixedPrice()
+
+    $bid.addAuctions(auctions)
+    $bid.addFixedPrice(fixed)
+    item = $bid.getItem(id)
+  }
+  identity.value = item
+  bidOffer.value = item.next_min_bid
   return item
+}
+
+async function getBidHistory() {
+  const {data} = await saas.getBidHistory(identity.value.id)
+  bidHistory.value = {...data}
+  return {...data}
 }
 
 async function placeBid() {
@@ -304,15 +266,13 @@ async function placeBid() {
   }
   try {
     // place bid
-    console.log('Placing bid', bidOffer.value)
     dataDialog.value = true
-    // const {data} = await saas.createBid(identity.value.local_part, bidOffer.value)
-    const data = {
-      payment_hash:
-        '99eeaaa3050213bbc78caf1d519f180d2e76e5c07613776ad66fce73d459859f',
-      bolt11:
-        'lnbc12340n1pnunneqdq8d4hkx6cxqz4usp5fu4ksmuaprs6kd988zvl5lkrx055hwedkshdgsxahp5wzjfqrsmspp5n8h24gc9qgfmh3uv4uw4r8ccp5h8dewqwcfhw6kkdl8884zesk0s4fmlcmz4k9ws93rrzgmlx3s03qrn9m7fn8a8fye4yvplmzgqxy2pcz30x5y574c9puwx8afqcwyvcrdtpsul7dwk528ansqpdmd2gggpk2eqr9'
+    const bidData = {
+      amount: bidOffer.value,
+      memo: `Bid for ${identity.value.name}`
     }
+    const {data} = await saas.createBid(identity.value.id, bidData)
+    data.bolt11 = data.payment_request
     if (data.bolt11) {
       paymentDetails.value = {...data}
       subscribeToPaylinkWs(data.payment_hash)
@@ -361,7 +321,7 @@ const subscribeToPaylinkWs = payment_hash => {
       })
       resetDataDialog()
       ws.close()
-      // add bid to store/state?
+      await getBidHistory()
     }
   })
 }
@@ -377,8 +337,9 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async () => {
-  identity.value = await getIdentifier(props.id)
-  bidOffer.value = identity.value.next_min_bid
+  await getIdentifier(props.id)
+  await getBidHistory()
+  identity.value.next_min_bid
   const expires = new Date(identity.value.expires_at).getTime()
   clearInterval($bid.interval)
   if (expires) {

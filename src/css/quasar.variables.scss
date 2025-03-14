@@ -24,3 +24,11 @@ $typography-font-family: Inter, sans-serif !default;
         color: $secondary;
     }
 }
+
+.responsive {
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain;
+    }
+}

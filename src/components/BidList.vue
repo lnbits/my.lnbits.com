@@ -1,4 +1,17 @@
 <template>
+  <!-- <template> -->
+  <div v-if="!identities.length">
+    <div class="text-center text-white q-mt-xl">
+      <q-icon name="search" size="64px" color="grey" class="q-mb-lg" />
+      <q-item-label
+        class="text-h6"
+        v-text="
+          `No ${props.auction ? 'Auctions' : 'Buy Now'} identifiers available`
+        "
+      ></q-item-label>
+    </div>
+  </div>
+  <!-- </template> -->
   <q-list
     v-for="identity in identities"
     class="nostr-card no-shadow q-ma-sm"
@@ -8,7 +21,7 @@
       clickable
       v-ripple
       tag="a"
-      :to="`/bid/${identity.name}`"
+      :to="`/bid/${identity.id}`"
       class="q-py-md"
     >
       <q-item-section avatar top>
@@ -26,7 +39,7 @@
         </q-item-label>
       </q-item-section>
 
-      <q-item-section v-if="identity.starting_price" top class="text-white">
+      <q-item-section v-if="auction" top class="text-white">
         <q-item-label lines="1">
           <span class="text-weight-bold">Initial Price:</span>
           &nbsp;
@@ -57,8 +70,8 @@
           rounded
           color="accent"
           text-color="white"
-          :label="identity.starting_price ? 'Bid' : 'Buy'"
-          :to="`/bid/${identity.name}`"
+          :label="auction ? 'Bid' : 'Buy'"
+          :to="`/bid/${identity.id}`"
           class="text-capitalize"
         />
       </q-item-section>
@@ -67,7 +80,13 @@
 </template>
 
 <script setup>
-defineProps(['identities'])
+const props = defineProps({
+  auction: {
+    type: Boolean,
+    default: false
+  },
+  identities: Array
+})
 
 import {timeFromNow} from '../boot/utils'
 import NostrHeadIcon from './NostrHeadIcon.vue'

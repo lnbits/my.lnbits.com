@@ -154,9 +154,25 @@ const saas = {
   },
 
   // AUCTIONS
+  getRoomInfo: async function () {
+    // get room info from auctionID and fixedPriceID
+    const response = await Promise.all([
+      this.auctionID &&
+        axios({
+          method: 'GET',
+          url: `${this.url}/auction_house/api/v1/auction_rooms/${this.auctionID}/public`
+        }),
+      this.fixedPriceID &&
+        axios({
+          method: 'GET',
+          url: `${this.url}/auction_house/api/v1/auction_rooms/${this.fixedPriceID}/public`
+        })
+    ])
+    return response.filter(Boolean).map(r => r.data)
+  },
   getAuctions: async function () {
     if (!this.auctionID) {
-      return {data: []}
+      return {data: {data: [], total: 0}}
     }
     // get auctions
     const response = await axios({
@@ -168,11 +184,20 @@ const saas = {
 
   getFixedPrice: async function () {
     if (!this.fixedPriceID) {
-      return {data: []}
+      return {data: {data: [], total: 0}}
     }
     const response = await axios({
       method: 'GET',
       url: `${this.url}/auction_house/api/v1/${this.fixedPriceID}/items/paginated`
+    })
+    console.log(response)
+    return response
+  },
+
+  getBidHistory: async function (roomID) {
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/auction_house/api/v1/bids/${roomID}/paginated`
     })
 
     return response
@@ -194,17 +219,17 @@ const saas = {
     return response
   },
 
-  createBid: async function (data, create_invoice = false) {
-    // const response = await axios({
-    //   method: 'POST',
-    //   url: `${this.url}/nostrnip5/api/v1/auction/${data.auction_id}/bid`,
-    //   data: {
-    //     amount: data.amount,
-    //     create_invoice
-    //   }
-    // })
-    // return response
-    return
+  createBid: async function (itemID, data) {
+    const response = await axios({
+      method: 'PUT',
+      url: `${this.url}/auction_house/api/v1/bids/${itemID}`,
+      data: {
+        amount: data.amount,
+        memo: data.memo
+      }
+    })
+    console.log(response)
+    return response
   },
 
   mapAddressToProfile(address) {

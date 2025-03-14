@@ -494,14 +494,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
-.responsive {
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: contain;
-  }
-}
-
 .id-card a {
   text-decoration: none;
 }

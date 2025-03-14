@@ -14,18 +14,16 @@ export const useBidStore = defineStore('bids', {
         data: new Map(),
         total: 0
       }
-    }
+    },
+    rooms: new Map()
   }),
   getters: {
-    getItemByName(state) {
-      return name =>
-        Array.from(state.items.auctions.data.values()).find(
-          item => item.name === name
-        ) ||
-        Array.from(state.items.fixedPrice.data.values()).find(
-          item => item.name === name
-        )
-    }
+    getItem(state) {
+      return id =>
+        state.items.auctions.data.get(id) || state.items.fixedPrice.data.get(id)
+    },
+    bidHistory: state => id => state.bids.data.get(id) || [],
+    roomByType: state => type => state.rooms.values().find(r => r.type === type)
   },
   actions: {
     addAuctions({data, total}) {
@@ -40,8 +38,10 @@ export const useBidStore = defineStore('bids', {
       })
       this.items.fixedPrice.total = total
     },
-    addBid(data, id) {
-      return
+    addRooms(data) {
+      data.forEach(room => {
+        this.rooms.set(room.id, room)
+      })
     }
   }
 })

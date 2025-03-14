@@ -36,6 +36,10 @@
                 <q-item-section>Shopping Cart</q-item-section>
               </q-item>
               <q-separator />
+              <q-item clickable v-close-popup to="/bid">
+                <q-item-section>Identifier Exchange</q-item-section>
+              </q-item>
+              <q-separator />
               <q-item clickable v-close-popup to="/account">
                 <q-item-section>Account</q-item-section>
               </q-item>
@@ -256,12 +260,14 @@ import {saas} from 'boot/saas'
 import {onMounted} from 'vue'
 import {useAppStore} from 'src/stores/store'
 import {useNostrStore} from 'src/stores/nostr'
+import {useBidStore} from 'src/stores/bids'
 import {getTagValues} from 'src/boot/utils'
 
 const $q = useQuasar()
 const $router = useRouter()
 const $store = useAppStore()
 const $nostr = useNostrStore()
+const $bid = useBidStore()
 
 onMounted(async () => {
   if (saas.username) {
@@ -290,6 +296,13 @@ onMounted(async () => {
             break
         }
       })
+      // BIDS
+      const rooms = await saas.getRoomInfo()
+      $bid.addRooms(rooms)
+      const {data: auctions} = await saas.getAuctions()
+      const {data: fixed} = await saas.getFixedPrice()
+      $bid.addAuctions(auctions)
+      $bid.addFixedPrice(fixed)
     } catch (error) {
       console.error('MainLayout Error', error)
     } finally {

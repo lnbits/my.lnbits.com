@@ -60,11 +60,11 @@
         </q-tabs>
         <q-tab-panels v-model="tab" animated style="background: transparent">
           <q-tab-panel name="buy">
-            <BidList :identities="fixedPrice.data" />
+            <BidList :identities="fixedPrice.data || []" :auction="false" />
           </q-tab-panel>
 
           <q-tab-panel name="auction">
-            <BidList :identities="auctions.data.filter(c => c.active)" />
+            <BidList :identities="auctions.data || []" :auction="true" />
           </q-tab-panel>
         </q-tab-panels>
       </div>

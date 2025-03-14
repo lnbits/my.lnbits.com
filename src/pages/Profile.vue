@@ -309,7 +309,11 @@
             class="q-mt-md"
             v-model="sellData.price"
             type="number"
-            :label="sellData.type === 'auction' ? 'Starting Price' : 'Price'"
+            :label="
+              sellData.type === 'auction'
+                ? `Starting Price (${currency})`
+                : `Price (${currency})`
+            "
             :hint="
               sellData.type === 'auction'
                 ? 'Starting price for the auction'
@@ -344,6 +348,7 @@ import {useQuasar} from 'quasar'
 import {ref, onMounted, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useNostrStore} from 'src/stores/nostr'
+import {useBidStore} from 'src/stores/bids'
 
 import {saas} from 'boot/saas'
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
@@ -352,6 +357,7 @@ const $q = useQuasar()
 const $router = useRouter()
 const $route = useRoute()
 const $nostr = useNostrStore()
+const $bids = useBidStore()
 
 const props = defineProps(['name'])
 
@@ -365,9 +371,25 @@ const addRelayValue = ref('')
 const isSelling = ref(false)
 const sellData = ref({})
 
+const currency = ref('sat')
+
 watch(
   () => $nostr.initiated,
   () => refreshProfileFromNostr()
+)
+
+watch(
+  () => sellData.value.type,
+  () => {
+    const auction = sellData.value.type === 'auction'
+    if (auction) {
+      currency.value = $bids.roomByType('auction').currency
+    } else {
+      currency.value = $bids.items.fixedPrice.data
+        .values()
+        .next().value.currency
+    }
+  }
 )
 
 const validateWsURL = wsUrl => {
@@ -516,7 +538,9 @@ function refreshProfileFromNostr() {
   }
 }
 
-function createSellOffer() {
+async function createSellOffer() {
+  const _currency = $bids.items.auctions.data.values().next().value.currency
+  console.log('currency', _currency)
   isSelling.value = !isSelling.value
 }
 
