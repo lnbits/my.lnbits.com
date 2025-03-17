@@ -290,13 +290,13 @@
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
-    <q-dialog v-model="isSelling" @hide="resetSellData" persistent>
+    <q-dialog v-model="showSellDialog" @hide="resetSellData" persistent>
       <q-card style="min-width: 350px" class="q-pa-md">
         <q-card-section>
           <div class="text-h6">Sell your Identifier</div>
           <div class="text-subtitle2">{{ user_details.name }}</div>
         </q-card-section>
-        <q-card-section>
+        <q-card-section v-if="sellData.currency">
           <div class="q-gutter-sm">
             <q-radio v-model="sellData.type" val="auction" label="Auction" />
             <q-radio
@@ -311,8 +311,8 @@
             type="number"
             :label="
               sellData.type === 'auction'
-                ? `Starting Price (${currency})`
-                : `Price (${currency})`
+                ? `Starting Price (${sellData.currency})`
+                : `Price (${sellData.currency})`
             "
             :hint="
               sellData.type === 'auction'
@@ -320,6 +320,9 @@
                 : 'Price for the identifier'
             "
           />
+        </q-card-section>
+        <q-card-section v-else>
+          <q-spinner />
         </q-card-section>
         <q-card-actions align="right" class="q-mt-lg">
           <q-btn
@@ -368,7 +371,7 @@ const selectedWallet = ref(null)
 
 const addRelayValue = ref('')
 
-const isSelling = ref(false)
+const showSellDialog = ref(false)
 const sellData = ref({})
 
 const currency = ref('sat')
@@ -379,17 +382,17 @@ watch(
 )
 
 watch(
-  () => sellData.value.type,
-  () => {
-    const auction = sellData.value.type === 'auction'
-    if (auction) {
-      currency.value = $bids.roomByType('auction').currency
-    } else {
-      currency.value = $bids.items.fixedPrice.data
-        .values()
-        .next().value.currency
-    }
-  }
+  () => sellData.value.type
+  // () => {
+  //   const auction = sellData.value.type === 'auction'
+  //   if (auction) {
+  //     currency.value = $bids.roomByType('auction').currency
+  //   } else {
+  //     currency.value = $bids.items.fixedPrice.data
+  //       .values()
+  //       .next().value.currency
+  //   }
+  // }
 )
 
 const validateWsURL = wsUrl => {
@@ -539,9 +542,26 @@ function refreshProfileFromNostr() {
 }
 
 async function createSellOffer() {
-  const _currency = $bids.items.auctions.data.values().next().value.currency
-  console.log('currency', _currency)
-  isSelling.value = !isSelling.value
+  // select action radio button
+  sellData.value.type = 'auction'
+  showSellDialog.value = true
+
+  // show spinner
+  // make call API to get the currency
+  const {data: room} = await saas.getRoomInfo(sellData.value.type)
+  console.log('Room: ', room)
+  sellData.value.currency = room.currency
+  // console.log('Rooms: ', rooms)
+  // $bids.addRooms(rooms)
+  // const {data: auctions} = await saas.getAuctions()
+  // const {data: fixed} = await saas.getFixedPrice()
+  // $bids.addAuctions(auctions)
+  // $bids.addFixedPrice(fixed)
+  // set currency
+  // stop spinner
+  // console.log('createSellOffer', $bids.items.auctions.data)
+  // const _currency = $bids.items.auctions.data.values().next().value.currency ||
+  // console.log('currency', _currency)
 }
 
 async function sendSellOffer() {
@@ -561,7 +581,7 @@ async function sendSellOffer() {
         message: 'Identifier sell offer started!',
         color: 'positive'
       })
-      isSelling.value = false
+      showSellDialog.value = false
     }
   } catch (error) {
     console.error(error)

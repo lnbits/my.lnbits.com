@@ -8,13 +8,13 @@
       </q-breadcrumbs>
     </div>
     <div class="row justify-center q-col-gutter-md">
-      <div :class="identity.starting_price ? 'col-12 col-md-7' : 'col-8'">
+      <div :class="identity.ask_price ? 'col-12 col-md-7' : 'col-8'">
         <q-card class="nostr-card text-white no-shadow" bordered>
           <q-card-section>
             <div class="text-h6">{{ identity.name }}</div>
           </q-card-section>
           <q-separator color="secondary" />
-          <template v-if="identity.starting_price">
+          <template v-if="identity.ask_price">
             <q-card-section class="row flex">
               <div class="col-12 col-sm-4">
                 <div class="text-h6 text-weight-regular">Time Left</div>
@@ -108,7 +108,7 @@
           </template>
         </q-card>
       </div>
-      <div class="col-12 col-md-5" v-if="identity.starting_price">
+      <div class="col-12 col-md-5" v-if="identity.ask_price">
         <q-card
           class="nostr-card text-white no-shadow q-mb-xl q-mx-auto"
           bordered
@@ -244,6 +244,7 @@ async function getIdentifier(id) {
     $bid.addFixedPrice(fixed)
     item = $bid.getItem(id)
   }
+  console.log('Identity: ', item)
   identity.value = item
   bidOffer.value = item.next_min_bid
   return item
@@ -251,6 +252,7 @@ async function getIdentifier(id) {
 
 async function getBidHistory() {
   const {data} = await saas.getBidHistory(identity.value.id)
+  console.log('Bid history: ', data)
   bidHistory.value = {...data}
   return {...data}
 }
@@ -320,8 +322,9 @@ const subscribeToPaylinkWs = payment_hash => {
         message: 'Invoice Paid!'
       })
       resetDataDialog()
-      ws.close()
       await getBidHistory()
+      await getIdentifier(props.id)
+      ws.close()
     }
   })
 }

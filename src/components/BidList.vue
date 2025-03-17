@@ -43,7 +43,7 @@
         <q-item-label lines="1">
           <span class="text-weight-bold">Initial Price:</span>
           &nbsp;
-          <span class="text-weight-medium">{{ identity.starting_price }}</span>
+          <span class="text-weight-medium">{{ identity.ask_price }}</span>
         </q-item-label>
         <q-item-label lines="1">
           <span class="text-weight-bold">Last Bid:</span>
@@ -61,15 +61,16 @@
         <q-item-label lines="1">
           <span class="text-weight-bold">Price:</span>
           &nbsp;
-          <span class="text-weight-medium">{{ identity.price }}</span>
+          <span class="text-weight-medium">{{ identity.ask_price }}</span>
         </q-item-label>
       </q-item-section>
 
       <q-item-section side>
         <q-btn
           rounded
-          color="accent"
-          text-color="white"
+          color="secondary"
+          text-color="primary"
+          padding="sm lg"
           :label="auction ? 'Bid' : 'Buy'"
           :to="`/bid/${identity.id}`"
           class="text-capitalize"

@@ -154,21 +154,14 @@ const saas = {
   },
 
   // AUCTIONS
-  getRoomInfo: async function () {
+  getRoomInfo: async function (type) {
     // get room info from auctionID and fixedPriceID
-    const response = await Promise.all([
-      this.auctionID &&
-        axios({
-          method: 'GET',
-          url: `${this.url}/auction_house/api/v1/auction_rooms/${this.auctionID}/public`
-        }),
-      this.fixedPriceID &&
-        axios({
-          method: 'GET',
-          url: `${this.url}/auction_house/api/v1/auction_rooms/${this.fixedPriceID}/public`
-        })
-    ])
-    return response.filter(Boolean).map(r => r.data)
+    const roomID = type === 'auction' ? this.auctionID : this.fixedPriceID
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/auction_house/api/v1/auction_room/${roomID}`
+    })
+    return response
   },
   getAuctions: async function () {
     if (!this.auctionID) {
@@ -177,7 +170,7 @@ const saas = {
     // get auctions
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/${this.auctionID}/items/paginated`
+      url: `${this.url}/auction_house/api/v1/items/${this.auctionID}/paginated`
     })
     return response
   },
@@ -188,7 +181,7 @@ const saas = {
     }
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/${this.fixedPriceID}/items/paginated`
+      url: `${this.url}/auction_house/api/v1/items/${this.fixedPriceID}/paginated`
     })
     console.log(response)
     return response
@@ -208,10 +201,10 @@ const saas = {
     const roomID = data.type === 'auction' ? this.auctionID : this.fixedPriceID
     const response = await axios({
       method: 'POST',
-      url: `${this.url}/auction_house/api/v1/${roomID}/items`,
+      url: `${this.url}/auction_house/api/v1/items/${roomID}`,
       data: {
         name: data.name,
-        starting_price: data.price,
+        ask_price: +data.price,
         transfer_code: data.transfer_code
       }
     })

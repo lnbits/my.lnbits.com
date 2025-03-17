@@ -6,13 +6,53 @@
         <q-breadcrumbs-el label="Bid" />
       </q-breadcrumbs>
     </div>
+    <q-input
+      dark
+      standout
+      rounded
+      v-model.trim="filterText"
+      class="input q-mb-lg"
+      placeholder="Filter by identifier or public key"
+      label-color="blue-grey-4"
+      :input-style="{fontSize: $q.screen.gt.sm ? '22px' : null}"
+      @keydown.enter.prevent="handleSearch"
+    >
+      <template v-slot:prepend>
+        <NostrHeadIcon color="blue-grey-4" />
+      </template>
+
+      <template v-slot:append>
+        <q-btn
+          v-if="filterText && identityNotOwned"
+          rounded
+          unelevated
+          text-color="primary"
+          color="secondary"
+          label="Check Identity"
+          @click="handleSearch"
+          class="text-capitalize"
+        />
+      </template>
+
+      <template v-slot:after>
+        <q-btn
+          @click="identitiesDisplay = !identitiesDisplay"
+          unelevated
+          text-color="secondary"
+          color="primary"
+          icon="filter_alt"
+        />
+      </template>
+
+      <template v-slot:error> Failed to filter. </template>
+    </q-input>
     <div class="hero">
-      <div class="pitch text-center text-secondary">
+      <!-- <div class="pitch text-center text-secondary">
         <h1 class="text-bold" :class="$q.screen.gt.sm ? 'text-h4' : 'text-h5'">
           Discover identifiers for sale in our Auctions and Buy Now listings
         </h1>
-      </div>
-      <q-input
+      </div> -->
+      <!-- <q-input
         dark
         standout
         autofocus
@@ -42,7 +82,7 @@
             class="text-capitalize"
           />
         </template>
-      </q-input>
+      </q-input> -->
     </div>
     <div class="container">
       <div class="pitch q-mx-auto">
@@ -55,16 +95,15 @@
           active-color="secondary"
           indicator-color="secondary"
         >
-          <q-tab name="buy" icon="attach_money" label="Buy Now" />
-          <q-tab name="auction" icon="currency_exchange" label="Auctions" />
+          <q-tab name="auction" icon="currency_exchange" label="On Auction" />
+          <q-tab name="buy" icon="attach_money" label="For Sale" />
         </q-tabs>
         <q-tab-panels v-model="tab" animated style="background: transparent">
-          <q-tab-panel name="buy">
-            <BidList :identities="fixedPrice.data || []" :auction="false" />
-          </q-tab-panel>
-
           <q-tab-panel name="auction">
             <BidList :identities="auctions.data || []" :auction="true" />
+          </q-tab-panel>
+          <q-tab-panel name="buy">
+            <BidList :identities="fixedPrice.data || []" :auction="false" />
           </q-tab-panel>
         </q-tab-panels>
       </div>
@@ -89,7 +128,7 @@ const $bids = useBidStore()
 const $router = useRouter()
 
 const handle = ref('')
-const tab = ref('buy')
+const tab = ref('auction')
 
 const auctions = ref([])
 const fixedPrice = ref([])

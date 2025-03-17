@@ -260,14 +260,14 @@ import {saas} from 'boot/saas'
 import {onMounted} from 'vue'
 import {useAppStore} from 'src/stores/store'
 import {useNostrStore} from 'src/stores/nostr'
-import {useBidStore} from 'src/stores/bids'
+// import {useBidStore} from 'src/stores/bids'
 import {getTagValues} from 'src/boot/utils'
 
 const $q = useQuasar()
 const $router = useRouter()
 const $store = useAppStore()
 const $nostr = useNostrStore()
-const $bid = useBidStore()
+// const $bid = useBidStore()
 
 onMounted(async () => {
   if (saas.username) {
@@ -296,13 +296,14 @@ onMounted(async () => {
             break
         }
       })
-      // BIDS
-      const rooms = await saas.getRoomInfo()
-      $bid.addRooms(rooms)
-      const {data: auctions} = await saas.getAuctions()
-      const {data: fixed} = await saas.getFixedPrice()
-      $bid.addAuctions(auctions)
-      $bid.addFixedPrice(fixed)
+      // // BIDS
+      // const rooms = await saas.getRoomInfo()
+      // console.log('Rooms: ', rooms)
+      // $bid.addRooms(rooms)
+      // const {data: auctions} = await saas.getAuctions()
+      // const {data: fixed} = await saas.getFixedPrice()
+      // $bid.addAuctions(auctions)
+      // $bid.addFixedPrice(fixed)
     } catch (error) {
       console.error('MainLayout Error', error)
     } finally {
