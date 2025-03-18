@@ -163,34 +163,44 @@ const saas = {
     })
     return response
   },
-  getAuctions: async function () {
+  getAuctions: async function (params = {}) {
     if (!this.auctionID) {
       return {data: {data: [], total: 0}}
     }
     // get auctions
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/items/${this.auctionID}/paginated`
+      url: `${this.url}/auction_house/api/v1/items/${this.auctionID}/paginated`,
+      params: params
     })
     return response
   },
 
-  getFixedPrice: async function () {
+  getFixedPrice: async function (params = {}) {
     if (!this.fixedPriceID) {
       return {data: {data: [], total: 0}}
     }
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/items/${this.fixedPriceID}/paginated`
+      url: `${this.url}/auction_house/api/v1/items/${this.fixedPriceID}/paginated`,
+      params: params
     })
-    console.log(response)
     return response
   },
 
-  getBidHistory: async function (roomID) {
+  getItem: async function (itemID) {
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/bids/${roomID}/paginated`
+      url: `${this.url}/auction_house/api/v1/items/${itemID}`
+    })
+    return response
+  },
+
+  getBidHistory: async function (roomID, params = {}) {
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/auction_house/api/v1/bids/${roomID}/paginated`,
+      params: params
     })
 
     return response

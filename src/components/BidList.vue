@@ -12,7 +12,7 @@
     </div>
   </div>
   <!-- </template> -->
-  <q-list
+  <!-- <q-list
     v-for="identity in identities"
     class="nostr-card no-shadow q-ma-sm"
     bordered
@@ -77,7 +77,7 @@
         />
       </q-item-section>
     </q-item>
-  </q-list>
+  </q-list> -->
 </template>
 
 <script setup>
@@ -86,7 +86,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  identities: Array
+  items: {
+    type: Array,
+    default: () => []
+  }
 })
 
 import {timeFromNow} from '../boot/utils'

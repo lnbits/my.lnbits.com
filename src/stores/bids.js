@@ -22,7 +22,8 @@ export const useBidStore = defineStore('bids', {
       return id =>
         state.items.auctions.data.get(id) || state.items.fixedPrice.data.get(id)
     },
-    bidHistory: state => id => state.bids.data.get(id) || [],
+    isAuction: state => id => state.rooms.get(id).type === 'auction',
+    // bidHistory: state => id => state.bids.data.get(id) || [],
     roomByType: state => type => state.rooms.values().find(r => r.type === type)
   },
   actions: {
@@ -37,6 +38,13 @@ export const useBidStore = defineStore('bids', {
         this.items.fixedPrice.data.set(item.id, item)
       })
       this.items.fixedPrice.total = total
+    },
+    updateItem(data) {
+      if (data.type === 'auction') {
+        this.items.auctions.data.set(data.id, data)
+      } else {
+        this.items.fixedPrice.data.set(data.id, data)
+      }
     },
     addRooms(data) {
       data.forEach(room => {

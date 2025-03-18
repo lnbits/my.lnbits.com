@@ -119,4 +119,40 @@ function countDownTimer(target) {
   return {days, hours, minutes, seconds}
 }
 
-export {secondsToDhm, timeFromNow, getTagValues, markdownToHTML, countDownTimer}
+function prepareFilterQuery(tableConfig, props) {
+  tableConfig.filter = tableConfig.filter || {}
+  if (props) {
+    tableConfig.pagination = props.pagination
+    Object.assign(tableConfig.filter, props.filter)
+  }
+  const pagination = tableConfig.pagination
+  tableConfig.loading = true
+  const query = {
+    limit: pagination.rowsPerPage,
+    offset: (pagination.page - 1) * pagination.rowsPerPage,
+    sortby: pagination.sortBy ?? '',
+    direction: pagination.descending ? 'desc' : 'asc',
+    ...tableConfig.filter
+  }
+  if (tableConfig.search) {
+    query.search = tableConfig.search
+  }
+  return new URLSearchParams(query)
+}
+
+function formatCurrency(value, currency) {
+  return new Intl.NumberFormat(window.LOCALE, {
+    style: 'currency',
+    currency: currency || 'sat'
+  }).format(value)
+}
+
+export {
+  secondsToDhm,
+  timeFromNow,
+  getTagValues,
+  markdownToHTML,
+  countDownTimer,
+  prepareFilterQuery,
+  formatCurrency
+}

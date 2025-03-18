@@ -297,6 +297,15 @@
           <div class="text-subtitle2">{{ user_details.name }}</div>
         </q-card-section>
         <q-card-section v-if="sellData.currency">
+          <p class="caption">
+            <span
+              v-text="
+                sellData.type == 'auction'
+                  ? sellData.auction_description
+                  : sellData.fixed_price_description
+              "
+            ></span>
+          </p>
           <div class="q-gutter-sm">
             <q-radio v-model="sellData.type" val="auction" label="Auction" />
             <q-radio
@@ -321,8 +330,8 @@
             "
           />
         </q-card-section>
-        <q-card-section v-else>
-          <q-spinner />
+        <q-card-section v-else class="text-center">
+          <q-spinner size="lg" />
         </q-card-section>
         <q-card-actions align="right" class="q-mt-lg">
           <q-btn
@@ -374,25 +383,9 @@ const addRelayValue = ref('')
 const showSellDialog = ref(false)
 const sellData = ref({})
 
-const currency = ref('sat')
-
 watch(
   () => $nostr.initiated,
   () => refreshProfileFromNostr()
-)
-
-watch(
-  () => sellData.value.type
-  // () => {
-  //   const auction = sellData.value.type === 'auction'
-  //   if (auction) {
-  //     currency.value = $bids.roomByType('auction').currency
-  //   } else {
-  //     currency.value = $bids.items.fixedPrice.data
-  //       .values()
-  //       .next().value.currency
-  //   }
-  // }
 )
 
 const validateWsURL = wsUrl => {
@@ -551,17 +544,16 @@ async function createSellOffer() {
   const {data: room} = await saas.getRoomInfo(sellData.value.type)
   console.log('Room: ', room)
   sellData.value.currency = room.currency
-  // console.log('Rooms: ', rooms)
-  // $bids.addRooms(rooms)
-  // const {data: auctions} = await saas.getAuctions()
-  // const {data: fixed} = await saas.getFixedPrice()
-  // $bids.addAuctions(auctions)
-  // $bids.addFixedPrice(fixed)
-  // set currency
-  // stop spinner
-  // console.log('createSellOffer', $bids.items.auctions.data)
-  // const _currency = $bids.items.auctions.data.values().next().value.currency ||
-  // console.log('currency', _currency)
+  sellData.value.auction_description = `Your auction will run for ${
+    room.days
+  } days, with bids in ${room.currency}, requiring at least a ${
+    room.min_bid_up_percentage
+  }% increase per bid. A ${
+    room.room_percentage
+  }% commission applies, and the room is ${
+    room.is_open_room ? 'open to all bidders' : 'private'
+  }.`
+  sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.`
 }
 
 async function sendSellOffer() {
