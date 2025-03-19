@@ -342,13 +342,14 @@
             label="Cancel"
           ></q-btn>
           <q-btn
-            label="Sell"
+            label="Post"
             rounded
             color="secondary"
             text-color="primary"
             @click="sendSellOffer"
             :disabled="!sellData.price || !sellData.type"
           />
+          <!-- todo: redirect after Post -->
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -550,10 +551,8 @@ async function createSellOffer() {
     room.min_bid_up_percentage
   }% increase per bid. A ${
     room.room_percentage
-  }% commission applies, and the room is ${
-    room.is_open_room ? 'open to all bidders' : 'private'
-  }.`
-  sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.`
+  }% commission applies.`
+  sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
 }
 
 async function sendSellOffer() {
