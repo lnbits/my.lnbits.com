@@ -17,6 +17,9 @@ localhost:9090 {
 	handle /lnurlp/api/v1* {
 		reverse_proxy localhost:5000
 	}
+	handle /auction_house/api/v1* {
+		reverse_proxy localhost:5000
+	}
 
 	handle /.well-known/lnurlp/* {
 		reverse_proxy 0.0.0.0:5000
