@@ -237,17 +237,17 @@ const itemsTable = {
   ],
   pagination: {
     sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
-    rowsPerPage: 20,
+    rowsPerPage: 25,
     page: 1,
     descending: true,
-    rowsNumber: 20
+    rowsNumber: 25
   }
 }
 
 const resetPagination = () => {
   itemsTable.pagination = {
     sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
-    rowsPerPage: 20,
+    rowsPerPage: 25,
     page: 1,
     descending: true,
     rowsNumber:
@@ -258,9 +258,6 @@ const resetPagination = () => {
 watch(filterText, () => handleSearch(), {immediate: true})
 
 async function handleSearch() {
-  if (!filterText.value || filterText.value.length < 2) {
-    return
-  }
   itemsTable.search = filterText.value
   if (tab.value == 'auction') {
     await getAuctions()
