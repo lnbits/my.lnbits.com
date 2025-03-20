@@ -37,7 +37,7 @@
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/bid">
-                <q-item-section>Identifier Exchange</q-item-section>
+                <q-item-section>Identifier Auctions</q-item-section>
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/account">
