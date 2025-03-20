@@ -545,13 +545,7 @@ async function createSellOffer() {
   const {data: room} = await saas.getRoomInfo(sellData.value.type)
   console.log('Room: ', room)
   sellData.value.currency = room.currency
-  sellData.value.auction_description = `Your auction will run for ${
-    room.days
-  } days, with bids in ${room.currency}, requiring at least a ${
-    room.min_bid_up_percentage
-  }% increase per bid. A ${
-    room.room_percentage
-  }% commission applies.`
+  sellData.value.auction_description = `Your auction will run for ${room.days} days, with bids in ${room.currency}, requiring at least a ${room.min_bid_up_percentage}% increase per bid. A ${room.room_percentage}% commission applies.`
   sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
 }
 
@@ -573,6 +567,9 @@ async function sendSellOffer() {
         color: 'positive'
       })
       showSellDialog.value = false
+      setTimeout(() => {
+        $router.push({path: `/bid/${data.id}`})
+      }, 1000)
     }
   } catch (error) {
     console.error(error)

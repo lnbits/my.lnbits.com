@@ -73,7 +73,6 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="text-h5 text-uppercase">
-                  <!-- <q-th auto-width></q-th> -->
                   <q-th
                     v-for="col in props.cols"
                     :key="col.name"
@@ -184,14 +183,16 @@
 </template>
 
 <script setup>
-import {ref, onMounted, watch, watchEffect} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {formatCurrency, prepareFilterQuery} from 'src/boot/utils'
+import {useBidStore} from 'src/stores/bids'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
 const $q = useQuasar()
+const $bids = useBidStore()
 
 const tab = ref('auction')
 
@@ -273,7 +274,6 @@ async function getAuctions(props) {
     auctions.value = {...data}
     itemsTable.pagination.rowsNumber = data.total
     console.log('Auctions: ', data)
-    // return {...data}
   } catch (error) {
     console.error('Error getting sell offers: ', error)
   }
@@ -294,27 +294,7 @@ async function getFixedPrice(props) {
 onMounted(async () => {
   await getAuctions()
   await getFixedPrice()
-  // $bids.addAuctions(auctions.value)
-  // $bids.addFixedPrice(fixedPrice.value)
+  $bids.addAuctions(auctions.value)
+  $bids.addFixedPrice(fixedPrice.value)
 })
 </script>
-
-<!-- <style lang="scss">
-.hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 2.5rem;
-  box-sizing: content-box;
-
-  .pitch {
-    width: 80%;
-    margin-bottom: 4rem;
-  }
-
-  .input {
-    margin-bottom: 3rem;
-    max-width: 800px;
-  }
-}
-</style> -->

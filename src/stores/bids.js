@@ -46,10 +46,8 @@ export const useBidStore = defineStore('bids', {
         this.items.fixedPrice.data.set(data.id, data)
       }
     },
-    addRooms(data) {
-      data.forEach(room => {
-        this.rooms.set(room.id, room)
-      })
+    addRoom(room) {
+      this.rooms.set(room.id, room)
     }
   }
 })

@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar class="container-fluid q-py-sm">
+      <q-toolbar class="container-fluid q-py-none">
         <q-toolbar-title
           class="text-h2"
           style="font-size: 1.5rem; font-weight: 700; cursor: pointer"
@@ -260,14 +260,12 @@ import {saas} from 'boot/saas'
 import {onMounted} from 'vue'
 import {useAppStore} from 'src/stores/store'
 import {useNostrStore} from 'src/stores/nostr'
-// import {useBidStore} from 'src/stores/bids'
 import {getTagValues} from 'src/boot/utils'
 
 const $q = useQuasar()
 const $router = useRouter()
 const $store = useAppStore()
 const $nostr = useNostrStore()
-// const $bid = useBidStore()
 
 onMounted(async () => {
   if (saas.username) {
@@ -296,14 +294,6 @@ onMounted(async () => {
             break
         }
       })
-      // // BIDS
-      // const rooms = await saas.getRoomInfo()
-      // console.log('Rooms: ', rooms)
-      // $bid.addRooms(rooms)
-      // const {data: auctions} = await saas.getAuctions()
-      // const {data: fixed} = await saas.getFixedPrice()
-      // $bid.addAuctions(auctions)
-      // $bid.addFixedPrice(fixed)
     } catch (error) {
       console.error('MainLayout Error', error)
     } finally {

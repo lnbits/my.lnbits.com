@@ -154,13 +154,12 @@ const saas = {
   },
 
   // AUCTIONS
-  getRoomInfo: async function (type) {
-    // get room info from auctionID and fixedPriceID
-    const roomID = type === 'auction' ? this.auctionID : this.fixedPriceID
+  getRoomInfo: async function (roomID) {
     const response = await axios({
       method: 'GET',
       url: `${this.url}/auction_house/api/v1/auction_room/${roomID}`
     })
+
     return response
   },
   getAuctions: async function (params = {}) {
@@ -228,7 +227,8 @@ const saas = {
       url: `${this.url}/auction_house/api/v1/bids/${itemID}`,
       data: {
         amount: data.amount,
-        memo: data.memo
+        memo: data.memo,
+        ln_address: data.ln_address
       }
     })
     console.log(response)

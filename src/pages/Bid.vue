@@ -7,128 +7,120 @@
         <q-breadcrumbs-el :label="item.name" />
       </q-breadcrumbs>
     </div>
-    <div class="row justify-center q-col-gutter-md">
-      <div :class="$bid.isAuction ? 'col-12 col-md-7' : 'col-8'">
+    <div class="row justify-center q-col-gutter-md q-mt-lg">
+      <div :class="isAuction ? 'col-12 col-md-7' : 'col-8'">
         <q-card class="nostr-card text-white no-shadow" bordered>
           <q-card-section>
             <div class="text-h6">{{ item.name }}</div>
           </q-card-section>
           <q-separator color="secondary" />
-          <template v-if="$bid.isAuction">
+          <template v-if="isAuction">
             <q-card-section class="row flex">
-              <div class="col-12 col-sm-4">
-                <div class="text-h6 text-weight-regular">Time Left</div>
-              </div>
-              <div class="col-12 col-sm-8">
-                <div class="row counter">
-                  <div class="q-pr-md">
-                    <h4 class="q-my-sm">{{ timeLeft.days }}</h4>
-                    <p>Days</p>
-                  </div>
-                  <div class="q-px-md">
-                    <h4 class="q-my-sm">{{ timeLeft.hours }}</h4>
-                    <p>Hours</p>
-                  </div>
-                  <div class="q-px-md">
-                    <h4 class="q-my-sm">{{ timeLeft.minutes }}</h4>
-                    <p>Min.</p>
-                  </div>
-                  <div class="q-pl-md">
-                    <h4 class="q-my-sm">{{ timeLeft.seconds }}</h4>
-                    <p>Sec.</p>
-                  </div>
-                </div>
-                <div class="counter">
-                  <p>{{ expiresOn }}</p>
-                </div>
-              </div>
+              <time-left
+                :time-left="timeLeft"
+                :time-loading="timeLoading"
+                :expires-on="expiresOn"
+              />
             </q-card-section>
             <q-separator color="secondary" />
             <q-card-section class="row flex">
               <div class="col-12 col-sm-4">
                 <div class="text-h6 text-weight-regular">Current Bid</div>
               </div>
-              <div class="col-12 col-sm-8">
-                <div class="row last-bid">
-                  <div class="q-pr-md">
-                    <h4 class="q-my-sm">
-                      {{ `${item.current_price} ${item.currency}` }}
-                    </h4>
-                  </div>
-                </div>
-              </div>
-            </q-card-section>
-            <q-card-section class="q-mb-lg">
-              <div class="row q-col-gutter-md q-mb-md">
-                <q-input
-                  class="col-12 col-md-6"
-                  dark
-                  dense
-                  standout
-                  v-model.trim="memo"
-                  label="Memo"
-                  hint="Displayed on the bid history (Required)"
-                />
-                <q-input
-                  class="col-12 col-md-6"
-                  dark
-                  dense
-                  standout
-                  v-model.trim="refundLNAddress"
-                  label="LN Address"
-                  hint="Refund address in case of being outbid (Optional)"
-                />
-              </div>
-              <div class="row q-gutter-md">
-                <q-input
-                  class="col"
-                  dark
-                  standout
-                  v-model="bidOffer"
-                  label="Place your bid"
-                  :rules="[
-                    val =>
-                      val >= minBid || 'Offer must be higher than current bid'
-                  ]"
-                  type="number"
-                  :min="minBid"
-                  :hint="`Minimum bid: ${minBid} ${item.currency}`"
-                />
-                <q-card-actions class="q-ma-none col-auto">
-                  <q-btn
-                    class="text-capitalize"
-                    rounded
-                    color="secondary"
-                    text-color="primary"
-                    label="Place Bid"
-                    :disable="!bidOffer || !memo"
-                    @click="placeBid"
-                  />
-                </q-card-actions>
+              <div class="col-12 col-sm-8 text-center">
+                <h4 class="q-my-none">
+                  {{ formatCurrency(item.current_price, item.currency) }}
+                </h4>
               </div>
             </q-card-section>
           </template>
           <template v-else>
             <q-card-section>
               <div class="text-h6">Price</div>
-              <div class="text-h5">{{ item.price }} sats</div>
+              <div class="text-h5">
+                {{ formatCurrency(item.ask_price, item.currency) }}
+              </div>
             </q-card-section>
-            <q-separator color="secondary" />
-            <q-card-actions align="right">
-              <q-btn
-                class="text-capitalize"
-                rounded
-                color="secondary"
-                text-color="primary"
-                label="Buy"
-                @click="handleBuy"
-                padding="sm lg"
-              />
-            </q-card-actions>
           </template>
+          <q-card-section class="q-mb-lg">
+            <div class="row q-col-gutter-md">
+              <q-input
+                class="col-12"
+                dark
+                standout
+                v-model.trim="memo"
+                type="textarea"
+                rows="3"
+                label="Memo"
+                :hint="
+                  isAuction
+                    ? 'Displayed on the bid history (Required)'
+                    : 'Memo (Required)'
+                "
+              />
+              <q-input
+                class="col-6 col-md-8"
+                dark
+                standout
+                v-model.trim="refundLNAddress"
+                label="LN Address"
+                :hint="
+                  isAuction
+                    ? 'Refund address in case of being outbid (Optional)'
+                    : 'Refund address (Optional)'
+                "
+              />
+              <q-input
+                v-if="isAuction"
+                class="col-6 col-md-4"
+                dark
+                standout
+                v-model="bidOffer"
+                label="Place your bid"
+                :rules="[
+                  val =>
+                    val >= minBid || 'Offer must be higher than current bid'
+                ]"
+                type="number"
+                :min="minBid"
+                :hint="`Minimum bid: ${formatCurrency(minBid, item.currency)}`"
+              />
+              <q-input
+                v-else
+                class="col-6 col-md-4"
+                dark
+                standout
+                v-model="bidOffer"
+                type="number"
+                readonly
+                hint="Amount to pay"
+              />
+            </div>
+          </q-card-section>
+          <q-separator color="secondary" />
+          <q-card-actions align="right" class="q-pa-md">
+            <q-btn
+              class="text-capitalize"
+              rounded
+              color="secondary"
+              text-color="primary"
+              :label="isAuction ? 'Place Bid' : 'Buy Now'"
+              @click="placeBid"
+            />
+            <!-- <q-btn
+              v-else
+              class="text-capitalize"
+              rounded
+              color="secondary"
+              text-color="primary"
+              label="Buy Now"
+              @click="handleBuy"
+              padding="sm lg"
+            /> -->
+          </q-card-actions>
         </q-card>
       </div>
-      <div class="col-12 col-md-5" v-if="item.ask_price">
+      <div class="col-12 col-md-5" v-if="isAuction">
         <q-card
           class="nostr-card text-white no-shadow q-mb-xl q-mx-auto"
           bordered
@@ -204,15 +196,20 @@ import {
 import {useBidStore} from 'src/stores/bids'
 import {useQuasar, copyToClipboard} from 'quasar'
 import {useAppStore} from 'src/stores/store'
+import {useRouter} from 'vue-router'
 import {saas} from 'boot/saas'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
+import TimeLeft from 'src/components/TimeLeft.vue'
 
 const props = defineProps(['id'])
 const $bid = useBidStore()
 const $q = useQuasar()
 const $store = useAppStore()
+const $router = useRouter()
 
 const item = ref({})
+const isAuction = ref(true)
+const timeLoading = ref(true)
 const timeLeft = ref({days: '00', hours: '00', minutes: '00', seconds: '00'})
 const bidOffer = ref(0)
 const memo = ref('')
@@ -227,11 +224,13 @@ const bidHistory = ref({data: [], total: 0})
 const bidsTable = {
   columns: [
     {
-      name: 'memo',
+      name: 'amount',
       align: 'left',
-      label: 'Memo',
-      field: 'memo',
-      sortable: true
+      label: 'Amount',
+      field: 'amount',
+      sortable: true,
+      format: (val, row) =>
+        row.currency != 'sats' ? formatCurrency(val, row.currency) : val
     },
     {
       name: 'created_at',
@@ -242,13 +241,11 @@ const bidsTable = {
       sortable: true
     },
     {
-      name: 'amount',
+      name: 'memo',
       align: 'left',
-      label: 'Amount',
-      field: 'amount',
-      sortable: true,
-      format: (val, row) =>
-        row.currency != 'sats' ? formatCurrency(val, row.currency) : val
+      label: 'Memo',
+      field: 'memo',
+      sortable: true
     }
   ],
   pagination: {
@@ -277,8 +274,8 @@ async function getItem(id) {
   try {
     const {data} = await saas.getItem(id)
     console.log('Item: ', data)
+    $bid.updateItem(data)
     item.value = {...data}
-    console.log(data.next_min_bid)
     bidOffer.value = data.next_min_bid == 0 ? data.ask_price : data.next_min_bid
     minBid.value = data.next_min_bid == 0 ? data.ask_price : data.next_min_bid
   } catch (error) {
@@ -302,6 +299,22 @@ async function placeBid() {
   if (!$store.isLoggedIn) {
     $q.notify({
       message: 'Please login to bid',
+      color: 'warning',
+      textColor: 'black'
+    })
+    return
+  }
+  if (bidOffer.value < minBid.value) {
+    $q.notify({
+      message: 'Offer must be higher than current bid',
+      color: 'warning',
+      textColor: 'black'
+    })
+    return
+  }
+  if (!memo.value) {
+    $q.notify({
+      message: 'Memo is required',
       color: 'warning',
       textColor: 'black'
     })
@@ -347,6 +360,14 @@ async function handleBuy() {
     })
     return
   }
+  if (!memo.value) {
+    $q.notify({
+      message: 'Memo is required',
+      color: 'warning',
+      textColor: 'black'
+    })
+    return
+  }
   // buy item
   console.log('Buying item')
 }
@@ -356,7 +377,7 @@ const subscribeToPaylinkWs = payment_hash => {
   url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
   url.pathname = `/api/v1/ws/${payment_hash}`
   const ws = new WebSocket(url)
-  ws.addEventListener('message', ({data}) => {
+  ws.addEventListener('message', async ({data}) => {
     const resp = JSON.parse(data)
     if (!resp.pending || resp.paid) {
       $q.notify({
@@ -364,12 +385,16 @@ const subscribeToPaylinkWs = payment_hash => {
         message: 'Invoice Paid!'
       })
       resetDataDialog()
+      memo.value = ''
+      refundLNAddress.value = ''
       ws.close()
-      setTimeout(async () => {
-        await getItem(props.id)
-        await getBidHistory()
-        // window.location.reload()
-      }, 2000)
+      setTimeout(() => {
+        if (isAuction.value) {
+          updateItemData(item.value.id)
+        } else {
+          $router.push('/identities')
+        }
+      }, 1000)
     }
   })
 }
@@ -380,25 +405,54 @@ const resetDataDialog = () => {
   paymentDetails.value = {}
 }
 
+async function updateItemData(itemID) {
+  await getItem(itemID)
+  if (isAuction.value) {
+    await getBidHistory()
+  }
+}
+
+const updateTime = expireDate => {
+  const {days, hours, minutes, seconds} = countDownTimer(expireDate)
+  timeLeft.value = {
+    days: days.toString().padStart(2, '0'),
+    hours: hours.toString().padStart(2, '0'),
+    minutes: minutes.toString().padStart(2, '0'),
+    seconds: seconds.toString().padStart(2, '0')
+  }
+}
+
 onBeforeUnmount(() => {
   clearInterval($bid.interval)
 })
 
 onMounted(async () => {
-  await getItem(props.id)
-  await getBidHistory()
-  const expires = new Date(item.value.expires_at).getTime()
-  clearInterval($bid.interval)
-  if (expires) {
-    $bid.interval = setInterval(() => {
-      const {days, hours, minutes, seconds} = countDownTimer(expires)
-      timeLeft.value = {
-        days: days.toString().padStart(2, '0'),
-        hours: hours.toString().padStart(2, '0'),
-        minutes: minutes.toString().padStart(2, '0'),
-        seconds: seconds.toString().padStart(2, '0')
-      }
-    }, 1000)
+  try {
+    await getItem(props.id)
+    const {data} = await saas.getRoomInfo(item.value.auction_room_id)
+    $bid.addRoom(data)
+    isAuction.value = data.type == 'auction'
+    if (isAuction.value) {
+      await getBidHistory()
+    }
+
+    const expires = new Date(item.value.expires_at).getTime()
+    clearInterval($bid.interval)
+    if (expires) {
+      updateTime(expires)
+      timeLoading.value = false
+
+      $bid.interval = setInterval(() => {
+        updateTime(expires)
+      }, 1000)
+    }
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to fetch item',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
   }
 })
 </script>
