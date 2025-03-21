@@ -191,9 +191,25 @@
             <q-separator color="secondary"></q-separator>
 
             <q-card-actions align="right" class="q-pa-md">
+              <div v-if="user_details.is_locked">
+                <q-btn
+                  label="Check Bids"
+                  class="text-capitalize"
+                  rounded
+                  outline
+                  color="secondary"
+                  padding="sm lg"
+                  :to="`/bid/${user_details.id}`"
+                >
+                </q-btn>
+                <div class="text-caption text-grey-5 q-mt-sm">
+                  This identifier is locked for sale.
+                </div>
+              </div>
               <q-btn
+                v-else
                 label="Sell"
-                class="text-capitalize q-mr-auto"
+                class="text-capitalize"
                 rounded
                 outline
                 color="secondary"
@@ -202,6 +218,7 @@
               >
                 <q-tooltip>Sell this identifier.</q-tooltip>
               </q-btn>
+              <q-space />
               <q-btn
                 disabled
                 label="Renew"
@@ -297,7 +314,21 @@
           <div class="text-subtitle2">{{ user_details.name }}</div>
         </q-card-section>
         <q-card-section v-if="sellData.currency">
-          <p class="caption">
+          <ul>
+            <!-- <li>
+              Duration: <span v-text="sellData.room.extra.duration.days"></span>
+            </li> -->
+            <li>Currency: <span v-text="sellData.room.currency"></span></li>
+            <li>
+              Minimum bid:
+              <span v-text="sellData.room.min_bid_up_percentage"></span>
+            </li>
+            <li>
+              Room percentage:
+              <span v-text="sellData.room.room_percentage"></span>
+            </li>
+          </ul>
+          <!-- <p class="caption">
             <span
               v-text="
                 sellData.type == 'auction'
@@ -305,7 +336,7 @@
                   : sellData.fixed_price_description
               "
             ></span>
-          </p>
+          </p> -->
           <div class="q-gutter-sm">
             <q-radio v-model="sellData.type" val="auction" label="Auction" />
             <q-radio
@@ -546,6 +577,7 @@ async function createSellOffer() {
     const {data: room} = await saas.getRoomInfoByType(sellData.value.type)
     console.log('Room: ', room)
     sellData.value.currency = room.currency
+    sellData.value.room = {...room}
     sellData.value.auction_description = `Your auction will run for ${room.days} days, with bids in ${room.currency}, requiring at least a ${room.min_bid_up_percentage}% increase per bid. A ${room.room_percentage}% commission applies.`
     sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
   } catch (error) {

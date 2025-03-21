@@ -5,6 +5,7 @@ export const useBidStore = defineStore('bids', {
     buying: false,
     identities: new Map(),
     interval: null,
+    bidHistoryInterval: null,
     items: {
       auctions: {
         data: new Map(),
@@ -15,7 +16,12 @@ export const useBidStore = defineStore('bids', {
         total: 0
       }
     },
-    rooms: new Map()
+    rooms: new Map(),
+    openTab: 'auction',
+    filter: {
+      showMineOnly: false,
+      showCompleted: false
+    }
   }),
   getters: {
     getItem(state) {
@@ -48,6 +54,9 @@ export const useBidStore = defineStore('bids', {
     },
     addRoom(room) {
       this.rooms.set(room.id, room)
+    },
+    toggleShowMineOnly() {
+      this.filters.showMineOnly = !this.filters.showMineOnly
     }
   }
 })
