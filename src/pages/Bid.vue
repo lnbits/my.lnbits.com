@@ -327,7 +327,6 @@ const copyData = data => {
 async function getItem(id) {
   try {
     const {data} = await saas.getItem(id)
-    console.log('Item: ', data)
     $bid.updateItem(data)
     item.value = {...data}
     bidOffer.value = data.next_min_bid == 0 ? data.ask_price : data.next_min_bid
@@ -346,7 +345,6 @@ async function checkOutBid() {
   const {data} = await await saas.getBidHistory(item.value.id, {
     only_mine: true
   })
-  console.log('My Bids: ', data)
   if (data.total == 0) return
   const myLastBid = data.data[0]
   if (myLastBid.higher_bid_made) {
@@ -371,7 +369,6 @@ async function getBidHistory(props) {
   const {data} = await saas.getBidHistory(item.value.id, params)
   bidHistory.value = {...data}
   bidsTable.pagination.rowsNumber = data.total
-  console.log('Bid History: ', data)
 }
 
 async function placeBid() {
@@ -458,7 +455,6 @@ const subscribeToPaylinkWs = payment_hash => {
 }
 
 const resetDataDialog = () => {
-  console.log('Resetting invoice dialog')
   dataDialog.value = false
   paymentDetails.value = {}
 }

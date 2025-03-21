@@ -601,7 +601,6 @@ function refreshProfileFromNostr() {
 }
 
 async function handleTypeChange(type) {
-  console.log('Type: ', type)
   if ($bids.roomByType(type)) {
     sellData.value.room = $bids.roomByType(type)
     sellData.value.currency = sellData.value.room.currency

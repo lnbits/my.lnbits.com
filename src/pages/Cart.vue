@@ -360,7 +360,6 @@ const computeCartItemPrice = async cartItem => {
 const getIdentities = async () => {
   try {
     const {data} = await saas.getUserIdentities({active: false})
-    console.log('data', data)
     identities.value = data.map(a => ({
       ...a,
       showPromoCode: !!a.extra.promo_code

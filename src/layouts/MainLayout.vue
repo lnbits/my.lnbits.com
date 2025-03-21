@@ -333,7 +333,6 @@ async function getIdentities() {
       $nostr.addPubkey(i.pubkey)
       $store.addIdentity(i)
     })
-    console.log('Identities: ', identities)
     return
   } catch (error) {
     console.error('error', error)

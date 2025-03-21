@@ -245,7 +245,6 @@ const saas = {
         ln_address: data.ln_address
       }
     })
-    console.log(response)
     return response
   },
 

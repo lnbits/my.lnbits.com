@@ -350,7 +350,6 @@ async function getAuctions(props) {
     const {data} = await saas.getAuctions(params)
     auctions.value = {...data}
     itemsTable.pagination.rowsNumber = data.total
-    console.log('Auctions: ', data)
   } catch (error) {
     console.error('Error getting sell offers: ', error)
   }
@@ -366,7 +365,6 @@ async function getFixedPrice(props) {
     const {data} = await saas.getFixedPrice(params)
     fixedPrice.value = {...data}
     itemsTable.pagination.rowsNumber = data.total
-    console.log('Fixed price: ', fixedPrice.value)
   } catch (error) {
     console.error('Error getting fixed price offers: ', error)
   }
