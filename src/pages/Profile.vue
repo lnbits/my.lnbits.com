@@ -540,24 +540,35 @@ async function createSellOffer() {
   sellData.value.type = 'auction'
   showSellDialog.value = true
 
-  // show spinner
-  // make call API to get the currency
-  const {data: room} = await saas.getRoomInfo(sellData.value.type)
-  console.log('Room: ', room)
-  sellData.value.currency = room.currency
-  sellData.value.auction_description = `Your auction will run for ${room.days} days, with bids in ${room.currency}, requiring at least a ${room.min_bid_up_percentage}% increase per bid. A ${room.room_percentage}% commission applies.`
-  sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
+  try {
+    // show spinner
+    // make call API to get the currency
+    const {data: room} = await saas.getRoomInfoByType(sellData.value.type)
+    console.log('Room: ', room)
+    sellData.value.currency = room.currency
+    sellData.value.auction_description = `Your auction will run for ${room.days} days, with bids in ${room.currency}, requiring at least a ${room.min_bid_up_percentage}% increase per bid. A ${room.room_percentage}% commission applies.`
+    sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to start identifier sell offer!',
+      caption: error.response?.data?.detail,
+      color: 'warning'
+    })
+  }
 }
 
 async function sendSellOffer() {
   // get transfer_code from API and lock the identifier
   // for now mock the transfer_code
   try {
-    const transfer_code = Date.now()
+    const {data: transferData} = await saas.getTransferCode(
+      user_details.value.id
+    )
 
     const {data} = await saas.sellIdentifier({
       name: user_details.value.name,
-      transfer_code,
+      transfer_code: transferData.transfer_code,
       ...sellData.value
     })
 
@@ -576,7 +587,7 @@ async function sendSellOffer() {
     $q.notify({
       message: 'Failed to start identifier sell offer!',
       caption: error.response?.data?.detail,
-      color: 'negative'
+      color: 'warning'
     })
   }
 }

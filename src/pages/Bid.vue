@@ -233,6 +233,14 @@ const bidsTable = {
         row.currency != 'sats' ? formatCurrency(val, row.currency) : val
     },
     {
+      name: 'amount_sat',
+      align: 'right',
+      label: 'Sats',
+      field: 'amount_sat',
+      sortable: true,
+      format: (val) => `${val || 0}`.toLocaleString()
+    },
+    {
       name: 'created_at',
       align: 'left',
       label: 'Date',
@@ -346,7 +354,7 @@ async function placeBid() {
     $q.notify({
       message: 'Failed to generate invoice',
       caption: error.response?.data?.detail,
-      color: 'negative'
+      color: 'warning'
     })
   }
 }

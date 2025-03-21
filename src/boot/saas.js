@@ -6,8 +6,8 @@ axios.defaults.withCredentials = true
 
 const saas = {
   domain: process.env.domainID,
-  auctionID: process.env.auctionID,
-  fixedPriceID: process.env.fixedPriceID,
+  auctionRoomId: process.env.auctionRoomId,
+  fixedPriceRoomId: process.env.fixedPriceRoomId,
   url: process.env.apiUrl,
   serverTime: null,
 
@@ -154,34 +154,38 @@ const saas = {
   },
 
   // AUCTIONS
-  getRoomInfo: async function (roomID) {
+  getRoomInfoByType: async function (roomType) {
+    const roomId = roomType === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
+    return this.getRoomInfo(roomId)
+  },
+  getRoomInfo: async function (roomId) {
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/auction_room/${roomID}`
+      url: `${this.url}/auction_house/api/v1/auction_room/${roomId}`
     })
 
     return response
   },
   getAuctions: async function (params = {}) {
-    if (!this.auctionID) {
+    if (!this.auctionRoomId) {
       return {data: {data: [], total: 0}}
     }
     // get auctions
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/items/${this.auctionID}/paginated`,
+      url: `${this.url}/auction_house/api/v1/items/${this.auctionRoomId}/paginated`,
       params: params
     })
     return response
   },
 
   getFixedPrice: async function (params = {}) {
-    if (!this.fixedPriceID) {
+    if (!this.fixedPriceRoomId) {
       return {data: {data: [], total: 0}}
     }
     const response = await axios({
       method: 'GET',
-      url: `${this.url}/auction_house/api/v1/items/${this.fixedPriceID}/paginated`,
+      url: `${this.url}/auction_house/api/v1/items/${this.fixedPriceRoomId}/paginated`,
       params: params
     })
     return response
@@ -191,6 +195,14 @@ const saas = {
     const response = await axios({
       method: 'GET',
       url: `${this.url}/auction_house/api/v1/items/${itemID}`
+    })
+    return response
+  },
+
+  getTransferCode: async function (addressId) {
+    const response = await axios({
+      method: 'GET',
+      url: `${this.url}/nostrnip5/api/v1/domain/${this.domain}/address/${addressId}/transfer`
     })
     return response
   },
@@ -207,7 +219,7 @@ const saas = {
 
   sellIdentifier: async function (data) {
     // /api/v1/{auction_room_id}/items
-    const roomID = data.type === 'auction' ? this.auctionID : this.fixedPriceID
+    const roomID = data.type === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
     const response = await axios({
       method: 'POST',
       url: `${this.url}/auction_house/api/v1/items/${roomID}`,
