@@ -62,7 +62,7 @@
                       </div>
 
                       <div v-if="user_details.expiresAt" class="text-caption">
-                        Expires at
+                        Ends at
                         <span
                           v-text="
                             new Date(

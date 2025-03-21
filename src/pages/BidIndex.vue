@@ -230,7 +230,7 @@ const itemsTable = {
     {
       name: 'expires_at',
       align: 'left',
-      label: 'Expires At',
+      label: 'Ends At',
       field: 'expires_at',
       format: val => new Date(val).toLocaleString(),
       sortable: true
