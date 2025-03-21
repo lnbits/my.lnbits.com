@@ -155,7 +155,8 @@ const saas = {
 
   // AUCTIONS
   getRoomInfoByType: async function (roomType) {
-    const roomId = roomType === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
+    const roomId =
+      roomType === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
     return this.getRoomInfo(roomId)
   },
   getRoomInfo: async function (roomId) {
@@ -219,7 +220,8 @@ const saas = {
 
   sellIdentifier: async function (data) {
     // /api/v1/{auction_room_id}/items
-    const roomID = data.type === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
+    const roomID =
+      data.type === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
     const response = await axios({
       method: 'POST',
       url: `${this.url}/auction_house/api/v1/items/${roomID}`,
@@ -255,7 +257,8 @@ const saas = {
       pubkey: address.pubkey,
       relays: address.extra.relays,
       ln_address: address.extra.ln_address,
-      expiresAt: address.expires_at
+      expiresAt: address.expires_at,
+      is_locked: address.is_locked
     }
   },
 

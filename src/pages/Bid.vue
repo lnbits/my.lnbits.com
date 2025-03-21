@@ -17,15 +17,23 @@
           <template v-if="isAuction">
             <q-card-section class="row flex">
               <time-left
+                v-if="item.active"
                 :time-left="timeLeft"
                 :time-loading="timeLoading"
                 :expires-on="expiresOn"
               />
+              <div v-else class="full-width text-h5 text-center q-my-xl">
+                Auction Ended
+              </div>
             </q-card-section>
             <q-separator color="secondary" />
             <q-card-section class="row flex">
               <div class="col-12 col-sm-4">
-                <div class="text-h6 text-weight-regular">Current Bid</div>
+                <div class="text-h6 text-weight-regular">
+                  <span
+                    v-text="item.active ? 'Current Bid' : 'Wining Bid'"
+                  ></span>
+                </div>
               </div>
               <div class="col-12 col-sm-8 text-center">
                 <h4 class="q-my-none">
@@ -42,7 +50,7 @@
               </div>
             </q-card-section>
           </template>
-          <q-card-section class="q-mb-lg">
+          <q-card-section class="q-mb-lg" v-if="item.active">
             <div class="row q-col-gutter-md">
               <q-input
                 class="col-12"
@@ -106,17 +114,8 @@
               text-color="primary"
               :label="isAuction ? 'Place Bid' : 'Buy Now'"
               @click="placeBid"
+              :disable="!item.active"
             />
-            <!-- <q-btn
-              v-else
-              class="text-capitalize"
-              rounded
-              color="secondary"
-              text-color="primary"
-              label="Buy Now"
-              @click="handleBuy"
-              padding="sm lg"
-            /> -->
           </q-card-actions>
         </q-card>
       </div>
@@ -135,7 +134,22 @@
             card-class="nostr-card"
             v-model:pagination="bidsTable.pagination"
             @request="getBidHistory"
-          />
+          >
+            <template v-slot:top>
+              <div class="text-h5 q-my-sm">Bid History</div>
+              <q-space />
+
+              <q-toggle
+                color="secondary"
+                v-model="onlyMine"
+                dark
+                size="xs"
+                label="Show mine"
+                left-label
+                @update:model-value="handleFilters"
+              />
+            </template>
+          </q-table>
         </q-card>
       </div>
     </div>
@@ -208,7 +222,7 @@ const $store = useAppStore()
 const $router = useRouter()
 
 const item = ref({})
-const isAuction = ref(true)
+const isAuction = ref(false)
 const timeLoading = ref(true)
 const timeLeft = ref({days: '00', hours: '00', minutes: '00', seconds: '00'})
 const bidOffer = ref(0)
@@ -220,6 +234,7 @@ const dataDialog = ref(false)
 const paymentDetails = ref({})
 
 const bidHistory = ref({data: [], total: 0})
+const onlyMine = ref(false)
 
 const bidsTable = {
   columns: [
@@ -238,7 +253,7 @@ const bidsTable = {
       label: 'Sats',
       field: 'amount_sat',
       sortable: true,
-      format: (val) => `${val || 0}`.toLocaleString()
+      format: val => `${val || 0}`.toLocaleString()
     },
     {
       name: 'created_at',
@@ -263,6 +278,13 @@ const bidsTable = {
     descending: true,
     rowsNumber: 10
   }
+}
+
+const handleFilters = async () => {
+  bidsTable.filters = {
+    only_mine: onlyMine.value
+  }
+  await getBidHistory()
 }
 
 const expiresOn = computed(() => {
@@ -297,10 +319,14 @@ async function getItem(id) {
 }
 
 async function getBidHistory(props) {
+  bidsTable.filter = {
+    only_mine: onlyMine.value
+  }
   const params = prepareFilterQuery(bidsTable, props)
   const {data} = await saas.getBidHistory(item.value.id, params)
   bidHistory.value = {...data}
   bidsTable.pagination.rowsNumber = data.total
+  console.log('Bid History: ', data)
 }
 
 async function placeBid() {
@@ -359,27 +385,6 @@ async function placeBid() {
   }
 }
 
-async function handleBuy() {
-  if (!$store.isLoggedIn) {
-    $q.notify({
-      message: 'Please login to buy',
-      color: 'warning',
-      textColor: 'black'
-    })
-    return
-  }
-  if (!memo.value) {
-    $q.notify({
-      message: 'Memo is required',
-      color: 'warning',
-      textColor: 'black'
-    })
-    return
-  }
-  // buy item
-  console.log('Buying item')
-}
-
 const subscribeToPaylinkWs = payment_hash => {
   const url = new URL(process.env.apiUrl || window.location)
   url.protocol = url.protocol === 'https:' ? 'wss' : 'ws'
@@ -432,6 +437,7 @@ const updateTime = expireDate => {
 
 onBeforeUnmount(() => {
   clearInterval($bid.interval)
+  clearInterval($bid.bidHistoryInterval)
 })
 
 onMounted(async () => {
@@ -442,6 +448,12 @@ onMounted(async () => {
     isAuction.value = data.type == 'auction'
     if (isAuction.value) {
       await getBidHistory()
+      if (item.value.active) {
+        clearInterval($bid.bidHistoryInterval)
+        $bid.bidHistoryInterval = setInterval(() => {
+          updateItemData(item.value.id)
+        }, 60000)
+      }
     }
 
     const expires = new Date(item.value.expires_at).getTime()

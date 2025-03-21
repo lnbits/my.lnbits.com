@@ -22,11 +22,47 @@
       </template>
 
       <template v-slot:error> Failed to filter. </template>
+
+      <template v-slot:after>
+        <q-btn
+          unelevated
+          text-color="secondary"
+          color="primary"
+          icon="filter_alt"
+        >
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <q-item
+                v-if="$store.isLoggedIn"
+                clickable
+                @click="handleFilters('showMineOnly')"
+              >
+                <q-item-section>Show Only Mine</q-item-section>
+                <q-item-section avatar>
+                  <q-icon
+                    :color="$bids.filter.showMineOnly ? 'primary' : 'grey-4'"
+                    name="check"
+                  />
+                </q-item-section>
+              </q-item>
+              <q-item clickable @click="handleFilters('showCompleted')">
+                <q-item-section>Show Completed</q-item-section>
+                <q-item-section avatar>
+                  <q-icon
+                    :color="$bids.filter.showCompleted ? 'primary' : 'grey-4'"
+                    name="check"
+                  />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+      </template>
     </q-input>
     <div class="container q-mt-lg">
       <div class="pitch q-mx-auto">
         <q-tabs
-          v-model="tab"
+          v-model="$bids.openTab"
           dense
           :inline-label="$q.screen.gt.sm"
           align="justify"
@@ -38,7 +74,11 @@
           <q-tab name="auction" icon="currency_exchange" label="On Auction" />
           <q-tab name="buy" icon="attach_money" label="For Sale" />
         </q-tabs>
-        <q-tab-panels v-model="tab" animated style="background: transparent">
+        <q-tab-panels
+          v-model="$bids.openTab"
+          animated
+          style="background: transparent"
+        >
           <q-tab-panel name="auction">
             <div v-if="!auctions.data || !auctions.data.length" class="q-pa-md">
               <div class="text-center text-white q-mt-xl">
@@ -95,10 +135,11 @@
                   <q-td auto-width>
                     <q-btn
                       rounded
+                      :outline="props.row.active ? false : true"
                       color="secondary"
-                      text-color="primary"
+                      :text-color="props.row.active && 'primary'"
                       padding="sm lg"
-                      label="Bid"
+                      :label="props.row.active ? 'Bid' : 'View'"
                       :to="`/bid/${props.row.id}`"
                       class="text-capitalize q-my-sm"
                     />
@@ -188,13 +229,15 @@ import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {formatCurrency, prepareFilterQuery} from 'src/boot/utils'
 import {useBidStore} from 'src/stores/bids'
+import {useAppStore} from 'src/stores/store'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
 const $q = useQuasar()
 const $bids = useBidStore()
+const $store = useAppStore()
 
-const tab = ref('auction')
+// const tab = ref('auction')
 
 const auctions = ref({})
 const fixedPrice = ref({})
@@ -237,7 +280,7 @@ const itemsTable = {
     }
   ],
   pagination: {
-    sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
+    sortBy: $bids.openTab == 'auction' ? 'current_price' : 'ask_price',
     rowsPerPage: 25,
     page: 1,
     descending: true,
@@ -245,7 +288,8 @@ const itemsTable = {
   }
 }
 
-const resetPagination = () => {
+const resetPagination = tab => {
+  $bids.openTab = tab
   itemsTable.pagination = {
     sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
     rowsPerPage: 25,
@@ -260,7 +304,30 @@ watch(filterText, () => handleSearch(), {immediate: true})
 
 async function handleSearch() {
   itemsTable.search = filterText.value
-  if (tab.value == 'auction') {
+  if ($bids.openTab == 'auction') {
+    await getAuctions()
+  } else {
+    await getFixedPrice()
+  }
+}
+
+async function handleFilters(filter) {
+  console.log('Filter: ', filter)
+  switch (filter) {
+    case 'showMineOnly':
+      $bids.filter.showMineOnly = !$bids.filter.showMineOnly
+      break
+    case 'showCompleted':
+      $bids.filter.showCompleted = !$bids.filter.showCompleted
+      break
+    default:
+      return
+  }
+  itemsTable.filter = {
+    only_mine: $bids.filter.showMineOnly,
+    include_inactive: $bids.filter.showCompleted
+  }
+  if ($bids.openTab == 'auction') {
     await getAuctions()
   } else {
     await getFixedPrice()

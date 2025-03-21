@@ -1,7 +1,7 @@
 <template>
   <router-link
     :to="{
-      path: `/identities/${name}`,
+      path: `/identities/${name}`
     }"
   >
     <q-card class="nostr-card no-shadow" bordered>
@@ -20,6 +20,12 @@
 
       <q-card-section class="q-pt-none text-center text-white">
         <div class="text-h6">
+          <span v-if="locked">
+            <q-icon color="secondary" name="lock_person" />
+            <q-tooltip anchor="top middle" self="bottom middle">
+              This identifier is locked for sale
+            </q-tooltip>
+          </span>
           {{ name }}
         </div>
         <div class="text-caption ellipsis">
@@ -31,9 +37,9 @@
 </template>
 
 <script setup>
-import NostrHeadIcon from "components/NostrHeadIcon.vue";
+import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 
-const props = defineProps(["name", "pubkey", "time", "profile"]);
+const props = defineProps(['name', 'pubkey', 'time', 'profile', 'locked'])
 </script>
 
 <style scoped lang="scss"></style>
