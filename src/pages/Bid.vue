@@ -31,7 +31,7 @@
               <div class="col-12 col-sm-4">
                 <div class="text-h6 text-weight-regular">
                   <span
-                    v-text="item.active ? 'Current Bid' : 'Wining Bid'"
+                    v-text="item.active ? 'Current Bid' : 'Winning Bid'"
                   ></span>
                 </div>
               </div>
@@ -39,6 +39,28 @@
                 <h4 class="q-my-none">
                   {{ formatCurrency(item.current_price, item.currency) }}
                 </h4>
+                <div v-if="item.active">
+                  <q-chip
+                    v-if="outBid"
+                    class="q-mt-sm"
+                    color="negative"
+                    text-color="white"
+                    icon-right="sentiment_dissatisfied"
+                    size="md"
+                  >
+                    You've been outbid
+                  </q-chip>
+                  <q-chip
+                    v-if="winner"
+                    class="q-mt-sm"
+                    color="secondary"
+                    text-color="primary"
+                    icon-right="mood"
+                    size="md"
+                  >
+                    You're winning
+                  </q-chip>
+                </div>
               </div>
             </q-card-section>
           </template>
@@ -235,6 +257,8 @@ const paymentDetails = ref({})
 
 const bidHistory = ref({data: [], total: 0})
 const onlyMine = ref(false)
+const outBid = ref(false)
+const winner = ref(false)
 
 const bidsTable = {
   columns: [
@@ -315,6 +339,27 @@ async function getItem(id) {
       caption: error.response?.data?.detail,
       color: 'negative'
     })
+  }
+}
+
+async function checkOutBid() {
+  const {data} = await await saas.getBidHistory(item.value.id, {
+    only_mine: true
+  })
+  console.log('My Bids: ', data)
+  if (data.total == 0) return
+  const myLastBid = data.data[0]
+  if (myLastBid.higher_bid_made) {
+    winner.value = false
+    outBid.value = true
+    $q.notify({
+      message: 'You have been outbid',
+      color: 'warning',
+      textColor: 'black'
+    })
+  } else {
+    winner.value = true
+    outBid.value = false
   }
 }
 
@@ -422,6 +467,7 @@ async function updateItemData(itemID) {
   await getItem(itemID)
   if (isAuction.value) {
     await getBidHistory()
+    await checkOutBid()
   }
 }
 
@@ -449,6 +495,7 @@ onMounted(async () => {
     if (isAuction.value) {
       await getBidHistory()
       if (item.value.active) {
+        await checkOutBid()
         clearInterval($bid.bidHistoryInterval)
         $bid.bidHistoryInterval = setInterval(() => {
           updateItemData(item.value.id)
