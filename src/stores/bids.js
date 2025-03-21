@@ -30,7 +30,7 @@ export const useBidStore = defineStore('bids', {
     },
     isAuction: state => id => state.rooms.get(id).type === 'auction',
     // bidHistory: state => id => state.bids.data.get(id) || [],
-    roomByType: state => type => state.rooms.values().find(r => r.type === type)
+    roomByType: state => type => state.rooms.get(type)
   },
   actions: {
     addAuctions({data, total}) {
@@ -53,7 +53,7 @@ export const useBidStore = defineStore('bids', {
       }
     },
     addRoom(room) {
-      this.rooms.set(room.id, room)
+      this.rooms.set(room.type, room)
     },
     toggleShowMineOnly() {
       this.filters.showMineOnly = !this.filters.showMineOnly

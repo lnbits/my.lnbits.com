@@ -313,36 +313,70 @@
           <div class="text-h6">Sell your Identifier</div>
           <div class="text-subtitle2">{{ user_details.name }}</div>
         </q-card-section>
-        <q-card-section v-if="sellData.currency">
-          <ul>
-            <!-- <li>
-              Duration: <span v-text="sellData.room.extra.duration.days"></span>
-            </li> -->
-            <li>Currency: <span v-text="sellData.room.currency"></span></li>
-            <li>
-              Minimum bid:
-              <span v-text="sellData.room.min_bid_up_percentage"></span>
-            </li>
-            <li>
-              Room percentage:
-              <span v-text="sellData.room.room_percentage"></span>
-            </li>
-          </ul>
-          <!-- <p class="caption">
-            <span
-              v-text="
-                sellData.type == 'auction'
-                  ? sellData.auction_description
-                  : sellData.fixed_price_description
-              "
-            ></span>
-          </p> -->
+        <q-card-section v-if="sellData.room">
+          <q-list dense padding class="q-mb-md">
+            <q-item>
+              <q-item-section>
+                <q-item-label>Duration:</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <!-- todo: get the duration from the API response -->
+                <q-item-label
+                  caption
+                  v-text="`${sellData.room.days || 7} days`"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>Currency</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.currency"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>Minimum bid increase</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.min_bid_up_percentage"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>Comission</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.room_percentage"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
           <div class="q-gutter-sm">
-            <q-radio v-model="sellData.type" val="auction" label="Auction" />
+            <q-radio
+              v-model="sellData.type"
+              val="auction"
+              label="Auction"
+              @update:model-value="handleTypeChange"
+            />
             <q-radio
               v-model="sellData.type"
               val="fixed_price"
               label="Fixed Price"
+              @update:model-value="handleTypeChange"
             />
           </div>
           <q-input
@@ -566,20 +600,28 @@ function refreshProfileFromNostr() {
   }
 }
 
+async function handleTypeChange(type) {
+  console.log('Type: ', type)
+  if ($bids.roomByType(type)) {
+    sellData.value.room = $bids.roomByType(type)
+    sellData.value.currency = sellData.value.room.currency
+    return
+  }
+  const {data: room} = await saas.getRoomInfoByType(type)
+  $bids.addRoom(room)
+  sellData.value.room = room
+  sellData.value.currency = room.currency
+}
+
 async function createSellOffer() {
-  // select action radio button
   sellData.value.type = 'auction'
   showSellDialog.value = true
 
   try {
-    // show spinner
-    // make call API to get the currency
     const {data: room} = await saas.getRoomInfoByType(sellData.value.type)
-    console.log('Room: ', room)
+    $bids.addRoom(room)
     sellData.value.currency = room.currency
     sellData.value.room = {...room}
-    sellData.value.auction_description = `Your auction will run for ${room.days} days, with bids in ${room.currency}, requiring at least a ${room.min_bid_up_percentage}% increase per bid. A ${room.room_percentage}% commission applies.`
-    sellData.value.fixed_price_description = `Fixed-price listings will be available for 1 year, with a ${room.room_percentage}% commission on sales.` // todo: why 1 yea is hardcoded?
   } catch (error) {
     console.error(error)
     $q.notify({
