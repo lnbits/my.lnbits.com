@@ -54,6 +54,10 @@
                   />
                 </q-item-section>
               </q-item>
+              <q-separator />
+              <q-item clickable @click="handleFilters('reset')">
+                <q-item-section>Reset Filters</q-item-section>
+              </q-item>
             </q-list>
           </q-menu>
         </q-btn>
@@ -137,7 +141,7 @@
                       rounded
                       :outline="props.row.active ? false : true"
                       color="secondary"
-                      :text-color="props.row.active && 'primary'"
+                      :text-color="props.row.active ? 'primary' : null"
                       padding="sm lg"
                       :label="props.row.active ? 'Bid' : 'View'"
                       :to="`/bid/${props.row.id}`"
@@ -312,13 +316,15 @@ async function handleSearch() {
 }
 
 async function handleFilters(filter) {
-  console.log('Filter: ', filter)
   switch (filter) {
     case 'showMineOnly':
       $bids.filter.showMineOnly = !$bids.filter.showMineOnly
       break
     case 'showCompleted':
       $bids.filter.showCompleted = !$bids.filter.showCompleted
+      break
+    case 'reset':
+      $bids.resetFilters()
       break
     default:
       return
@@ -335,6 +341,10 @@ async function handleFilters(filter) {
 }
 
 async function getAuctions(props) {
+  itemsTable.filter = {
+    only_mine: $bids.filter.showMineOnly,
+    include_inactive: $bids.filter.showCompleted
+  }
   const params = prepareFilterQuery(itemsTable, props)
   try {
     const {data} = await saas.getAuctions(params)
@@ -347,6 +357,10 @@ async function getAuctions(props) {
 }
 
 async function getFixedPrice(props) {
+  itemsTable.filter = {
+    only_mine: $bids.filter.showMineOnly,
+    include_inactive: $bids.filter.showCompleted
+  }
   const params = prepareFilterQuery(itemsTable, props)
   try {
     const {data} = await saas.getFixedPrice(params)

@@ -57,6 +57,10 @@ export const useBidStore = defineStore('bids', {
     },
     toggleShowMineOnly() {
       this.filters.showMineOnly = !this.filters.showMineOnly
+    },
+    resetFilters() {
+      this.filter.showMineOnly = false
+      this.filter.showCompleted = false
     }
   }
 })
