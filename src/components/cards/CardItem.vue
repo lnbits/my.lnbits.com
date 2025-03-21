@@ -2,7 +2,7 @@
   <q-card class="no-shadow q-pa-md nostr-card" bordered>
     <q-card-section class="row items-center q-pb-none">
       <div class="text-h6 text-white">
-        {{ data.available ? "Great News!" : "Oh... Try again!" }}
+        {{ data.available ? 'Great News!' : 'Oh... Try again!' }}
       </div>
       <q-btn
         class="q-ml-auto"
@@ -28,7 +28,7 @@
           &nbsp;Get it now for
           <span
             >{{
-              data.currency !== "sats"
+              data.currency !== 'sats'
                 ? formatCurrency(data.price, data.currency)
                 : formatSat(data.price)
             }}!</span
@@ -48,6 +48,17 @@
         <span>
           The handle <span>{{ name }}</span> is not available!
         </span>
+        <div v-if="bid" class="q-mt-md">
+          <span> ...but, not all is lost! </span>
+          <q-btn
+            outline
+            rounded
+            color="secondary"
+            label="Bid for it"
+            class="text-capitalize float-right"
+            :to="`/bid/${bid.id}`"
+          />
+        </div>
       </div>
 
       <div v-if="data.hasFreeOption" class="q-mt-lg text-h6">
@@ -66,11 +77,11 @@
             max="999999"
             autofocus
             dense
-            :rules="[(val) => val.length <= 6 || 'Max 6 characters']"
+            :rules="[val => val.length <= 6 || 'Max 6 characters']"
             class="my-input q-pb-none"
             :input-style="{
               fontSize: '22px',
-              color: '#7dd3fc',
+              color: '#7dd3fc'
             }"
           >
           </q-input>
@@ -94,23 +105,23 @@
 </template>
 
 <script setup>
-defineProps(["name", "data", "close", "action", "free"]);
+defineProps(['name', 'data', 'close', 'action', 'free', 'bid'])
 
 const formatCurrency = (value, currency) => {
   return new Intl.NumberFormat(window.LOCALE, {
-    style: "currency",
-    currency: currency,
-  }).format(value);
-};
-const formatSat = (value) => {
-  return new Intl.NumberFormat(window.LOCALE).format(value) + " sats";
-};
+    style: 'currency',
+    currency: currency
+  }).format(value)
+}
+const formatSat = value => {
+  return new Intl.NumberFormat(window.LOCALE).format(value) + ' sats'
+}
 </script>
 
 <style lang="scss">
 .my-input {
-  font-style: "22px";
-  color: "#7dd3fc";
+  font-style: '22px';
+  color: '#7dd3fc';
   /* Chrome, Safari, Edge, Opera */
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
@@ -119,7 +130,7 @@ const formatSat = (value) => {
   }
 
   /* Firefox */
-  input[type="number"] {
+  input[type='number'] {
     -moz-appearance: textfield;
   }
 }

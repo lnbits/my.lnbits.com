@@ -28,6 +28,19 @@ export const useBidStore = defineStore('bids', {
       return id =>
         state.items.auctions.data.get(id) || state.items.fixedPrice.data.get(id)
     },
+    getItemByName: state => name => {
+      for (const item of state.items.auctions.data.values()) {
+        if (item.name === name) {
+          return item
+        }
+      }
+      for (const item of state.items.fixedPrice.data.values()) {
+        if (item.name === name) {
+          return item
+        }
+      }
+      return null
+    },
     isAuction: state => id => state.rooms.get(id).type === 'auction',
     // bidHistory: state => id => state.bids.data.get(id) || [],
     roomByType: state => type => state.rooms.get(type)

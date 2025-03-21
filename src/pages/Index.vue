@@ -64,6 +64,7 @@
             label="Search"
             @click="handleSearch"
             class="text-capitalize"
+            :disable="searching"
           />
         </template>
       </q-input>
@@ -78,6 +79,7 @@
         />
       </div>
       <div class="flex full-width justify-center" ref="nipCard">
+        <q-spinner v-if="searching" color="secondary" size="2rem" />
         <div class="nip-list q-pa-lg" v-if="$store.showCard">
           <CardItem
             :name="$store.handle"
@@ -85,19 +87,10 @@
             :close="closeCard"
             :action="handleBuy"
             :free="handleFreeId"
+            :bid="$bids.getItemByName($store.handle)"
           />
         </div>
       </div>
-      <!-- <div class="row input">
-        <q-btn
-          rounded
-          outline
-          color="secondary"
-          to="/bid"
-          label="Check out the identities market"
-          class="text-capitalize"
-        />
-      </div> -->
       <q-badge
         v-if="$store.pubkey"
         outline
@@ -125,10 +118,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, nextTick} from 'vue'
+import {ref, onMounted} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar, scroll} from 'quasar'
 import {useAppStore} from 'src/stores/store'
+import {useBidStore} from 'src/stores/bids'
 import {useRouter, useRoute} from 'vue-router'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
@@ -136,6 +130,7 @@ import CardItem from 'components/cards/CardItem.vue'
 
 const $q = useQuasar()
 const $store = useAppStore()
+const $bids = useBidStore()
 const $router = useRouter()
 const $route = useRoute()
 const {getScrollTarget, setVerticalScrollPosition} = scroll
@@ -143,11 +138,21 @@ const {getScrollTarget, setVerticalScrollPosition} = scroll
 const handle = ref('')
 const nipCard = ref(null)
 
+const searching = ref(false)
+
+onMounted(async () => {
+  const {data: auctions} = await saas.getAuctions()
+  const {data: fixed} = await saas.getFixedPrice()
+  $bids.addAuctions(auctions)
+  $bids.addFixedPrice(fixed)
+})
+
 const handleSearch = async () => {
   if (!handle.value) {
     return
   }
   try {
+    searching.value = true
     const {data} = await saas.queryIdentifier(handle.value)
     $store.handle = handle.value
     data.hasFreeOption = !!data.free_identifier_number
@@ -161,6 +166,7 @@ const handleSearch = async () => {
       timeout: 2000
     })
   } finally {
+    searching.value = false
     $router.push({query: {q: handle.value}})
     const element = nipCard.value
     scrollToElement(element)
