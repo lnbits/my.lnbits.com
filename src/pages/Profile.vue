@@ -199,7 +199,7 @@
                   outline
                   color="secondary"
                   padding="sm lg"
-                  :to="`/bid/${user_details.id}`"
+                  :to="`/bid/${itemId()}`"
                 >
                 </q-btn>
                 <div class="text-caption text-grey-5 q-mt-sm">
@@ -337,9 +337,8 @@
               <q-item-section side>
                 <q-item-label
                   caption
-                  v-text="`${sellData.room.days || 7} days`"
+                  v-text="timeFromSeconds(sellData.room.duration_seconds)"
                 ></q-item-label>
-                <!-- todo: fetch days -->
               </q-item-section>
             </q-item>
 
@@ -413,13 +412,15 @@
 
 <script setup>
 import {useQuasar} from 'quasar'
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useNostrStore} from 'src/stores/nostr'
 import {useBidStore} from 'src/stores/bids'
 
 import {saas} from 'boot/saas'
+import {timeFromSeconds} from 'src/boot/utils'
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
+import {time} from 'echarts'
 
 const $q = useQuasar()
 const $router = useRouter()
@@ -438,6 +439,8 @@ const addRelayValue = ref('')
 
 const showSellDialog = ref(false)
 const sellData = ref({})
+
+const itemId = () => $bids.getItemByName(user_details.value.name)?.id
 
 watch(
   () => $nostr.initiated,
