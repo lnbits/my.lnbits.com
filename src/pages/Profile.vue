@@ -199,7 +199,7 @@
                   outline
                   color="secondary"
                   padding="sm lg"
-                  :to="`/bid/${itemId()}`"
+                  :to="`/bid/${itemId}`"
                 >
                 </q-btn>
                 <div class="text-caption text-grey-5 q-mt-sm">
@@ -412,7 +412,7 @@
 
 <script setup>
 import {useQuasar} from 'quasar'
-import {ref, onMounted, watch, computed} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useNostrStore} from 'src/stores/nostr'
 import {useBidStore} from 'src/stores/bids'
@@ -420,7 +420,6 @@ import {useBidStore} from 'src/stores/bids'
 import {saas} from 'boot/saas'
 import {timeFromSeconds} from 'src/boot/utils'
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
-import {time} from 'echarts'
 
 const $q = useQuasar()
 const $router = useRouter()
@@ -440,7 +439,7 @@ const addRelayValue = ref('')
 const showSellDialog = ref(false)
 const sellData = ref({})
 
-const itemId = () => $bids.getItemByName(user_details.value.name)?.id
+const itemId = ref(null)
 
 watch(
   () => $nostr.initiated,
@@ -625,8 +624,6 @@ async function createSellOffer() {
 }
 
 async function sendSellOffer() {
-  // get transfer_code from API and lock the identifier
-  // for now mock the transfer_code
   try {
     const {data: transferData} = await saas.getTransferCode(
       user_details.value.id
@@ -662,6 +659,36 @@ function resetSellData() {
   sellData.value = {}
 }
 
+async function getItemByName(name) {
+  const params = {
+    limit: 100,
+    search: name
+  }
+  try {
+    const {
+      data: {data: auctions}
+    } = await saas.getAuctions(params)
+    if (auctions.find(i => i.name === name)) {
+      itemId.value = auctions.find(i => i.name === name).id
+      return
+    }
+    const {
+      data: {data: sales}
+    } = await saas.getFixedPrice(params)
+    if (sales.data.find(i => i.name === name)) {
+      itemId.value = sales.find(i => i.name === name).id
+      return
+    }
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to get item!',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
+  }
+}
+
 onMounted(async () => {
   const name = props.name || $route.params.name
   if (!name) {
@@ -670,6 +697,8 @@ onMounted(async () => {
   const identifier = await getUserIdentifier(name)
 
   await getAccountDetails()
+  await getItemByName(name)
+
   if (identifier) {
     user_details.value = identifier
     selectedWallet.value = userWallets.value.find(
