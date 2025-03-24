@@ -75,6 +75,17 @@ function timeFromNow(time) {
     return `${tfn.time} ${tfn.unitOfTime} ago`
   }
 }
+
+function timeFromSeconds(seconds) {
+  if (seconds < 3600) {
+    return `${Math.floor(seconds / 60)} minutes`
+  }
+  if (seconds < 86400) {
+    return `${Math.floor(seconds / 3600)} hours`
+  }
+  return `${Math.floor(seconds / 86400)} days`
+}
+
 let tags = [
   ['r', 'wss://relay.damus.io'],
   ['r', 'wss://nostr-pub.wellorder.net'],
@@ -150,6 +161,7 @@ function formatCurrency(value, currency) {
 export {
   secondsToDhm,
   timeFromNow,
+  timeFromSeconds,
   getTagValues,
   markdownToHTML,
   countDownTimer,
