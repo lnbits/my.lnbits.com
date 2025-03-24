@@ -140,13 +140,6 @@ const nipCard = ref(null)
 
 const searching = ref(false)
 
-onMounted(async () => {
-  const {data: auctions} = await saas.getAuctions()
-  const {data: fixed} = await saas.getFixedPrice()
-  $bids.addAuctions(auctions)
-  $bids.addFixedPrice(fixed)
-})
-
 const handleSearch = async () => {
   if (!handle.value) {
     return
