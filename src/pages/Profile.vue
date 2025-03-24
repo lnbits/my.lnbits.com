@@ -668,14 +668,14 @@ async function getItemByName(name) {
     const {
       data: {data: auctions}
     } = await saas.getAuctions(params)
-    if (auctions.find(i => i.name === name)) {
+    if (auctions.length && auctions.find(i => i.name === name)) {
       itemId.value = auctions.find(i => i.name === name).id
       return
     }
     const {
       data: {data: sales}
     } = await saas.getFixedPrice(params)
-    if (sales.data.find(i => i.name === name)) {
+    if (sales.length && sales.find(i => i.name === name)) {
       itemId.value = sales.find(i => i.name === name).id
       return
     }

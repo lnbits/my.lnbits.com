@@ -117,6 +117,7 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="text-h5 text-uppercase">
+                  <q-th auto-width></q-th>
                   <q-th
                     v-for="col in props.cols"
                     :key="col.name"
@@ -128,7 +129,22 @@
                 </q-tr>
               </template>
               <template v-slot:body="props">
-                <q-tr :props="props">
+                <q-tr
+                  :props="props"
+                  :style="
+                    props.row.is_mine
+                      ? 'background-color: rgb(9 87 131 / 8%)'
+                      : ''
+                  "
+                >
+                  <q-td auto-width>
+                    <q-badge
+                      v-if="props.row.is_mine"
+                      rounded
+                      color="secondary"
+                    />
+                    <q-tooltip v-if="props.row.is_mine">My item</q-tooltip>
+                  </q-td>
                   <q-td
                     v-for="col in props.cols"
                     :key="col.name"
@@ -151,7 +167,6 @@
                 </q-tr>
               </template>
             </q-table>
-            <!-- <BidList :items="auctions.data" :columns :auction="true" /> -->
           </q-tab-panel>
           <q-tab-panel name="buy">
             <div
@@ -186,6 +201,7 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="text-h5 text-uppercase">
+                  <q-th auto-width></q-th>
                   <q-th
                     v-for="col in props.cols"
                     :key="col.name"
@@ -197,7 +213,22 @@
                 </q-tr>
               </template>
               <template v-slot:body="props">
-                <q-tr :props="props">
+                <q-tr
+                  :props="props"
+                  :style="
+                    props.row.is_mine
+                      ? 'background-color: rgb(9 87 131 / 8%)'
+                      : ''
+                  "
+                >
+                  <q-td auto-width>
+                    <q-badge
+                      v-if="props.row.is_mine"
+                      rounded
+                      color="secondary"
+                    />
+                    <q-tooltip v-if="props.row.is_mine">My item</q-tooltip>
+                  </q-td>
                   <q-td
                     v-for="col in props.cols"
                     :key="col.name"
@@ -221,7 +252,6 @@
                 </q-tr>
               </template>
             </q-table>
-            <!-- <BidList :identities="fixedPrice.data || []" :auction="false" /> -->
           </q-tab-panel>
         </q-tab-panels>
       </div>
@@ -242,8 +272,6 @@ import NostrHeadIcon from 'components/NostrHeadIcon.vue'
 const $q = useQuasar()
 const $bids = useBidStore()
 const $store = useAppStore()
-
-// const tab = ref('auction')
 
 const auctions = ref({})
 const fixedPrice = ref({})
