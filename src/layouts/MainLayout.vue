@@ -27,6 +27,9 @@
               <q-item clickable v-close-popup to="/identities">
                 <q-item-section> <strong>Identities</strong></q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/bid">
+                <q-item-section>Auctions</q-item-section>
+              </q-item>
               <q-separator />
               <q-item clickable v-close-popup to="/wallets">
                 <q-item-section>My Wallets</q-item-section>
@@ -36,9 +39,7 @@
                 <q-item-section>Shopping Cart</q-item-section>
               </q-item>
               <q-separator />
-              <q-item clickable v-close-popup to="/bid">
-                <q-item-section>Identifier Auctions</q-item-section>
-              </q-item>
+
               <q-separator />
               <q-item clickable v-close-popup to="/account">
                 <q-item-section>Account</q-item-section>
