@@ -343,7 +343,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item>
+            <q-item v-if="sellData.type === 'auction'">
               <q-item-section>
                 <q-item-label>Minimum bid increase:</q-item-label>
               </q-item-section>

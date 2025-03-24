@@ -208,10 +208,12 @@
                   <q-td auto-width>
                     <q-btn
                       rounded
+                      :outline="props.row.active ? false : true"
                       color="secondary"
+                      :text-color="props.row.active ? 'primary' : null"
                       text-color="primary"
                       padding="sm lg"
-                      label="Buy"
+                      :label="props.row.active? 'Buy' : 'View'"
                       :to="`/bid/${props.row.id}`"
                       class="text-capitalize q-my-sm"
                     />
