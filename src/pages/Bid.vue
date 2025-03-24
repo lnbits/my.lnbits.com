@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, computed} from 'vue'
+import {ref, onMounted, onBeforeUnmount, computed, reactive} from 'vue'
 import {
   countDownTimer,
   timeFromNow,
@@ -260,7 +260,7 @@ const onlyMine = ref(false)
 const outBid = ref(false)
 const winner = ref(false)
 
-const bidsTable = {
+const bidsTable = reactive({
   columns: [
     {
       name: 'amount',
@@ -302,7 +302,7 @@ const bidsTable = {
     descending: true,
     rowsNumber: 10
   }
-}
+})
 
 const handleFilters = async () => {
   bidsTable.filters = {

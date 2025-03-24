@@ -107,7 +107,7 @@
               row-key="id"
               color="secondary"
               card-class="nostr-card"
-              v-model:pagination.sync="itemsTable.pagination"
+              v-model:pagination="itemsTable.pagination"
               @request="getAuctions"
               :visible-columns="
                 $q.screen.gt.sm
@@ -180,7 +180,7 @@
               row-key="id"
               color="secondary"
               card-class="nostr-card"
-              v-model:pagination.sync="itemsTable.pagination"
+              v-model:pagination="itemsTable.pagination"
               @request="getFixedPrice"
               :visible-columns="['name', 'ask_price']"
             >
@@ -213,7 +213,7 @@
                       :text-color="props.row.active ? 'primary' : null"
                       text-color="primary"
                       padding="sm lg"
-                      :label="props.row.active? 'Buy' : 'View'"
+                      :label="props.row.active ? 'Buy' : 'View'"
                       :to="`/bid/${props.row.id}`"
                       class="text-capitalize q-my-sm"
                     />
@@ -230,7 +230,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, reactive} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {formatCurrency, prepareFilterQuery} from 'src/boot/utils'
@@ -250,7 +250,7 @@ const fixedPrice = ref({})
 
 const filterText = ref('')
 
-const itemsTable = {
+const itemsTable = reactive({
   columns: [
     {
       name: 'name',
@@ -287,18 +287,18 @@ const itemsTable = {
   ],
   pagination: {
     sortBy: $bids.openTab == 'auction' ? 'current_price' : 'ask_price',
-    rowsPerPage: 25,
+    rowsPerPage: 100,
     page: 1,
     descending: true,
-    rowsNumber: 25
+    rowsNumber: 100
   }
-}
+})
 
 const resetPagination = tab => {
   $bids.openTab = tab
   itemsTable.pagination = {
     sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
-    rowsPerPage: 25,
+    rowsPerPage: 100,
     page: 1,
     descending: true,
     rowsNumber:
@@ -331,10 +331,6 @@ async function handleFilters(filter) {
     default:
       return
   }
-  itemsTable.filter = {
-    only_mine: $bids.filter.showMineOnly,
-    include_inactive: $bids.filter.showCompleted
-  }
   if ($bids.openTab == 'auction') {
     await getAuctions()
   } else {
@@ -350,10 +346,14 @@ async function getAuctions(props) {
   const params = prepareFilterQuery(itemsTable, props)
   try {
     const {data} = await saas.getAuctions(params)
-    auctions.value = {...data}
     itemsTable.pagination.rowsNumber = data.total
+    auctions.value = {...data}
   } catch (error) {
     console.error('Error getting sell offers: ', error)
+    $q.notify({
+      message: 'Failed to get sell offers',
+      color: 'negative'
+    })
   }
 }
 
@@ -369,6 +369,10 @@ async function getFixedPrice(props) {
     itemsTable.pagination.rowsNumber = data.total
   } catch (error) {
     console.error('Error getting fixed price offers: ', error)
+    $q.notify({
+      message: 'Failed to get fixed price offers',
+      color: 'negative'
+    })
   }
 }
 
