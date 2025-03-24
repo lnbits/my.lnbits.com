@@ -69,7 +69,7 @@
         <CardProfile
           :locked="identity.is_locked"
           :name="identity.local_part"
-          :pubkey="identity.pubkey"
+          :pubkey="identity.pubkey || '&nbsp;'"
           :time="identity.time"
           :profile="$nostr.profiles.get(identity.pubkey)"
         ></CardProfile>

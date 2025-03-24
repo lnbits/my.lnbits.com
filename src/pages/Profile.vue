@@ -310,61 +310,10 @@
     <q-dialog v-model="showSellDialog" @hide="resetSellData" persistent>
       <q-card style="min-width: 350px" class="q-pa-md">
         <q-card-section>
-          <div class="text-h6">Sell your Identifier</div>
-          <div class="text-subtitle2">{{ user_details.name }}</div>
+          <div class="text-h6 text-center">Sell this identifier</div>
+          <div class="text-subtitle2 text-center">{{ user_details.name }}</div>
         </q-card-section>
         <q-card-section v-if="sellData.room">
-          <q-list dense padding class="q-mb-md">
-            <q-item>
-              <q-item-section>
-                <q-item-label>Duration:</q-item-label>
-              </q-item-section>
-
-              <q-item-section side>
-                <!-- todo: get the duration from the API response -->
-                <q-item-label
-                  caption
-                  v-text="`${sellData.room.days || 7} days`"
-                ></q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label>Currency</q-item-label>
-              </q-item-section>
-
-              <q-item-section side>
-                <q-item-label
-                  caption
-                  v-text="sellData.room.currency"
-                ></q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label>Minimum bid increase</q-item-label>
-              </q-item-section>
-
-              <q-item-section side>
-                <q-item-label
-                  caption
-                  v-text="sellData.room.min_bid_up_percentage"
-                ></q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item>
-              <q-item-section>
-                <q-item-label>Comission</q-item-label>
-              </q-item-section>
-
-              <q-item-section side>
-                <q-item-label
-                  caption
-                  v-text="sellData.room.room_percentage"
-                ></q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
           <div class="q-gutter-sm">
             <q-radio
               v-model="sellData.type"
@@ -379,6 +328,47 @@
               @update:model-value="handleTypeChange"
             />
           </div>
+          <q-list dense padding class="q-mb-md">
+            <q-item>
+              <q-item-section>
+                <q-item-label>Duration:</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="`${sellData.room.days || 7} days`"
+                ></q-item-label>
+                <!-- todo: fetch days -->
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section>
+                <q-item-label>Minimum bid increase:</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.min_bid_up_percentage + '%'"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>Comission</q-item-label>
+              </q-item-section>
+
+              <q-item-section side>
+                <q-item-label
+                  caption
+                  v-text="sellData.room.room_percentage + '%'"
+                ></q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
           <q-input
             class="q-mt-md"
             v-model="sellData.price"
