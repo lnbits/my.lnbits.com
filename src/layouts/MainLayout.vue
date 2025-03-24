@@ -261,10 +261,12 @@ import {saas} from 'boot/saas'
 import {onMounted} from 'vue'
 import {useAppStore} from 'src/stores/store'
 import {useNostrStore} from 'src/stores/nostr'
+import {useBidStore} from 'src/stores/bids'
 import {getTagValues} from 'src/boot/utils'
 
 const $q = useQuasar()
 const $router = useRouter()
+const $bids = useBidStore()
 const $store = useAppStore()
 const $nostr = useNostrStore()
 
@@ -295,6 +297,10 @@ onMounted(async () => {
             break
         }
       })
+      const {data: auctions} = await saas.getAuctions()
+      const {data: fixed} = await saas.getFixedPrice()
+      $bids.addAuctions(auctions)
+      $bids.addFixedPrice(fixed)
     } catch (error) {
       console.error('MainLayout Error', error)
     } finally {

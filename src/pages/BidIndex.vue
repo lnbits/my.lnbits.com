@@ -73,7 +73,7 @@
           class="text-grey q-pa-sm"
           active-color="secondary"
           indicator-color="secondary"
-          @update:model-value="resetPagination"
+          @update:model-value="handleFilters()"
         >
           <q-tab name="auction" icon="currency_exchange" label="On Auction" />
           <q-tab name="buy" icon="attach_money" label="For Sale" />
@@ -294,18 +294,6 @@ const itemsTable = reactive({
   }
 })
 
-const resetPagination = tab => {
-  $bids.openTab = tab
-  itemsTable.pagination = {
-    sortBy: tab.value == 'auction' ? 'current_price' : 'ask_price',
-    rowsPerPage: 100,
-    page: 1,
-    descending: true,
-    rowsNumber:
-      tab.value == 'auction' ? auctions.value.total : fixedPrice.value.total
-  }
-}
-
 watch(filterText, () => handleSearch(), {immediate: true})
 
 async function handleSearch() {
@@ -329,7 +317,7 @@ async function handleFilters(filter) {
       $bids.resetFilters()
       break
     default:
-      return
+      break
   }
   if ($bids.openTab == 'auction') {
     await getAuctions()
