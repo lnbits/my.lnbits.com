@@ -1,5 +1,4 @@
 import axios from 'axios'
-import {time} from 'echarts'
 import {Converter} from 'showdown'
 
 function secondsToDhm(seconds) {
@@ -152,6 +151,12 @@ function prepareFilterQuery(tableConfig, props) {
 }
 
 function formatCurrency(value, currency) {
+  if (currency === 'sat') {
+    return `${value.toLocaleString(window.LOCALE, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })} sats`
+  }
   return new Intl.NumberFormat(window.LOCALE, {
     style: 'currency',
     currency: currency || 'sat'
