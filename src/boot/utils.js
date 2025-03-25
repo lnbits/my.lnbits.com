@@ -82,7 +82,8 @@ function timeFromSeconds(seconds) {
   if (seconds < 86400) {
     return `${Math.floor(seconds / 3600)} hours`
   }
-  return `${Math.floor(seconds / 86400)} days`
+  const d = Math.floor(seconds / 86400)
+  return `${d} day${d > 1 ? 's' : ''}`
 }
 
 let tags = [

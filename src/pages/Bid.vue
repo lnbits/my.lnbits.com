@@ -166,10 +166,36 @@
                 v-model="onlyMine"
                 dark
                 size="xs"
-                label="Show mine"
+                label="Only mine"
                 left-label
                 @update:model-value="handleFilters"
               />
+            </template>
+            <template v-slot:header="props">
+              <q-tr :props="props">
+                <q-th auto-width></q-th>
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.label }}
+                </q-th>
+              </q-tr>
+            </template>
+            <template v-slot:body="props">
+              <q-tr
+                :props="props"
+                :style="
+                  props.row.is_mine
+                    ? 'background-color: rgb(9 87 131 / 8%)'
+                    : ''
+                "
+              >
+                <q-td auto-width>
+                  <q-badge v-if="props.row.is_mine" rounded color="secondary" />
+                  <q-tooltip v-if="props.row.is_mine">My bid</q-tooltip>
+                </q-td>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.value }}
+                </q-td>
+              </q-tr>
             </template>
           </q-table>
         </q-card>
