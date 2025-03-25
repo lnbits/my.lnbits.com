@@ -219,7 +219,6 @@ const saas = {
   },
 
   sellIdentifier: async function (data) {
-    // /api/v1/{auction_room_id}/items
     const roomID =
       data.type === 'auction' ? this.auctionRoomId : this.fixedPriceRoomId
     const response = await axios({
@@ -227,7 +226,8 @@ const saas = {
       url: `${this.url}/auction_house/api/v1/items/${roomID}`,
       data: {
         name: data.name,
-        ask_price: +data.price,
+        ask_price: + data.price,
+        ln_address: data.ln_address,
         transfer_code: data.transfer_code
       }
     })

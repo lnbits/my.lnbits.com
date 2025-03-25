@@ -383,6 +383,13 @@
                 : 'Price for the identifier'
             "
           />
+          <!-- todo: validate email format -->
+          <q-input
+            class="q-mt-md"
+            v-model="sellData.ln_address"
+            label="Lightning Address (optional)"
+            hint="Lightning Address to receive the payment once the auction is over."
+          />
         </q-card-section>
         <q-card-section v-else class="text-center">
           <q-spinner size="lg" />
@@ -403,7 +410,6 @@
             @click="sendSellOffer"
             :disabled="!sellData.price || !sellData.type"
           />
-          <!-- todo: redirect after Post -->
         </q-card-actions>
       </q-card>
     </q-dialog>
