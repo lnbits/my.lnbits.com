@@ -368,6 +368,7 @@ async function getItem(id) {
 }
 
 async function checkOutBid() {
+  if (!$store.isLoggedIn) return
   const {data} = await saas.getBidHistory(item.value.id, {
     only_mine: true
   })
