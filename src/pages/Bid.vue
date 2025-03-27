@@ -374,6 +374,7 @@ async function checkOutBid() {
   if (data.total == 0) return
   const myLastBid = data.data[0]
   if (myLastBid.higher_bid_made) {
+    if (outBid.value) return
     winner.value = false
     outBid.value = true
     $q.notify({
