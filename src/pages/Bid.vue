@@ -8,7 +8,7 @@
       </q-breadcrumbs>
     </div>
     <div class="row justify-center q-col-gutter-md q-mt-lg">
-      <div :class="isAuction ? 'col-12 col-md-7' : 'col-8'">
+      <div :class="isAuction ? 'col-12 col-md-7' : 'col-12 col-md-10'">
         <q-card class="nostr-card text-white no-shadow" bordered>
           <q-card-section>
             <div class="text-h6">{{ item.name }}</div>
