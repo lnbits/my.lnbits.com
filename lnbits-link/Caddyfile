@@ -75,6 +75,7 @@ my.lnbits.link {
 	@lnbits_backend {
 		path /api/v1/auth* /api/v1/ws*
 		path /nostrnip5/api/v1* /lnurlp/api/v1*
+		path /auction_house/api/v1*
 		path /lndhub/api/v1* /lndhub/ext/*
 	}
 
@@ -94,15 +95,6 @@ my.lnbits.link {
 }
 
 nostr.lnbits.link {
-	handle /api/v1/payments/sse* {
-		reverse_proxy localhost:5000 {
-			header_up X-Forwarded-Host nostr.lnbits.link
-			transport http {
-				keepalive off
-				compression off
-			}
-		}
-	}
 	reverse_proxy localhost:5000 {
 		header_up X-Forwarded-Host nostr.lnbits.link
 		header_down Access-Control-Allow-Credentials true
