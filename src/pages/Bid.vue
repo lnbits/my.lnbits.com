@@ -31,7 +31,13 @@
               <div class="col-12 col-sm-4">
                 <div class="text-h6 text-weight-regular">
                   <span
-                    v-text="item.active ? 'Current Bid' : 'Winning Bid'"
+                    v-text="
+                      item.active
+                        ? 'Current Bid'
+                        : bidHistory.total > 0
+                        ? 'Winning Bid'
+                        : 'No Bids Made'
+                    "
                   ></span>
                 </div>
               </div>
