@@ -42,7 +42,7 @@ lnbits.link {
 	handle @profile {
 		uri strip_prefix /p
 		uri strip_prefix /i
-		rewrite * {path}@nostr.com
+		rewrite * {path}@lnbits.link
 		reverse_proxy https://njump.me {
 			header_up Host njump.me
 		}
@@ -56,17 +56,17 @@ lnbits.link {
 
 	handle /@* {
 		uri replace /@ /
-		rewrite * {path}@nostr.com
+		rewrite * {path}@lnbits.link
 		reverse_proxy https://njump.me {
 			header_up Host njump.me
 		}
 	}
 
 	handle /* {
-		reverse_proxy https://www.nostr.com {
-			header_up Host www.nostr.com
+		reverse_proxy https://www.lnbits.link {
+			header_up Host www.lnbits.link
 			header_down Access-Control-Allow-Credentials true
-			header_down Access-Control-Allow-Origin https://nostr.com
+			header_down Access-Control-Allow-Origin https://lnbits.link
 		}
 	}
 }
@@ -94,11 +94,11 @@ my.lnbits.link {
 	}
 }
 
-nostr.lnbits.link {
+v1.lnbits.link {
 	reverse_proxy localhost:5000 {
-		header_up X-Forwarded-Host nostr.lnbits.link
+		header_up X-Forwarded-Host v1.lnbits.link
 		header_down Access-Control-Allow-Credentials true
-		header_down Access-Control-Allow-Origin https://nostr.lnbits.link
+		header_down Access-Control-Allow-Origin https://v1.lnbits.link
 	}
 }
 
