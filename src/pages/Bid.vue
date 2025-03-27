@@ -368,7 +368,7 @@ async function getItem(id) {
 }
 
 async function checkOutBid() {
-  const {data} = await await saas.getBidHistory(item.value.id, {
+  const {data} = await saas.getBidHistory(item.value.id, {
     only_mine: true
   })
   if (data.total == 0) return
@@ -471,7 +471,7 @@ const subscribeToPaylinkWs = payment_hash => {
       ws.close()
       setTimeout(() => {
         if (isAuction.value) {
-          updateItemData(item.value.id)
+          Promise.resolve(updateItemData(item.value.id))
         } else {
           $router.push('/identities')
         }
