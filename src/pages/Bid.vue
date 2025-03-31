@@ -304,7 +304,8 @@ const winner = ref(false)
 
 const canBeClosed = computed(() => {
   if (!item.value.is_mine) return false
-  if (bidHistory.value.total > 0 || !item.value.active) return false
+  if (!item.value.active) return true
+  if (bidHistory.value.total > 0) return false
   return true
 })
 
