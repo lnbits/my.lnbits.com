@@ -379,7 +379,9 @@ async function checkOutBid() {
     only_mine: true
   })
   if (data.total == 0) return
-  const myLastBid = data.data[0]
+  const myLastBid = data.data.sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  )[0]
   if (myLastBid.higher_bid_made) {
     if (outBid.value) return
     winner.value = false
