@@ -668,7 +668,8 @@ function resetSellData() {
 async function getItemByName(name) {
   const params = {
     limit: 100,
-    search: name
+    search: name,
+    include_inactive: true
   }
   try {
     const {
