@@ -25,4 +25,3 @@ LNbits LLC reserves the right to modify these Terms at any time. Your continued 
 
 #### 6. Governing Law
 These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which LNbits LLC is incorporated, without regard to its conflict of law provisions.
-s
