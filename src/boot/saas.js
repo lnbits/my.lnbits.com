@@ -200,6 +200,14 @@ const saas = {
     return response
   },
 
+  closeItem: async function (itemID) {
+    const response = await axios({
+      method: 'DELETE',
+      url: `${this.url}/auction_house/api/v1/items/${itemID}`
+    })
+    return response
+  },
+
   getTransferCode: async function (addressId) {
     const response = await axios({
       method: 'GET',
@@ -226,7 +234,7 @@ const saas = {
       url: `${this.url}/auction_house/api/v1/items/${roomID}`,
       data: {
         name: data.name,
-        ask_price: + data.price,
+        ask_price: +data.price,
         ln_address: data.ln_address,
         transfer_code: data.transfer_code
       }
