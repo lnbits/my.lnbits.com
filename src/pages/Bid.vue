@@ -136,6 +136,16 @@
           <q-separator color="secondary" />
           <q-card-actions align="right" class="q-pa-md">
             <q-btn
+              v-if="canBeClosed"
+              class="text-capitalize"
+              rounded
+              color="negative"
+              label="Close"
+              @click="closeItem"
+              padding="sm md"
+            />
+            <q-space />
+            <q-btn
               class="text-capitalize"
               rounded
               color="secondary"
@@ -291,6 +301,12 @@ const bidHistory = ref({data: [], total: 0})
 const onlyMine = ref(false)
 const outBid = ref(false)
 const winner = ref(false)
+
+const canBeClosed = computed(() => {
+  if (!item.value.is_mine) return false
+  if (bidHistory.value.total > 0 || !item.value.active) return false
+  return true
+})
 
 const bidsTable = reactive({
   columns: [
@@ -488,6 +504,31 @@ const subscribeToPaylinkWs = payment_hash => {
       }, 1000)
     }
   })
+}
+
+async function closeItem() {
+  try {
+    $q.dialog({
+      title: 'End Bidding',
+      message: 'Are you sure you want to end the bidding?'
+    }).onOk(async () => {
+      await saas.closeItem(item.value.id)
+      $q.notify({
+        message: 'Close request sent!',
+        color: 'positive'
+      })
+      setTimeout(() => {
+        $router.push('/identities')
+      }, 500)
+    })
+  } catch (error) {
+    console.error(error)
+    $q.notify({
+      message: 'Failed to close item',
+      caption: error.response?.data?.detail,
+      color: 'negative'
+    })
+  }
 }
 
 const resetDataDialog = () => {
