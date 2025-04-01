@@ -45,6 +45,19 @@
                   />
                 </q-item-section>
               </q-item>
+              <q-item
+                v-if="$store.isLoggedIn"
+                clickable
+                @click="handleFilters('showMyBidsOnly')"
+              >
+                <q-item-section>Show Participating</q-item-section>
+                <q-item-section avatar>
+                  <q-icon
+                    :color="$bids.filter.showMyBidsOnly ? 'primary' : 'grey-4'"
+                    name="check"
+                  />
+                </q-item-section>
+              </q-item>
               <q-item clickable @click="handleFilters('showCompleted')">
                 <q-item-section>Show Completed</q-item-section>
                 <q-item-section avatar>
@@ -151,6 +164,14 @@
                     v-for="col in props.cols"
                     :key="col.name"
                     :props="props"
+                    :class="{
+                      'text-negative':
+                        props.row.user_is_participant &&
+                        !props.row.user_is_top_bidder,
+                      'text-lime-1':
+                        props.row.user_is_participant &&
+                        props.row.user_is_top_bidder
+                    }"
                   >
                     {{ col.value }}
                   </q-td>
@@ -161,10 +182,20 @@
                       color="secondary"
                       :text-color="props.row.active ? 'primary' : null"
                       padding="sm lg"
-                      :label="props.row.active ? 'Bid' : 'View'"
                       :to="`/bid/${props.row.id}`"
-                      class="text-capitalize q-my-sm"
-                    />
+                      class="text-capitalize q-my-sm float-right"
+                      no-wrap
+                      :label="props.row.active ? 'Bid' : 'View'"
+                    >
+                      <div v-if="buttonIcon(props)">
+                        <q-icon
+                          :name="buttonIcon(props)"
+                          size="xs"
+                          color="primary"
+                          class="q-ml-xs"
+                        />
+                      </div>
+                    </q-btn>
                   </q-td>
                 </q-tr>
               </template>
@@ -345,6 +376,9 @@ async function handleFilters(filter) {
     case 'showCompleted':
       $bids.filter.showCompleted = !$bids.filter.showCompleted
       break
+    case 'showMyBidsOnly':
+      $bids.filter.showMyBidsOnly = !$bids.filter.showMyBidsOnly
+      break
     case 'reset':
       $bids.resetFilters()
       break
@@ -361,7 +395,8 @@ async function handleFilters(filter) {
 async function getAuctions(props) {
   itemsTable.filter = {
     only_mine: $bids.filter.showMineOnly,
-    include_inactive: $bids.filter.showCompleted
+    include_inactive: $bids.filter.showCompleted,
+    user_is_participant: $bids.filter.showMyBidsOnly
   }
   const params = prepareFilterQuery(itemsTable, props)
   try {
@@ -380,7 +415,8 @@ async function getAuctions(props) {
 async function getFixedPrice(props) {
   itemsTable.filter = {
     only_mine: $bids.filter.showMineOnly,
-    include_inactive: $bids.filter.showCompleted
+    include_inactive: $bids.filter.showCompleted,
+    user_is_participant: $bids.filter.showMyBidsOnly
   }
   const params = prepareFilterQuery(itemsTable, props)
   try {
@@ -394,6 +430,16 @@ async function getFixedPrice(props) {
       color: 'negative'
     })
   }
+}
+
+const buttonIcon = props => {
+  const {active, user_is_owner, user_is_participant, user_is_top_bidder} =
+    props.row
+  if (!active) return null
+  if (user_is_participant) {
+    return user_is_top_bidder ? 'military_tech' : 'sentiment_dissatisfied'
+  }
+  return null
 }
 
 onMounted(async () => {

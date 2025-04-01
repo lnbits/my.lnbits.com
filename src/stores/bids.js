@@ -20,6 +20,7 @@ export const useBidStore = defineStore('bids', {
     openTab: 'auction',
     filter: {
       showMineOnly: false,
+      showMyBidsOnly: false,
       showCompleted: false
     }
   }),
