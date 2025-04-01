@@ -199,14 +199,18 @@
               <q-tr
                 :props="props"
                 :style="
-                  props.row.is_mine
+                  props.row.user_is_owner
                     ? 'background-color: rgb(9 87 131 / 8%)'
                     : ''
                 "
               >
                 <q-td auto-width>
-                  <q-badge v-if="props.row.is_mine" rounded color="secondary" />
-                  <q-tooltip v-if="props.row.is_mine">My bid</q-tooltip>
+                  <q-badge
+                    v-if="props.row.user_is_owner"
+                    rounded
+                    color="secondary"
+                  />
+                  <q-tooltip v-if="props.row.user_is_owner">My bid</q-tooltip>
                 </q-td>
                 <q-td v-for="col in props.cols" :key="col.name" :props="props">
                   {{ col.value }}
@@ -303,7 +307,7 @@ const outBid = ref(false)
 const winner = ref(false)
 
 const canBeClosed = computed(() => {
-  if (!item.value.is_mine) return false
+  if (!item.value.user_is_owner) return false
   if (!item.value.active) return true
   if (bidHistory.value.total > 0) return false
   return true
