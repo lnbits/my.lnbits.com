@@ -362,8 +362,6 @@ async function getIdentities() {
   width: 100%;
   margin-right: auto;
   margin-left: auto;
-  padding-right: 1rem;
-  padding-left: 1rem;
 }
 
 .container {

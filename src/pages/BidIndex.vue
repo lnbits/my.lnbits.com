@@ -117,7 +117,7 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="text-h5 text-uppercase">
-                  <q-th auto-width></q-th>
+                  <q-th auto-width v-if="$q.screen.gt.xs"></q-th>
                   <q-th
                     v-for="col in props.cols"
                     :key="col.name"
@@ -137,7 +137,7 @@
                       : ''
                   "
                 >
-                  <q-td auto-width>
+                  <q-td auto-width v-if="$q.screen.gt.xs">
                     <q-badge
                       v-if="props.row.user_is_owner"
                       rounded
@@ -203,7 +203,7 @@
             >
               <template v-slot:header="props">
                 <q-tr :props="props" class="text-h5 text-uppercase">
-                  <q-th auto-width></q-th>
+                  <q-th auto-width v-if="$q.screen.gt.xs"></q-th>
                   <q-th
                     v-for="col in props.cols"
                     :key="col.name"
@@ -223,7 +223,7 @@
                       : ''
                   "
                 >
-                  <q-td auto-width>
+                  <q-td auto-width v-if="$q.screen.gt.xs">
                     <q-badge
                       v-if="props.row.user_is_owner"
                       rounded
@@ -303,7 +303,7 @@ const itemsTable = reactive({
     {
       name: 'current_price',
       align: 'left',
-      label: 'Current Price',
+      label: $q.screen.gt.xs ? 'Current Price' : 'Price',
       field: 'current_price',
       sortable: true,
       format: (_, row) => formatCurrency(row.current_price, row.currency)
