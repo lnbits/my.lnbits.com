@@ -26,9 +26,13 @@
       <template v-slot:after>
         <q-btn
           unelevated
+          :outline="$q.screen.gt.xs"
+          rounded
+          class="text-capitalize"
           text-color="secondary"
           color="primary"
-          icon="filter_alt"
+          icon-right="filter_alt"
+          :label="$q.screen.gt.xs ? 'Filter' : null"
         >
           <q-menu>
             <q-list style="min-width: 100px">
