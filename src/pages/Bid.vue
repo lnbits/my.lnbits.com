@@ -511,12 +511,12 @@ const subscribeToPaylinkWs = payment_hash => {
   })
 }
 
-async function closeItem() {
-  try {
-    $q.dialog({
-      title: 'End Bidding',
-      message: 'Are you sure you want to end the bidding?'
-    }).onOk(async () => {
+function closeItem() {
+  $q.dialog({
+    title: 'End Bidding',
+    message: 'Are you sure you want to end the bidding?'
+  }).onOk(async () => {
+    try {
       await saas.closeItem(item.value.id)
       $q.notify({
         message: 'Close request sent!',
@@ -525,15 +525,15 @@ async function closeItem() {
       setTimeout(() => {
         $router.push('/identities')
       }, 500)
-    })
-  } catch (error) {
-    console.error(error)
-    $q.notify({
-      message: 'Failed to close item',
-      caption: error.response?.data?.detail,
-      color: 'negative'
-    })
-  }
+    } catch (error) {
+      console.error(error)
+      $q.notify({
+        message: 'Failed to close item',
+        caption: error.response?.data?.detail,
+        color: 'negative'
+      })
+    }
+  })
 }
 
 const resetDataDialog = () => {
