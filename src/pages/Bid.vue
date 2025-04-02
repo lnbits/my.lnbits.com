@@ -578,15 +578,17 @@ onMounted(async () => {
       await getBidHistory()
       if (item.value.active) {
         await checkOutBid()
-        itemWS.value = saas.subscribeToWS(item.value.id)
-        itemWS.value.onmessage = async ({data}) => {
-          const resp = JSON.parse(data)
-          if (resp.status == 'new_bid') {
-            await updateItemData(item.value.id)
-          }
-          if (resp.status == 'closed') {
-            clearInterval($bid.interval)
-            item.value.active = false
+        if ($store.isLoggedIn) {
+          itemWS.value = saas.subscribeToWS(item.value.id)
+          itemWS.value.onmessage = async ({data}) => {
+            const resp = JSON.parse(data)
+            if (resp.status == 'new_bid') {
+              await updateItemData(item.value.id)
+            }
+            if (resp.status == 'closed') {
+              clearInterval($bid.interval)
+              item.value.active = false
+            }
           }
         }
       }
