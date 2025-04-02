@@ -256,6 +256,28 @@ const saas = {
     return response
   },
 
+  subscribeToWS: function (itemID) {
+    const socket = new WebSocket(
+      `${this.url.replace('http', 'ws')}/api/v1/ws/${
+        itemID ? itemID : this.auctionRoomId
+      }`
+    )
+
+    socket.onopen = () => {
+      console.log('WebSocket Client Connected')
+    }
+
+    socket.onclose = () => {
+      console.log('WebSocket Client Disconnected')
+    }
+
+    socket.onerror = error => {
+      console.error('WebSocket Error: ', error)
+    }
+
+    return socket
+  },
+
   mapAddressToProfile(address) {
     return {
       id: address.id,

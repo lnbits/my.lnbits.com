@@ -295,11 +295,43 @@
         </q-tab-panels>
       </div>
     </div>
+    <q-dialog v-model="outbidded.show" @hide="resetOutbidded">
+      <q-card class="q-pa-md">
+        <q-card-section class="row items-center">
+          <div class="text-h6">Outbid</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <div class="text-h6">
+            You have been outbid on an auction you are participating in.
+          </div>
+          <div class="q-mt-md">
+            Please check your bids to see the latest status.
+            <p>Item: <span v-text="outbidded.item.name"></span></p>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            rounded
+            unelevated
+            text-color="primary"
+            class="text-capitalize"
+            :to="`/bid/${outbidded.item.id}`"
+            label="go to auction"
+            color="secondary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
-import {ref, onMounted, watch, reactive} from 'vue'
+import {ref, onMounted, watch, reactive, onBeforeUnmount} from 'vue'
 import {saas} from 'src/boot/saas'
 import {useQuasar} from 'quasar'
 import {formatCurrency, prepareFilterQuery} from 'src/boot/utils'
@@ -316,6 +348,25 @@ const auctions = ref({})
 const fixedPrice = ref({})
 
 const filterText = ref('')
+
+const auctionWs = ref(null)
+const outbidded = ref({
+  show: false,
+  item: null
+})
+
+const resetOutbidded = () => {
+  outbidded.value = {
+    show: false,
+    item: null
+  }
+}
+
+onBeforeUnmount(() => {
+  if (auctionWs.value) {
+    auctionWs.value.close()
+  }
+})
 
 const itemsTable = reactive({
   columns: [
@@ -407,6 +458,7 @@ async function getAuctions(props) {
     const {data} = await saas.getAuctions(params)
     itemsTable.pagination.rowsNumber = data.total
     auctions.value = {...data}
+    $bids.addAuctions(auctions.value)
   } catch (error) {
     console.error('Error getting sell offers: ', error)
     $q.notify({
@@ -427,6 +479,7 @@ async function getFixedPrice(props) {
     const {data} = await saas.getFixedPrice(params)
     fixedPrice.value = {...data}
     itemsTable.pagination.rowsNumber = data.total
+    $bids.addFixedPrice(fixedPrice.value)
   } catch (error) {
     console.error('Error getting fixed price offers: ', error)
     $q.notify({
@@ -449,7 +502,36 @@ const buttonIcon = props => {
 onMounted(async () => {
   await getAuctions()
   await getFixedPrice()
-  $bids.addAuctions(auctions.value)
-  $bids.addFixedPrice(fixedPrice.value)
+  setTimeout(() => {
+    outbidded.value = {
+      show: true,
+      item: {id: 12345, name: 'Test Item'}
+    }
+  }, 1000)
+  if ($store.isLoggedIn) {
+    auctionWs.value = saas.subscribeToWS()
+    auctionWs.value.onmessage = async ({data}) => {
+      const resp = JSON.parse(data)
+      if (resp.status == 'new_bid') {
+        const {data: item} = await saas.getItem(resp.auction_item_id)
+        const auction = $bids.getItem(resp.auction_item_id)
+
+        if (item.user_is_participant) {
+          const isTopBidder = auction.user_is_top_bidder
+          if (isTopBidder && !item.user_is_top_bidder) {
+            outbidded.value = {
+              show: true,
+              item
+            }
+            $q.notify({
+              message: 'You have been outbid',
+              color: 'negative'
+            })
+          }
+        }
+        await getAuctions()
+      }
+    }
+  }
 })
 </script>

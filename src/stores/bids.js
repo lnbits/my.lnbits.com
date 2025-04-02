@@ -59,8 +59,8 @@ export const useBidStore = defineStore('bids', {
       })
       this.items.fixedPrice.total = total
     },
-    updateItem(data) {
-      if (data.type === 'auction') {
+    updateItem(data, type = 'auction') {
+      if (type === 'auction') {
         this.items.auctions.data.set(data.id, data)
       } else {
         this.items.fixedPrice.data.set(data.id, data)

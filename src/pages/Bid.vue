@@ -313,6 +313,8 @@ const canBeClosed = computed(() => {
   return true
 })
 
+const itemWS = ref(null)
+
 const bidsTable = reactive({
   columns: [
     {
@@ -561,7 +563,9 @@ const updateTime = expireDate => {
 
 onBeforeUnmount(() => {
   clearInterval($bid.interval)
-  clearInterval($bid.bidHistoryInterval)
+  if (itemWS.value) {
+    itemWS.value.close()
+  }
 })
 
 onMounted(async () => {
@@ -574,10 +578,17 @@ onMounted(async () => {
       await getBidHistory()
       if (item.value.active) {
         await checkOutBid()
-        clearInterval($bid.bidHistoryInterval)
-        $bid.bidHistoryInterval = setInterval(() => {
-          updateItemData(item.value.id)
-        }, 60000)
+        itemWS.value = saas.subscribeToWS(item.value.id)
+        itemWS.value.onmessage = async ({data}) => {
+          const resp = JSON.parse(data)
+          if (resp.status == 'new_bid') {
+            await updateItemData(item.value.id)
+          }
+          if (resp.status == 'closed') {
+            clearInterval($bid.interval)
+            item.value.active = false
+          }
+        }
       }
     }
 
