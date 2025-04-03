@@ -36,6 +36,16 @@
         >
           <q-menu>
             <q-list style="min-width: 100px">
+              <q-item>
+                <q-btn
+                  icon="close"
+                  flat
+                  round
+                  v-close-popup
+                  class="q-ml-auto"
+                  size="sm"
+                />
+              </q-item>
               <q-item
                 v-if="$store.isLoggedIn"
                 clickable
