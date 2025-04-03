@@ -88,7 +88,7 @@
             </q-list>
           </q-menu>
         </q-btn>
-        <q-btn
+        <!-- <q-btn
           v-if="$store.isLoggedIn && participating.length"
           unelevated
           :outline="$q.screen.gt.xs"
@@ -108,12 +108,13 @@
             :label="outbidded.length"
             style="font-size: 0.8em"
           />
-        </q-btn>
+        </q-btn> -->
       </template>
     </q-input>
     <div class="container q-mt-lg">
       <div class="pitch q-mx-auto">
-        <div class="flex-center q-my-md q-px-md" v-if="showOutbidded">
+        <CardOutbid :items="outbidded" v-if="outbidded.length" />
+        <!-- <div class="flex-center q-my-md q-px-md" v-if="showOutbidded">
           <div v-if="!outbidded.length" class="q-pa-md">
             <div class="text-center text-white q-mt-xl">
               <q-icon
@@ -137,7 +138,7 @@
               :to="`/bid/${item.id}`"
             />
           </q-list>
-        </div>
+        </div> -->
         <q-tabs
           v-model="$bids.openTab"
           dense
@@ -225,10 +226,10 @@
                     :key="col.name"
                     :props="props"
                     :class="{
-                      'text-negative':
+                      'text-accent':
                         props.row.user_is_participant &&
                         !props.row.user_is_top_bidder,
-                      'text-lime-1':
+                      'text-light-green-11':
                         props.row.user_is_participant &&
                         props.row.user_is_top_bidder
                     }"
@@ -247,14 +248,14 @@
                       no-wrap
                       :label="props.row.active ? 'Bid' : 'View'"
                     >
-                      <div v-if="buttonIcon(props)">
+                      <!-- <div v-if="buttonIcon(props)">
                         <q-icon
                           :name="buttonIcon(props)"
                           size="xs"
                           color="primary"
                           class="q-ml-xs"
                         />
-                      </div>
+                      </div> -->
                     </q-btn>
                   </q-td>
                 </q-tr>
@@ -377,7 +378,7 @@ const filterText = ref('')
 const auctionWs = ref(null)
 const participating = ref([])
 const outbidded = ref([])
-const showOutbidded = ref(false)
+// const showOutbidded = ref(false)
 const loadingParticipating = ref(false)
 
 onBeforeUnmount(() => {
@@ -509,18 +510,17 @@ async function getFixedPrice(props) {
 
 function findOutbids() {
   const outbids = participating.value.filter(item => !item.user_is_top_bidder)
-  console.log('outbids', outbids)
   return outbids
 }
 
-const buttonIcon = props => {
-  const {active, user_is_participant, user_is_top_bidder} = props.row
-  if (!active) return null
-  if (user_is_participant) {
-    return user_is_top_bidder ? 'military_tech' : 'sentiment_dissatisfied'
-  }
-  return null
-}
+// const buttonIcon = props => {
+//   const {active, user_is_participant, user_is_top_bidder} = props.row
+//   if (!active) return null
+//   if (user_is_participant) {
+//     return user_is_top_bidder ? 'military_tech' : 'sentiment_dissatisfied'
+//   }
+//   return null
+// }
 
 onMounted(async () => {
   await getAuctions()

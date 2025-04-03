@@ -1,5 +1,24 @@
 <template>
-  <q-item clickable v-ripple class="nostr-card q-py-md">
+  <q-card class="q-mb-md q-mx-md q-pa-none nostr-card text-white no-shadow">
+    <q-card-section>
+      <div class="text-h6">You're outbid in the following items</div>
+    </q-card-section>
+    <q-card-section>
+      <div class="flex q-gutter-md">
+        <template v-for="(item, index) in items" :key="index" class="q-mb-md">
+          <q-badge
+            color="accent"
+            text-color="white"
+            :label="item.name"
+            class="q-pa-sm text-weight-bold"
+            @click="goTo(`/bid/${item.id}`)"
+            style="cursor: pointer"
+          />
+        </template>
+      </div>
+    </q-card-section>
+  </q-card>
+  <!-- <q-item clickable v-ripple class="nostr-card q-py-md">
     <q-item-section class="ellipsis">
       <q-item-label lines="1" class="text-weight-bold text-white q-mb-md">{{
         item.name
@@ -27,15 +46,20 @@
         }}</span>
       </q-item-label>
     </q-item-section>
-  </q-item>
+  </q-item> -->
 </template>
-
 <script setup>
-import {formatCurrency, timeFromSeconds} from 'src/boot/utils'
+import {useRouter} from 'vue-router'
 defineProps({
-  item: {
-    type: Object,
+  items: {
+    type: Array,
+    default: () => [],
     required: true
   }
 })
+
+const $router = useRouter()
+const goTo = path => {
+  $router.push(path)
+}
 </script>

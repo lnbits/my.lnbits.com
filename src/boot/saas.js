@@ -264,11 +264,11 @@ const saas = {
     )
 
     socket.onopen = () => {
-      console.log('WebSocket Client Connected')
+      console.debug('WebSocket Client Connected')
     }
 
     socket.onclose = () => {
-      console.log('WebSocket Client Disconnected')
+      console.debug('WebSocket Client Disconnected')
     }
 
     socket.onerror = error => {
