@@ -88,10 +88,56 @@
             </q-list>
           </q-menu>
         </q-btn>
+        <q-btn
+          v-if="$store.isLoggedIn && participating.length"
+          unelevated
+          :outline="$q.screen.gt.xs"
+          rounded
+          class="text-capitalize q-ml-sm"
+          text-color="secondary"
+          color="primary"
+          icon-right="dangerous"
+          :label="$q.screen.gt.xs ? 'Outbids' : null"
+          @click="showOutbidded = !showOutbidded"
+        >
+          <q-badge
+            v-if="outbidded.length"
+            class="q-ml-sm"
+            color="negative"
+            floating
+            :label="outbidded.length"
+            style="font-size: 0.8em"
+          />
+        </q-btn>
       </template>
     </q-input>
     <div class="container q-mt-lg">
       <div class="pitch q-mx-auto">
+        <div class="flex-center q-my-md q-px-md" v-if="showOutbidded">
+          <div v-if="!outbidded.length" class="q-pa-md">
+            <div class="text-center text-white q-mt-xl">
+              <q-icon
+                name="military_tech"
+                size="64px"
+                color="secondary"
+                class="q-mb-lg"
+              />
+              <q-item-label
+                class="text-h6"
+                v-text="'Seems like you are winning all your bids'"
+              ></q-item-label>
+            </div>
+          </div>
+          <q-list dark>
+            <CardOutbid
+              v-for="item in outbidded"
+              :key="item.id"
+              :item="item"
+              class="q-my-sm"
+              :to="`/bid/${item.id}`"
+            />
+          </q-list>
+        </div>
         <q-tabs
           v-model="$bids.openTab"
           dense
@@ -305,38 +351,6 @@
         </q-tab-panels>
       </div>
     </div>
-    <q-dialog v-model="outbidded.show" @hide="resetOutbidded">
-      <q-card class="q-pa-md">
-        <q-card-section class="row items-center">
-          <div class="text-h6">Outbid</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          <div class="text-h6">
-            You have been outbid on an auction you are participating in.
-          </div>
-          <div class="q-mt-md">
-            Please check your bids to see the latest status.
-            <p>Item: <span v-text="outbidded.item.name"></span></p>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            rounded
-            unelevated
-            text-color="primary"
-            class="text-capitalize"
-            :to="`/bid/${outbidded.item.id}`"
-            label="go to auction"
-            color="secondary"
-            v-close-popup
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
@@ -349,6 +363,7 @@ import {useBidStore} from 'src/stores/bids'
 import {useAppStore} from 'src/stores/store'
 
 import NostrHeadIcon from 'components/NostrHeadIcon.vue'
+import CardOutbid from 'src/components/cards/CardOutbid.vue'
 
 const $q = useQuasar()
 const $bids = useBidStore()
@@ -360,17 +375,10 @@ const fixedPrice = ref({})
 const filterText = ref('')
 
 const auctionWs = ref(null)
-const outbidded = ref({
-  show: false,
-  item: null
-})
-
-const resetOutbidded = () => {
-  outbidded.value = {
-    show: false,
-    item: null
-  }
-}
+const participating = ref([])
+const outbidded = ref([])
+const showOutbidded = ref(false)
+const loadingParticipating = ref(false)
 
 onBeforeUnmount(() => {
   if (auctionWs.value) {
@@ -499,9 +507,14 @@ async function getFixedPrice(props) {
   }
 }
 
+function findOutbids() {
+  const outbids = participating.value.filter(item => !item.user_is_top_bidder)
+  console.log('outbids', outbids)
+  return outbids
+}
+
 const buttonIcon = props => {
-  const {active, user_is_owner, user_is_participant, user_is_top_bidder} =
-    props.row
+  const {active, user_is_participant, user_is_top_bidder} = props.row
   if (!active) return null
   if (user_is_participant) {
     return user_is_top_bidder ? 'military_tech' : 'sentiment_dissatisfied'
@@ -512,34 +525,37 @@ const buttonIcon = props => {
 onMounted(async () => {
   await getAuctions()
   await getFixedPrice()
-  setTimeout(() => {
-    outbidded.value = {
-      show: true,
-      item: {id: 12345, name: 'Test Item'}
-    }
-  }, 1000)
   if ($store.isLoggedIn) {
+    loadingParticipating.value = true
+    // get all auctions where the user is a participant
+    const {data: myAuctions} = await saas.getAuctions({
+      user_is_participant: true,
+      include_inactive: false // this doesn't seem to be working
+    })
+    // filter myAuctions to only include active auctions
+    participating.value = myAuctions.data.filter(auction => auction.active)
+    outbidded.value = findOutbids()
+    loadingParticipating.value = false
+
     auctionWs.value = saas.subscribeToWS()
     auctionWs.value.onmessage = async ({data}) => {
       const resp = JSON.parse(data)
       if (resp.status == 'new_bid') {
-        const {data: item} = await saas.getItem(resp.auction_item_id)
-        const auction = $bids.getItem(resp.auction_item_id)
-
-        if (item.user_is_participant) {
-          const isTopBidder = auction.user_is_top_bidder
-          if (isTopBidder && !item.user_is_top_bidder) {
-            outbidded.value = {
-              show: true,
-              item
-            }
-            $q.notify({
-              message: 'You have been outbid',
-              color: 'negative'
-            })
-          }
+        const isUserParticipating = participating.value.find(
+          item => item.id == resp.auction_item_id
+        )
+        if (isUserParticipating && isUserParticipating.user_is_top_bidder) {
+          const index = participating.value.findIndex(
+            item => item.id == resp.auction_item_id
+          )
+          participating.value[index].user_is_top_bidder = false
+          $q.notify({
+            message: 'You have been outbid',
+            color: 'negative'
+          })
+          await getAuctions()
+          outbidded.value = findOutbids()
         }
-        await getAuctions()
       }
     }
   }
