@@ -508,6 +508,12 @@ async function getFixedPrice(props) {
   }
 }
 
+function getParticipating() {
+  return auctions.value.data.filter(
+    auction => auction.active && auction.user_is_participant
+  )
+}
+
 function findOutbids() {
   const outbids = participating.value.filter(item => !item.user_is_top_bidder)
   return outbids
@@ -527,13 +533,7 @@ onMounted(async () => {
   await getFixedPrice()
   if ($store.isLoggedIn) {
     loadingParticipating.value = true
-    // get all auctions where the user is a participant
-    const {data: myAuctions} = await saas.getAuctions({
-      user_is_participant: true,
-      include_inactive: false // this doesn't seem to be working
-    })
-    // filter myAuctions to only include active auctions
-    participating.value = myAuctions.data.filter(auction => auction.active)
+    participating.value = getParticipating()
     outbidded.value = findOutbids()
     loadingParticipating.value = false
 
@@ -554,6 +554,7 @@ onMounted(async () => {
             color: 'negative'
           })
           await getAuctions()
+          participating.value = getParticipating()
           outbidded.value = findOutbids()
         }
       }
