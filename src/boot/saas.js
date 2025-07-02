@@ -131,7 +131,7 @@ var saas = {
       if (!enabled) {
         return "Disabled"
       }
-      return "Runnning"
+      return "Running"
     }
 
     const timeLeft = Math.floor(
