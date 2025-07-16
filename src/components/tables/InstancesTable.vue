@@ -25,6 +25,26 @@
         </div>
       </div>
     </q-card-section>
+    <q-card-section class="q-pa-none">
+      <div class="row q-col-gutter-sm q-mt-md">
+        <div class="col">
+          <q-item class="q-pa-none bg-grey-8">
+            <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
+              <q-icon name="info" color="white" size="24px"></q-icon>
+            </q-item-section>
+            <q-item-section class="q-pa-md q-ml-none text-white">
+              <q-item-label class="text-white text-h6 text-weight-bolder"
+                >New Instances Creation</q-item-label
+              >
+              <q-item-label
+                >It takes a few minutes to create a new instance after the
+                payment is confirmed. Please wait.</q-item-label
+              >
+            </q-item-section>
+          </q-item>
+        </div>
+      </div>
+    </q-card-section>
   </q-card>
   <q-card class="table-bg no-shadow" bordered>
     <q-card-section>
@@ -252,11 +272,7 @@
       <h5><span v-text="activeInstance.name"></span></h5>
       <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <div class="row q-mt-md">
-        <q-btn
-          color="deep-purple"
-          @click="copyData"
-          v-text="'Copy'"
-        ></q-btn>
+        <q-btn color="deep-purple" @click="copyData" v-text="'Copy'"></q-btn>
         <q-btn
           v-close-popup
           flat
