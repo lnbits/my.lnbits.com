@@ -1,3 +1,16 @@
 {
-        debug
+	debug
+	email stan.v.vlad@gmail.com
 }
+
+localhost:9090 {
+	handle /saas/api/v1* {
+    # uri replace /saas/api/v1: /
+		reverse_proxy https://api.lnbits.com
+	}
+
+	handle /* {
+		reverse_proxy localhost:8080
+	}
+}
+

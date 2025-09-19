@@ -3,7 +3,8 @@ import { secondsToDhm } from "src/boot/utils";
 
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
-  url: "https://api.lnbits.com",
+  // url: "https://api.lnbits.com",
+  url: "/saas/api/v1",
   serverTime: null,
 
   username: localStorage.getItem("username"),
@@ -177,13 +178,13 @@ var saas = {
   axios.interceptors.response.use(
     (response) => response,
     (err) => {
-      if (err?.response?.status === 401) {
-        saas.logout();
-        if (window.location.pathname !==  "/login") {
-          setTimeout(() => (window.location.href = "/login"), 500);
-        }
-      }
-      return Promise.reject(err);
+      // if (err?.response?.status === 401) {
+      //   saas.logout();
+      //   if (window.location.pathname !==  "/login") {
+      //     setTimeout(() => (window.location.href = "/login"), 500);
+      //   }
+      // }
+      // return Promise.reject(err);
     }
   );
 })();
