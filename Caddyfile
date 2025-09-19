@@ -4,13 +4,18 @@
 }
 
 localhost:9090 {
-	handle /saas/api/v1* {
-    # uri replace /saas/api/v1: /
-		reverse_proxy https://api.lnbits.com
+	@saas {
+		path /api/*
+	}
+
+	handle @saas {
+		uri strip_prefix /api
+		reverse_proxy https://api.lnbits.com {
+			header_up Host api.lnbits.com
+		}
 	}
 
 	handle /* {
 		reverse_proxy localhost:8080
 	}
 }
-

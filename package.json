@@ -5,8 +5,8 @@
   "productName": "My Bits",
   "private": true,
   "scripts": {
-    ////////// if `npm run start`  does not work then run from the command line
-    ////////// first build with `npm run build`
+    "comment1": "//// if `npm run start`  does not work then run from the command line",
+    "comment2": "//// first build with `npm run build`",
     "start": "quasar serve dist/spa -p 8080",
     "dev": "quasar dev",
     "build": "quasar build",
