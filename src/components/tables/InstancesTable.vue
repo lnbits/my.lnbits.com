@@ -283,6 +283,31 @@
       </div>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
+            <q-card-section class="q-py-lg bg-grey text-white column">
+                <div class="text-h6">Your VPS is being provisioned...</div>
+                <div>Please wait while we set up your server. This may take a few
+                    minutes.</div>
+            </q-card-section>
+            <q-linear-progress indeterminate></q-linear-progress>
+            <q-carousel v-model="slide" arrows infinite :autoplay="5000" transition-prev="slide-right"
+                transition-next="slide-left" animated>
+                <q-carousel-slide v-for="(slide, index) in slides" :key="index" :name="index" :img-src="slide.image"
+                    class="">
+                    <div class="absolute-bottom custom-caption">
+                        <div class="text-h5">{{ slide.title }}</div>
+                        <div class="text-subtitle1">{{ slide.description }}</div>
+                    </div>
+                </q-carousel-slide>
+            </q-carousel>
+
+            <q-card-actions align="right">
+                <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
+            </q-card-actions>
+        </q-card>
+
+  </q-dialog>
 </template>
 
 <script>
@@ -305,6 +330,8 @@ export default defineComponent({
         page: 1,
       },
       inProgress: false,
+      showProvisioning: false,
+      provisionCheck: null,
       columns: [
         {
           name: "action",
@@ -401,6 +428,45 @@ export default defineComponent({
           color2: "#3e51b5",
         },
       ],
+      slide: 0,
+      slides: [
+        {
+          image: 'https://cdn.quasar.dev/img/mountains.jpg',
+          title: 'Choose Your Funding Source',
+          description:
+        'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
+        },
+        {
+          image: 'https://cdn.quasar.dev/img/parallax1.jpg',
+          title: 'Your LNbits Wallet for Everyday Use',
+          description:
+        'Send and receive bitcoin using your LNbits wallet.'
+        },
+        {
+          image: 'https://cdn.quasar.dev/img/parallax2.jpg',
+          title: 'Extend LNbits with Powerful Extensions',
+          description:
+        'LNbits has dozens of extensions including a Point of Sale device, Split Payments and Boltz swaps.'
+        },
+        {
+          image: 'https://cdn.quasar.dev/img/quasar.jpg',
+          title: 'Connect LNbits to Your Favourite Apps and Services',
+          description:
+        'LNbits supports Nostr Wallet Connect and LNDHub, so you can easily integrate it with external wallets, apps or your own projects.'
+        },
+        {
+          image: 'https://cdn.quasar.dev/img/material.png',
+          title: 'Awesome for Developers with an API-First Architecture',
+          description:
+        'Excellent REST and WebSocket APIs to build and automate on Bitcoin.'
+        },
+        {
+          image: 'https://cdn.quasar.dev/img/boy-avatar.png',
+          title: 'Hardware Support for Real-World Bitcoin Use',
+          description:
+        'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions.'
+        }
+      ]
     };
   },
   setup() {
@@ -582,6 +648,15 @@ export default defineComponent({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
               color: "positive",
             });
+            const { status } = await fetch(`https://${updatedInstance.domain}`);
+            if (status === 503) {
+              this.$q.notify({
+                message: `Instance ${instance.name} (${instance.id}) is being deployed!`,
+                caption: 'This may take a few minutes, please wait...',
+              });
+              this.checkInstanceProvisioning(updatedInstance);
+            }
+
           }
           if (!this.showPaymentQrDialog) {
             await this.refreshState();
@@ -592,9 +667,31 @@ export default defineComponent({
         }
       }, 3000);
     },
+    async checkInstanceProvisioning(instance) {
+      console.log("checking instance", instance.id);
+      this.showProvisioning = true;
+      this.provisionCheck = setInterval(async () => {
+        try {
+          // ping the instance to see if returns 200 or 307 (on first install it redirects to /first_install)
+          const {status} = await fetch(`https://${instance.domain}`);
+          console.log("ping response", status);
+          if (status === 200 || status === 307) {
+            this.showProvisioning = false;
+            this.q.notify({
+              message: `Instance ${instance.name} (${instance.id}) is ready!`,
+              color: "positive",
+            });
+            clearInterval(this.provisionCheck);
+            await this.refreshState();
+          }
+        } catch (error) {
+          console.debug(error);
+        }
+      }, 5000);
+    },
     serverStatus: async function () {
       try {
-        await saas.status();
+        return await saas.status();
       } catch (error) {
         console.warn(error);
         this.q.notify({
@@ -623,6 +720,18 @@ export default defineComponent({
     refreshState: async function () {
       try {
         const { data } = await saas.getInstances();
+        // this.checkInstance({
+        //   id: 5906,
+        //   timestamp_stop: 1758292759,
+        //   timestamp: 1758289125,
+        //   is_active: true,
+        //   lnurl: "LNURL1DP68GURN8GHJ7URJDAJZUMRWVF5HGUEWVDHK6TMVDE6HYMRS9UUYS42SF43QDVAHRF",
+        //   user_id: 5096,
+        //   timestamp_start: 1758289386,
+        //   is_enabled: false,
+        //   domain: "pluckycamel7.lnbits.com",
+        //   adminuser: ""
+        // })
         await this.serverStatus();
         const tableData = (data || []).map((i) => saas.mapInstance(i));
 
@@ -659,5 +768,10 @@ export default defineComponent({
 <style>
 .table-bg {
   background-color: #162b4d;
+}
+.custom-caption {
+    padding: 12px;
+    color: white;
+    background-color: rgba(0, 0, 0, .35);
 }
 </style>
