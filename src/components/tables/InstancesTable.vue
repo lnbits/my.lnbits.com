@@ -285,14 +285,15 @@
   </q-dialog>
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
-            <q-card-section class="q-py-lg bg-grey text-white column">
+            <q-card-section class="q-py-lg bg-secondary text-white column">
                 <div class="text-h6">Your VPS is being provisioned...</div>
                 <div>Please wait while we set up your server. This may take a few
                     minutes.</div>
             </q-card-section>
             <q-linear-progress indeterminate></q-linear-progress>
-            <q-carousel v-model="slide" arrows infinite :autoplay="5000" transition-prev="slide-right"
-                transition-next="slide-left" animated>
+            <q-carousel v-model="slide" arrows infinite :autoplay="20000" transition-prev="slide-right"
+                transition-next="slide-left" animated height="600px" control-type="regular"
+      control-color="secondary">
                 <q-carousel-slide v-for="(slide, index) in slides" :key="index" :name="index" :img-src="slide.image"
                     class="">
                     <div class="absolute-bottom custom-caption">
@@ -431,40 +432,40 @@ export default defineComponent({
       slide: 0,
       slides: [
         {
-          image: 'https://cdn.quasar.dev/img/mountains.jpg',
+          image: 'images/slide_1.jpg',
           title: 'Choose Your Funding Source',
           description:
         'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
         },
         {
-          image: 'https://cdn.quasar.dev/img/parallax1.jpg',
+          image: 'images/slide_2.jpg',
           title: 'Your LNbits Wallet for Everyday Use',
           description:
         'Send and receive bitcoin using your LNbits wallet.'
         },
         {
-          image: 'https://cdn.quasar.dev/img/parallax2.jpg',
+          image: 'images/slide_3.jpg',
           title: 'Extend LNbits with Powerful Extensions',
           description:
         'LNbits has dozens of extensions including a Point of Sale device, Split Payments and Boltz swaps.'
         },
         {
-          image: 'https://cdn.quasar.dev/img/quasar.jpg',
+          image: 'images/slide_4.jpg',
           title: 'Connect LNbits to Your Favourite Apps and Services',
           description:
         'LNbits supports Nostr Wallet Connect and LNDHub, so you can easily integrate it with external wallets, apps or your own projects.'
         },
         {
-          image: 'https://cdn.quasar.dev/img/material.png',
+          image: 'images/slide_5.jpg',
           title: 'Awesome for Developers with an API-First Architecture',
           description:
         'Excellent REST and WebSocket APIs to build and automate on Bitcoin.'
         },
         {
-          image: 'https://cdn.quasar.dev/img/boy-avatar.png',
+          image: 'images/slide_6.jpg',
           title: 'Hardware Support for Real-World Bitcoin Use',
           description:
-        'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions.'
+        'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions. Visit the shop at shop.lnbits.com'
         }
       ]
     };
@@ -639,6 +640,7 @@ export default defineComponent({
           const updatedInstance = (data || [])
             .map((i) => saas.mapInstance(i))
             .find((i) => i.id === instance.id);
+          console.log("checking instance", instance.id, updatedInstance);
           if (
             updatedInstance &&
             updatedInstance.timestampStop > instance.timestampStop
@@ -648,19 +650,11 @@ export default defineComponent({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
               color: "positive",
             });
-            const { status } = await fetch(`https://${updatedInstance.domain}`);
-            if (status === 503) {
-              this.$q.notify({
-                message: `Instance ${instance.name} (${instance.id}) is being deployed!`,
-                caption: 'This may take a few minutes, please wait...',
-              });
-              this.checkInstanceProvisioning(updatedInstance);
-            }
-
           }
           if (!this.showPaymentQrDialog) {
             await this.refreshState();
             clearInterval(retryId);
+            await this.checkInstanceProvisioning(updatedInstance);
           }
         } catch (error) {
           console.warn(error);
@@ -668,26 +662,39 @@ export default defineComponent({
       }, 3000);
     },
     async checkInstanceProvisioning(instance) {
-      console.log("checking instance", instance.id);
+      let timeout = 5 * 60 * 1000; // 5 minutes max wait
       this.showProvisioning = true;
-      this.provisionCheck = setInterval(async () => {
+      const intervalId = setInterval(async () => {
         try {
-          // ping the instance to see if returns 200 or 307 (on first install it redirects to /first_install)
-          const {status} = await fetch(`https://${instance.domain}`);
-          console.log("ping response", status);
-          if (status === 200 || status === 307) {
+          const response = await fetch(`https://${instance.name}/static/i18n/en.js`);
+          if (response.status === 200) {
             this.showProvisioning = false;
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) is ready!`,
               color: "positive",
             });
-            clearInterval(this.provisionCheck);
             await this.refreshState();
+            clearInterval(intervalId);
+          } else if (response.status === 503) {
+            // Service unavailable, keep waiting
+            return;
+          }
+          timeout -= 5000;
+          if (timeout <= 0) {
+            this.showProvisioning = false;
+            this.q.notify({
+              message: `Instance ${instance.name} (${instance.id}) is taking too long to be ready. Please try again later.`,
+              color: "warning",
+            });
+            await this.refreshState();
+            clearInterval(intervalId);
           }
         } catch (error) {
-          console.debug(error);
+          // Ignore CORS errors and other network errors, just continue polling
+          console.debug("Provisioning ping error (ignored):", error);
         }
       }, 5000);
+      this.provisionCheck = intervalId;
     },
     serverStatus: async function () {
       try {
