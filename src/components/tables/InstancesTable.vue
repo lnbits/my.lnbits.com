@@ -296,7 +296,7 @@
         v-model="slide"
         arrows
         infinite
-        :autoplay="20000"
+        :autoplay="10000"
         transition-prev="slide-right"
         transition-next="slide-left"
         animated
