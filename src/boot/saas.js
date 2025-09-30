@@ -4,6 +4,8 @@ import { secondsToDhm } from "src/boot/utils";
 var saas = {
   slideimg: "assets/images/hero/bitcoin-accounts.png",
   url: "https://api.lnbits.com",
+  // for local development togegther with Caddy
+  // url: "/api",
   serverTime: null,
 
   username: localStorage.getItem("username"),

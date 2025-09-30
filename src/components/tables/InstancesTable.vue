@@ -283,17 +283,58 @@
       </div>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
+      <q-card-section class="q-py-lg bg-secondary text-white column">
+        <div class="text-h6">Your VPS is being provisioned...</div>
+        <div>
+          Please wait while we set up your server. This may take a few minutes.
+        </div>
+      </q-card-section>
+      <q-linear-progress indeterminate></q-linear-progress>
+      <q-carousel
+        v-model="slide"
+        arrows
+        infinite
+        :autoplay="20000"
+        transition-prev="slide-right"
+        transition-next="slide-left"
+        animated
+        height="800px"
+        control-type="regular"
+        control-color="secondary"
+        style="max-height: 75vh"
+      >
+        <q-carousel-slide
+          v-for="(slide, index) in slides"
+          :key="index"
+          :name="index"
+          :img-src="slide.image"
+          class=""
+        >
+          <div class="absolute-bottom custom-caption">
+            <div class="text-h5">{{ slide.title }}</div>
+            <div class="text-subtitle1">{{ slide.description }}</div>
+          </div>
+        </q-carousel-slide>
+      </q-carousel>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import {defineComponent} from 'vue'
 
-import { useQuasar, copyToClipboard } from "quasar";
-import { saas } from "src/boot/saas";
-import { secondsToDhm } from "src/boot/utils";
+import {useQuasar, copyToClipboard} from 'quasar'
+import {saas} from 'src/boot/saas'
+import {secondsToDhm} from 'src/boot/utils'
 
 export default defineComponent({
-  name: "TableDarkMode",
+  name: 'TableDarkMode',
 
   data() {
     return {
@@ -302,43 +343,44 @@ export default defineComponent({
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
-        page: 1,
+        page: 1
       },
       inProgress: false,
+      showProvisioning: false,
       columns: [
         {
-          name: "action",
-          label: "",
-          field: "action",
+          name: 'action',
+          label: '',
+          field: 'action',
           sortable: false,
-          align: "center",
+          align: 'center'
         },
         {
-          name: "name",
-          label: "Name",
-          field: "name",
+          name: 'name',
+          label: 'Name',
+          field: 'name',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "id",
-          label: "Instance ID",
-          field: "id",
+          name: 'id',
+          label: 'Instance ID',
+          field: 'id',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "status",
-          label: "Status",
-          field: "statusText",
+          name: 'status',
+          label: 'Status',
+          field: 'statusText',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "progress",
-          label: "Time Left",
-          field: "progress",
-          align: "left",
+          name: 'progress',
+          label: 'Time Left',
+          field: 'progress',
+          align: 'left'
         },
         // {
         //   name: "enabled",
@@ -356,55 +398,93 @@ export default defineComponent({
         // },
 
         {
-          name: "Created Date",
-          label: "Created Date",
-          field: "createdDate",
+          name: 'Created Date',
+          label: 'Created Date',
+          field: 'createdDate',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "Stop Date",
-          label: "Stop Date",
-          field: "stopDate",
+          name: 'Stop Date',
+          label: 'Stop Date',
+          field: 'stopDate',
           sortable: true,
-          align: "left",
-        },
+          align: 'left'
+        }
       ],
 
       activityStats: [
         {
-          title: "Instances",
-          icon: "dns",
+          title: 'Instances',
+          icon: 'dns',
           value: 0,
-          color1: "#546bfa",
-          color2: "#3e51b5",
+          color1: '#546bfa',
+          color2: '#3e51b5'
         },
         {
-          title: "Enabled",
-          icon: "power_settings_new",
-          value: "0",
-          color1: "#3a9688",
-          color2: "#3e51b5",
+          title: 'Enabled',
+          icon: 'power_settings_new',
+          value: '0',
+          color1: '#3a9688',
+          color2: '#3e51b5'
         },
         {
-          title: "Deployed",
-          icon: "cloud_done",
-          value: "0",
-          color1: "#7cb342",
-          color2: "#3e51b5",
+          title: 'Deployed',
+          icon: 'cloud_done',
+          value: '0',
+          color1: '#7cb342',
+          color2: '#3e51b5'
         },
         {
-          title: "Total Time Left",
-          icon: "running_with_errors",
-          value: "0",
-          color1: "#f88c2b",
-          color2: "#3e51b5",
-        },
+          title: 'Total Time Left',
+          icon: 'running_with_errors',
+          value: '0',
+          color1: '#f88c2b',
+          color2: '#3e51b5'
+        }
       ],
-    };
+      slide: 0,
+      slides: [
+        {
+          image: 'images/slide_1.jpg',
+          title: 'Choose Your Funding Source',
+          description:
+            'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
+        },
+        {
+          image: 'images/slide_2.jpg',
+          title: 'Your LNbits Wallet for Everyday Use',
+          description: 'Send and receive bitcoin using your LNbits wallet.'
+        },
+        {
+          image: 'images/slide_3.jpg',
+          title: 'Extend LNbits with Powerful Extensions',
+          description:
+            'LNbits has dozens of extensions including a Point of Sale device, Split Payments and Boltz swaps.'
+        },
+        {
+          image: 'images/slide_4.jpg',
+          title: 'Connect LNbits to Your Favourite Apps and Services',
+          description:
+            'LNbits supports Nostr Wallet Connect and LNDHub, so you can easily integrate it with external wallets, apps or your own projects.'
+        },
+        {
+          image: 'images/slide_5.jpg',
+          title: 'Awesome for Developers with an API-First Architecture',
+          description:
+            'Excellent REST and WebSocket APIs to build and automate on Bitcoin.'
+        },
+        {
+          image: 'images/slide_6.jpg',
+          title: 'Hardware Support for Real-World Bitcoin Use',
+          description:
+            'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions. Visit the shop at shop.lnbits.com'
+        }
+      ]
+    }
   },
   setup() {
-    const $q = useQuasar();
+    const $q = useQuasar()
 
     return {
       q: $q,
@@ -413,251 +493,296 @@ export default defineComponent({
           title,
           message,
           cancel: true,
-          persistent: true,
-        });
+          persistent: true
+        })
       },
       getColor(val) {
         if (val > 95 && val <= 100) {
-          return "red";
+          return 'red'
         }
         if (val > 70 && val <= 95) {
-          return "orange";
+          return 'orange'
         }
         if (val > 50 && val <= 70) {
-          return "blue";
+          return 'blue'
         }
-        return "green";
-      },
-    };
+        return 'green'
+      }
+    }
   },
   methods: {
     createInstance: function () {
       this.confirm(
-        "Create New Instance",
-        "You are about the create a new LNbits instance." +
-          " You will be shown a payment request QR code." +
-          " Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance." +
-          " It costs 21 sats to run an instance for one hour."
+        'Create New Instance',
+        'You are about the create a new LNbits instance.' +
+          ' You will be shown a payment request QR code.' +
+          ' Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance.' +
+          ' It costs 21 sats to run an instance for one hour.'
       ).onOk(async () => {
         try {
-          this.inProgress = true;
-          const { data } = await saas.createInstance();
-          const instance = saas.mapInstance(data);
-          this.data.push(instance);
-          this.extendInstance(instance);
+          this.inProgress = true
+          const {data} = await saas.createInstance()
+          const instance = saas.mapInstance(data)
+          this.data.push(instance)
+          this.extendInstance(instance)
         } catch (error) {
-          console.warn(error);
+          console.warn(error)
           this.q.notify({
-            message: "Failed to create instance",
+            message: 'Failed to create instance',
             caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
+            color: 'negative'
+          })
         } finally {
-          this.inProgress = false;
+          this.inProgress = false
         }
-      });
+      })
     },
     resetInstance: function (id) {
       this.confirm(
         `Reset ${id}`,
-        "Are you sure you want to reset?" +
-          " Resetting will delete all your admin settings including your super user."
+        'Are you sure you want to reset?' +
+          ' Resetting will delete all your admin settings including your super user.'
       ).onOk(async () => {
         try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "reset");
+          this.inProgress = true
+          const {data} = await saas.updateInstance(id, 'reset')
           this.q.notify({
             message: data.message || `${data}`,
-            color: "positive",
-          });
-          await this.refreshState();
+            color: 'positive'
+          })
+          await this.refreshState()
         } catch (error) {
-          console.warn(error);
+          console.warn(error)
           this.q.notify({
             message: `Failed to reset instance ${id}.`,
             caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
+            color: 'negative'
+          })
         } finally {
-          this.inProgress = false;
+          this.inProgress = false
         }
-      });
+      })
     },
     disableInstance: function (id) {
       this.confirm(
         `Disable ${id}`,
-        "Are you sure you want to disable?" +
-          " Disabling will make your instance unavailable." +
-          " The clock is still ticking!"
+        'Are you sure you want to disable?' +
+          ' Disabling will make your instance unavailable.' +
+          ' The clock is still ticking!'
       ).onOk(async () => {
         try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "disable");
+          this.inProgress = true
+          const {data} = await saas.updateInstance(id, 'disable')
 
           this.q.notify({
             message: data.message || `${data}`,
-            color: "positive",
-          });
-          await this.refreshState();
+            color: 'positive'
+          })
+          await this.refreshState()
         } catch (error) {
-          console.warn(error);
+          console.warn(error)
           this.q.notify({
             message: `Failed to disable instance ${id}.`,
             caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
+            color: 'negative'
+          })
         } finally {
-          this.inProgress = false;
+          this.inProgress = false
         }
-      });
+      })
     },
     enableInstance: function (id) {
-      this.confirm(`Enable ${id}`, "Are you sure you want to enable?").onOk(
+      this.confirm(`Enable ${id}`, 'Are you sure you want to enable?').onOk(
         async () => {
           try {
-            this.inProgress = true;
-            const { data } = await saas.updateInstance(id, "enable");
+            this.inProgress = true
+            const {data} = await saas.updateInstance(id, 'enable')
 
             this.q.notify({
               message: data.message || `${data}`,
-              color: "positive",
-            });
-            await this.refreshState();
+              color: 'positive'
+            })
+            await this.refreshState()
           } catch (error) {
-            console.warn(error);
+            console.warn(error)
             this.q.notify({
               message: `Failed to enable instance ${id}.`,
               caption: saas.mapErrorToString(error),
-              color: "negative",
-            });
+              color: 'negative'
+            })
           } finally {
-            this.inProgress = false;
+            this.inProgress = false
           }
         }
-      );
+      )
     },
     destroyInstance: function (id) {
       this.confirm(
         `Destroy ${id}`,
-        "Are you sure you want to destroy?" +
-          " This action will delete all data and is not recoverable."
+        'Are you sure you want to destroy?' +
+          ' This action will delete all data and is not recoverable.'
       ).onOk(async () => {
         try {
-          this.inProgress = true;
-          const { data } = await saas.updateInstance(id, "destroy");
-          const index = this.data.findIndex((i) => i.id == id);
+          this.inProgress = true
+          const {data} = await saas.updateInstance(id, 'destroy')
+          const index = this.data.findIndex(i => i.id == id)
           if (index >= 0) {
-            this.data.splice(index, 1);
+            this.data.splice(index, 1)
           }
           this.q.notify({
             message: data.message || `${data}`,
-            color: "positive",
-          });
-          await this.refreshState();
+            color: 'positive'
+          })
+          await this.refreshState()
         } catch (error) {
-          console.warn(error);
+          console.warn(error)
           this.q.notify({
             message: `Failed to destroy instance '${id}'`,
             caption: saas.mapErrorToString(error),
-            color: "negative",
-          });
+            color: 'negative'
+          })
         } finally {
-          this.inProgress = false;
+          this.inProgress = false
         }
-      });
+      })
     },
     checkInstanceStatus: function (instance) {
       const retryId = setInterval(async () => {
         try {
-          const { data } = await saas.getInstances();
+          const {data} = await saas.getInstances()
           const updatedInstance = (data || [])
-            .map((i) => saas.mapInstance(i))
-            .find((i) => i.id === instance.id);
+            .map(i => saas.mapInstance(i))
+            .find(i => i.id === instance.id)
+          console.log('checking instance', instance.id, updatedInstance)
           if (
             updatedInstance &&
             updatedInstance.timestampStop > instance.timestampStop
           ) {
-            this.showPaymentQrDialog = false;
+            this.showPaymentQrDialog = false
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
-              color: "positive",
-            });
+              color: 'positive'
+            })
           }
           if (!this.showPaymentQrDialog) {
-            await this.refreshState();
-            clearInterval(retryId);
+            await this.refreshState()
+            clearInterval(retryId)
+            await this.checkInstanceProvisioning(updatedInstance)
           }
         } catch (error) {
-          console.warn(error);
+          console.warn(error)
         }
-      }, 3000);
+      }, 3000)
+    },
+    async checkInstanceProvisioning(instance) {
+      let timeout = 5 * 60 * 1000 // 5 minutes max wait
+      this.showProvisioning = true
+      const intervalId = setInterval(async () => {
+        try {
+          const response = await fetch(
+            `https://${instance.name}/static/i18n/en.js`
+          )
+          if (response.status === 200) {
+            this.showProvisioning = false
+            this.q.notify({
+              message: `Instance ${instance.name} (${instance.id}) is ready!`,
+              color: 'positive'
+            })
+            await this.refreshState()
+            clearInterval(intervalId)
+          } else if (response.status === 503) {
+            // Service unavailable, keep waiting
+            return
+          }
+          timeout -= 5000
+          if (timeout <= 0) {
+            this.showProvisioning = false
+            this.q.notify({
+              message: `Instance ${instance.name} (${instance.id}) is taking too long to be ready. Please try again later.`,
+              color: 'warning'
+            })
+            await this.refreshState()
+            clearInterval(intervalId)
+          }
+        } catch (error) {
+          // Ignore CORS errors and other network errors, just continue polling
+          console.debug('Provisioning ping error (ignored):', error)
+        }
+      }, 5000)
     },
     serverStatus: async function () {
       try {
-        await saas.status();
+        return await saas.status()
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to check SaaS Server status!",
+          message: 'Failed to check SaaS Server status!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-        });
+          color: 'negative'
+        })
       }
     },
     extendInstance: function (instance) {
-      this.activeInstance = instance;
-      this.showPaymentQrDialog = true;
-      this.checkInstanceStatus(instance);
+      this.activeInstance = instance
+      this.showPaymentQrDialog = true
+      this.checkInstanceStatus(instance)
     },
     qrUrl: function () {
-      return `https://prod.lnbits.com/api/v1/qrcode/${this.activeInstance.lnurl}`;
+      return `https://prod.lnbits.com/api/v1/qrcode/${this.activeInstance.lnurl}`
     },
     copyData: function () {
-      copyToClipboard(this.activeInstance.lnurl);
+      copyToClipboard(this.activeInstance.lnurl)
 
       this.q.notify({
-        message: "Copied",
-        color: "grey",
-      });
+        message: 'Copied',
+        color: 'grey'
+      })
     },
     refreshState: async function () {
       try {
-        const { data } = await saas.getInstances();
-        await this.serverStatus();
-        const tableData = (data || []).map((i) => saas.mapInstance(i));
+        const {data} = await saas.getInstances()
 
-        this.activityStats[0].value = tableData.length;
+        await this.serverStatus()
+        const tableData = (data || []).map(i => saas.mapInstance(i))
+
+        this.activityStats[0].value = tableData.length
         this.activityStats[1].value = tableData.filter(
-          (i) => i.enabled === true
-        ).length;
+          i => i.enabled === true
+        ).length
         this.activityStats[2].value = tableData.filter(
-          (i) => i.active === true
-        ).length;
+          i => i.active === true
+        ).length
         this.activityStats[3].value = secondsToDhm(
           tableData.reduce((t, i) => t + i.timeLeft, 0)
-        );
+        )
 
-        this.data = tableData;
+        this.data = tableData
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
       }
-    },
+    }
   },
   async created() {
     try {
-      this.inProgress = true;
-      await this.refreshState();
+      this.inProgress = true
+      await this.refreshState()
     } catch (error) {
-      console.warn(error);
+      console.warn(error)
     } finally {
-      this.inProgress = false;
+      this.inProgress = false
     }
-  },
-});
+  }
+})
 </script>
 
 <style>
 .table-bg {
   background-color: #162b4d;
+}
+
+.custom-caption {
+  padding: 12px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.35);
 }
 </style>
