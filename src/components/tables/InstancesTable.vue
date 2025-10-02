@@ -663,6 +663,7 @@ export default defineComponent({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
               color: 'positive'
             })
+            await this.checkInstanceProvisioning(updatedInstance)
           }
           if (!this.showPaymentQrDialog) {
             await this.refreshState()
