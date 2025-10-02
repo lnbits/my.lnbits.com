@@ -70,15 +70,25 @@
 import {defineComponent, defineAsyncComponent} from 'vue'
 
 const pricing_data = [
+  // {
+  //   title: 'Daily',
+  //   subtitle: 'Pay As You Go',
+  //   description: 'Perfect for testing and short-term projects',
+  //   price: 0.49,
+  //   price_text: 'USD / per day',
+  //   price_savings: 'Just $0.021 per hour',
+  //   active: true,
+  //   link: {path: '/instances', query: {plan: 'daily'}}
+  // },
   {
-    title: 'Daily',
-    subtitle: 'Pay As You Go',
+    title: 'Weekly',
+    subtitle: 'Great Start',
     description: 'Perfect for testing and short-term projects',
-    price: 0.49,
-    price_text: 'USD / per day',
-    price_savings: 'Just $0.021 per hour',
+    price: 2.99,
+    price_text: 'USD / per week',
+    price_savings: 'Just $0.43/day',
     active: true,
-    link: '/instances'
+    link: {path: '/instances', query: {plan: 'weekly'}}
   },
   {
     title: 'Monthly',
@@ -88,7 +98,7 @@ const pricing_data = [
     price_text: 'USD / per month',
     price_savings: 'Save 25% • Only $0.37/day',
     active: true,
-    link: '/instances',
+    link: {path: '/instances', query: {plan: 'monthly'}},
     popular: true
   },
   {
@@ -99,7 +109,7 @@ const pricing_data = [
     price_text: 'USD / per year',
     price_savings: 'Save 38% • 2+ months FREE',
     active: true,
-    link: '/instances'
+    link: {path: '/instances', query: {plan: 'yearly'}}
   }
 ]
 export default defineComponent({

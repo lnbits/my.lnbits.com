@@ -169,6 +169,33 @@
           </q-td>
         </template>
 
+        <template v-slot:body-cell-methods="props">
+          <q-td :props="props">
+            <q-btn
+              @click="subscriptionInstance(props.row.id, false)"
+              icon="currency_bitcoin"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Pay for a one-time plan with BTC.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              @click="subscriptionInstance(props.row.id, true)"
+              icon="attach_money"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Get a subscription plan or pay once with USD.
+              </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-progress="props">
           <q-td :props="props">
             <q-tooltip
@@ -324,6 +351,110 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="planDialog.show" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
+      <q-card-section class="q-py-lg bg-secondary text-white column">
+        <div class="text-h6">Create New Instance</div>
+        <div>
+          Choose your payment plan and method below to create, or extend, an
+          LNbits instance.
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pa-none">
+        <q-separator></q-separator>
+        <div class="">
+          <q-btn-toggle
+            v-model="planDialog.subscription"
+            spread
+            unelevated
+            toggle-color="accent"
+            color="white"
+            text-color="black"
+            :options="[
+              {label: 'Subscription Plan', value: true},
+              {label: 'One Time', value: false}
+            ]"
+          />
+        </div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div v-if="planDialog.subscription">
+            Choose a subscription plan and we'll automatically renew it for you.
+            Cancel anytime with no commitments or hidden fees.
+          </div>
+          <div v-else>
+            Pay once for immediate access—no recurring charges. Perfect for
+            temporary projects or when you need flexibility without a
+            subscription.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding class="">
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
+                  : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
+              "
+              :price="2.99"
+              :min="1"
+              :max="8"
+              :step="1"
+              plan-value="weekly"
+            />
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Best value for regular use. Renews monthly and saves you 25% compared to weekly billing. Cancel anytime, no questions asked.'
+                  : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
+              "
+              :price="10.99"
+              :min="1"
+              :max="12"
+              :step="1"
+              plan-value="monthly"
+            />
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Maximum savings with 38% off—like getting 2+ months free. Renews annually. Perfect for businesses and power users.'
+                  : 'Pay once for 365 days of access. Maximum value with 38% savings and zero subscription management. Set it and forget it.'
+              "
+              :price="109.99"
+              :min="1"
+              :max="5"
+              :step="1"
+              plan-value="yearly"
+            />
+          </q-list>
+        </div>
+        <div v-if="!planDialog.subscription" class="flex-center">
+          <div class="text-subtitle1 q-mb-md">Choose payment method</div>
+          <q-btn-toggle
+            v-model="planDialog.fiat"
+            toggle-color="accent"
+            :options="[
+              {label: 'USD', value: true},
+              {label: 'BTC', value: false}
+            ]"
+          />
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -333,9 +464,16 @@ import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
 
+import ItemPricing from 'components/cards/ItemPricing.vue'
+
 export default defineComponent({
   name: 'TableDarkMode',
-
+  props: {
+    plan: String
+  },
+  components: {
+    ItemPricing
+  },
   data() {
     return {
       data: [],
@@ -354,6 +492,13 @@ export default defineComponent({
           field: 'action',
           sortable: false,
           align: 'center'
+        },
+        {
+          name: 'methods',
+          label: 'Payment Plans',
+          field: 'methods',
+          sortable: false,
+          align: 'left'
         },
         {
           name: 'name',
@@ -480,7 +625,14 @@ export default defineComponent({
           description:
             'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions. Visit the shop at shop.lnbits.com'
         }
-      ]
+      ],
+      planDialog: {
+        show: false,
+        subscription: true,
+        fiat: true,
+        plan: null,
+        count: 1
+      }
     }
   },
   setup() {
@@ -536,6 +688,12 @@ export default defineComponent({
           this.inProgress = false
         }
       })
+    },
+    subscriptionInstance: function (id, fiat) {
+      this.planDialog.fiat = fiat
+      this.planDialog.subscription = fiat
+      this.planDialog.plan = 'monthly'
+      this.planDialog.show = true
     },
     resetInstance: function (id) {
       this.confirm(
@@ -668,7 +826,6 @@ export default defineComponent({
           if (!this.showPaymentQrDialog) {
             await this.refreshState()
             clearInterval(retryId)
-            await this.checkInstanceProvisioning(updatedInstance)
           }
         } catch (error) {
           console.warn(error)
@@ -771,6 +928,14 @@ export default defineComponent({
       console.warn(error)
     } finally {
       this.inProgress = false
+      if (this.plan) {
+        this.planDialog.plan = this.plan
+        this.planDialog.show = true
+        // remove query params from URL
+        this.$router.replace({query: null}).catch(() => {
+          // Ignore errors
+        })
+      }
     }
   }
 })
