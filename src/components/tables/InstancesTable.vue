@@ -354,7 +354,13 @@
   <q-dialog v-model="planDialog.show" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
       <q-card-section class="q-py-lg bg-secondary text-white column">
-        <div class="text-h6">Create New Instance</div>
+        <div class="text-h6">
+          {{
+            planDialog.instanceId
+              ? `Add Subscription to Instance (${planDialog.instanceId})`
+              : 'Create New Instance'
+          }}
+        </div>
         <div>
           Choose your payment plan and method below to create, or extend, an
           LNbits instance.
