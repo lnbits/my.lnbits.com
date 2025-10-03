@@ -452,6 +452,12 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
+        <q-btn
+          :disable="!planDialog.plan"
+          :label="planDialog.subscription ? 'Subscribe Plan' : 'Buy Now'"
+          color="positive"
+          @click="submitPlan"
+        ></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -627,11 +633,12 @@ export default defineComponent({
         }
       ],
       planDialog: {
-        show: false,
+        show: true,
         subscription: true,
         fiat: true,
         plan: null,
-        count: 1
+        count: 1,
+        instanceId: null
       }
     }
   },
@@ -693,7 +700,14 @@ export default defineComponent({
       this.planDialog.fiat = fiat
       this.planDialog.subscription = fiat
       this.planDialog.plan = 'monthly'
+      if (id) {
+        this.planDialog.instanceId = id
+      }
       this.planDialog.show = true
+    },
+    async submitPlan() {
+      // validate planDialog data, make saas request for payment details
+      return
     },
     resetInstance: function (id) {
       this.confirm(
@@ -811,7 +825,6 @@ export default defineComponent({
           const updatedInstance = (data || [])
             .map(i => saas.mapInstance(i))
             .find(i => i.id === instance.id)
-          console.log('checking instance', instance.id, updatedInstance)
           if (
             updatedInstance &&
             updatedInstance.timestampStop > instance.timestampStop
