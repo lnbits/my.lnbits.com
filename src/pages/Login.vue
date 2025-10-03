@@ -2,9 +2,7 @@
   <q-layout>
     <q-page-container>
       <q-page class="flex bg-image flex-center">
-        <q-card
-          v-bind:style="q.screen.lt.sm ? { width: '80%' } : { width: '30%' }"
-        >
+        <q-card v-bind:style="q.screen.lt.sm ? {width: '80%'} : {width: '30%'}">
           <q-card-section class="q-mb-md">
             <q-avatar
               size="150px"
@@ -12,7 +10,6 @@
               color="primary"
             >
               <img src="profile.svg" class="q-pa-md" />
-
             </q-avatar>
           </q-card-section>
           <q-card-section>
@@ -102,143 +99,143 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { ref } from "vue";
-import { useQuasar } from "quasar";
+import {defineComponent} from 'vue'
+import {ref} from 'vue'
+import {useQuasar} from 'quasar'
 
-import { saas } from "boot/saas";
+import {saas} from 'boot/saas'
 
 export default defineComponent({
   setup() {
-    const $q = useQuasar();
+    const $q = useQuasar()
     return {
       q: $q,
-      username: ref(""),
-      password: ref(""),
-      passwordRepeat: ref(""),
+      username: ref(''),
+      password: ref(''),
+      passwordRepeat: ref(''),
       isSignupRequest: ref(false),
-      inProgress: ref(false),
-    };
+      inProgress: ref(false)
+    }
   },
 
   methods: {
     async login() {
       try {
-        this.inProgress = true;
-        const message = this.validateForm();
+        this.inProgress = true
+        const message = this.validateForm()
         if (message) {
           this.q.notify({
             message,
-            color: "negative",
-            icon: "warning",
-          });
-          return false;
+            color: 'negative',
+            icon: 'warning'
+          })
+          return false
         }
-        await saas.login(this.username, this.password);
+        await saas.login(this.username, this.password)
         this.q.notify({
-          message: "Logged in!",
-          color: "positive",
-        });
-        setTimeout(() => (window.location.href = "/"), 500);
+          message: 'Logged in!',
+          color: 'positive'
+        })
+        setTimeout(() => (window.location.href = '/'), 500)
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to login!",
+          message: 'Failed to login!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-          icon: "warning",
-        });
-        return false;
+          color: 'negative',
+          icon: 'warning'
+        })
+        return false
       } finally {
-        this.inProgress = false;
+        this.inProgress = false
       }
     },
     checkUsername(val) {
       return (
-        (val && val.length >= 3) || "Username must have at least 3 characters"
-      );
+        (val && val.length >= 3) || 'Username must have at least 3 characters'
+      )
     },
     checkPassword(val) {
       return (
-        (val && val.length >= 8) || "Password must have at least 8 characters"
-      );
+        (val && val.length >= 8) || 'Password must have at least 8 characters'
+      )
     },
     validateForm() {
-      const usernameMessage = this.checkUsername(this.username);
+      const usernameMessage = this.checkUsername(this.username)
       if (usernameMessage !== true) {
-        return usernameMessage;
+        return usernameMessage
       }
-      const passwordMessage = this.checkPassword(this.password);
+      const passwordMessage = this.checkPassword(this.password)
       if (passwordMessage !== true) {
-        return passwordMessage;
+        return passwordMessage
       }
-      return null;
+      return null
     },
     validateSignupForm() {
-      const message = this.validateForm();
+      const message = this.validateForm()
       if (message) {
-        return message;
+        return message
       }
-      const passwordRepeatMessage = this.checkPassword(this.passwordRepeat);
+      const passwordRepeatMessage = this.checkPassword(this.passwordRepeat)
       if (passwordRepeatMessage !== true) {
-        return passwordRepeatMessage;
+        return passwordRepeatMessage
       }
       if (this.password !== this.passwordRepeat) {
-        return "Passwords do not match!";
+        return 'Passwords do not match!'
       }
 
-      return null;
+      return null
     },
 
     async onSubmit() {
       if (this.isSignupRequest) {
-        await this.signup();
+        await this.signup()
       } else {
-        await this.login();
+        await this.login()
       }
     },
     async signup() {
       if (!this.isSignupRequest) {
-        this.isSignupRequest = true;
-        return;
+        this.isSignupRequest = true
+        return
       }
-      const message = this.validateSignupForm();
+      const message = this.validateSignupForm()
       if (message) {
         this.q.notify({
           message,
-          color: "negative",
-          icon: "warning",
-        });
-        return;
+          color: 'negative',
+          icon: 'warning'
+        })
+        return
       }
 
       try {
-        this.inProgress = true;
-        await saas.signup(this.username, this.password, this.passwordRepeat);
+        this.inProgress = true
+        await saas.signup(this.username, this.password, this.passwordRepeat)
         this.q.notify({
-          message: "Signed Up!",
-          color: "positive",
-        });
-        setTimeout(() => (window.location.href = "/"), 500);
+          message: 'Signed Up!',
+          color: 'positive'
+        })
+        setTimeout(() => (window.location.href = '/'), 500)
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to register!",
+          message: 'Failed to register!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-          icon: "warning",
-        });
-        return false;
+          color: 'negative',
+          icon: 'warning'
+        })
+        return false
       } finally {
-        this.inProgress = false;
+        this.inProgress = false
       }
-    },
-  },
-});
+    }
+  }
+})
 </script>
 
-<style>
+<!-- <style>
 .bg-image {
   background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
 }
-</style>
+</style> -->
