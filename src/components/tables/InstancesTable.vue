@@ -361,10 +361,6 @@
               : 'Create New Instance'
           }}
         </div>
-        <div>
-          Choose your payment plan and method below to create, or extend, an
-          LNbits instance.
-        </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <q-separator></q-separator>
