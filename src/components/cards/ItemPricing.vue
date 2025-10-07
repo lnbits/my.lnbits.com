@@ -16,7 +16,7 @@
           label
           marker-labels
           snap
-          color="accent"
+          color="primary"
           switch-label-side
         />
       </div>

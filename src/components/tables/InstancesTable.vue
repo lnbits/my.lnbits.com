@@ -288,10 +288,10 @@
         balance for this instance.
       </p>
 
-      <p style="color: white">
+      <p style="color: white" class="text-center">
         <q-img
           class="qrcode"
-          style="width: 100%; height: auto"
+          style="width: 100%; height: auto; max-width: 350px"
           :src="qrUrl()"
           alt="LNURLp"
         />
@@ -299,14 +299,14 @@
       <h5><span v-text="activeInstance.name"></span></h5>
       <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <div class="row q-mt-md">
-        <q-btn color="deep-purple" @click="copyData" v-text="'Copy'"></q-btn>
         <q-btn
           v-close-popup
           flat
-          color="grey"
-          class="q-ml-auto"
+          color="primary"
+          class="q-mr-auto"
           v-text="'Close'"
         ></q-btn>
+        <q-btn color="primary" @click="copyData" v-text="'Copy'"></q-btn>
       </div>
     </q-card>
   </q-dialog>
@@ -351,30 +351,44 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-dialog v-model="planDialog.show" backdrop-filter="blur(4px)" persistent>
+  <q-dialog
+    v-model="planDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+    @hide="resetSubscriptionDialog"
+  >
     <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
       <q-card-section class="q-py-lg bg-secondary text-white column">
         <div class="text-h6">
           {{
             planDialog.instanceId
-              ? `Add Subscription to Instance (${planDialog.instanceId})`
+              ? `${
+                  planDialog.fiat ? 'Add Subscription to' : 'Extend'
+                } Instance (${planDialog.instanceId})`
               : 'Create New Instance'
           }}
         </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
-        <q-separator></q-separator>
-        <div class="">
+        <div v-if="!planDialog.hideFeatures.tab">
           <q-btn-toggle
             v-model="planDialog.subscription"
             spread
+            style="border-radius: 0"
             unelevated
             toggle-color="primary"
             color="white"
             text-color="grey-5"
+            :disable="planDialog.disabled_tab"
             :options="[
-              {label: 'Subscription Plan', value: true},
-              {label: 'One Time', value: false}
+              {
+                label: 'Subscription Plan',
+                value: true
+              },
+              {
+                label: 'One Time',
+                value: false
+              }
             ]"
           />
         </div>
@@ -440,12 +454,16 @@
             />
           </q-list>
         </div>
-        <div v-if="!planDialog.subscription" class="flex-center">
+        <div
+          v-if="!planDialog.subscription && !planDialog.hideFeatures.currency"
+          class="flex-center"
+        >
           <div class="text-subtitle1 q-mb-md">Choose payment method</div>
           <q-btn-toggle
             v-model="planDialog.fiat"
             toggle-color="primary"
             text-color="grey-5"
+            class="no-shadow"
             :options="[
               {label: 'USD', value: true},
               {label: 'BTC', value: false}
@@ -454,7 +472,13 @@
         </div>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
+        <q-btn
+          class="q-mr-auto"
+          flat
+          label="Close"
+          color="primary"
+          v-close-popup
+        ></q-btn>
         <q-btn
           :disable="!planDialog.plan"
           :label="planDialog.subscription ? 'Subscribe Plan' : 'Buy Now'"
@@ -636,12 +660,16 @@ export default defineComponent({
         }
       ],
       planDialog: {
-        show: true,
+        show: false,
         subscription: true,
         fiat: true,
         plan: null,
         count: 1,
-        instanceId: null
+        instanceId: null,
+        hideFeatures: {
+          tab: false,
+          currency: false
+        }
       }
     }
   },
@@ -699,13 +727,29 @@ export default defineComponent({
         }
       })
     },
-    subscriptionInstance: function (id, fiat) {
+    resetSubscriptionDialog() {
+      this.planDialog = {
+        show: false,
+        subscription: false,
+        fiat: false,
+        plan: null,
+        count: 1,
+        instanceId: null,
+        hideFeatures: {
+          tab: false,
+          currency: false
+        }
+      }
+    },
+    subscriptionInstance(id, fiat) {
       this.planDialog.fiat = fiat
       this.planDialog.subscription = fiat
       this.planDialog.plan = 'monthly'
       if (id) {
         this.planDialog.instanceId = id
       }
+      this.planDialog.hideFeatures.tab = true
+      this.planDialog.hideFeatures.currency = true
       this.planDialog.show = true
     },
     async submitPlan() {
