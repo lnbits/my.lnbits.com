@@ -767,7 +767,9 @@ export default defineComponent({
       if (id) {
         this.planDialog.instanceId = id
       }
-      this.planDialog.hideFeatures.tab = true
+      if (!fiat) {
+        this.planDialog.hideFeatures.tab = true
+      }
       this.planDialog.hideFeatures.currency = true
       this.planDialog.show = true
     },
