@@ -278,12 +278,26 @@
       </q-table>
     </q-card-section>
   </q-card>
-  <q-dialog v-model="showPaymentQrDialog" position="top">
+  <q-dialog v-model="qrCodeDialog.show" position="top">
     <q-card style="min-height: 200px" class="q-pa-lg">
-      <h3>
+      <h5 class="q-mt-sm">
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
-      </h3>
-      <p>
+      </h5>
+      <div v-if="qrCodeDialog.dataIsUrl">
+        <p>
+          Scan the QR code to open the link for the checkount page. Or open the
+          link in a new tab.
+          <q-btn
+            type="a"
+            :href="qrCodeDialog.data"
+            target="_blank"
+            class="full-width"
+            outline
+            >Open Checkout Page</q-btn
+          >
+        </p>
+      </div>
+      <p v-else>
         Scan the QR code below using a lightning wallet to add credit to your
         balance for this instance.
       </p>
@@ -489,7 +503,12 @@ export default defineComponent({
   data() {
     return {
       data: [],
-      showPaymentQrDialog: false,
+      qrCodeData: null,
+      qrCodeDialog: {
+        show: false,
+        data: null,
+        dataIsUrl: false
+      },
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
@@ -639,7 +658,7 @@ export default defineComponent({
         }
       ],
       planDialog: {
-        show: true,
+        show: false,
         subscription: true,
         fiat: true,
         plan: null,
@@ -713,6 +732,24 @@ export default defineComponent({
     },
     async submitPlan() {
       // validate planDialog data, make saas request for payment details
+      console.log('### planDialog', this.planDialog)
+      if (this.planDialog.subscription) {
+        console.log('### subscribe plan')
+        return
+      } else {
+        const {data} = await saas.createOneTimePlan(
+          this.planDialog.instanceId,
+          this.planDialog.plan,
+          this.planDialog.count,
+          this.planDialog.fiat
+        )
+        console.log('### one time plan data', data)
+        this.extendInstance(
+          this.data.find(i => i.id === this.planDialog.instanceId),
+          data.payment_request,
+          true
+        )
+      }
       return
     },
     resetInstance: function (id) {
@@ -835,14 +872,14 @@ export default defineComponent({
             updatedInstance &&
             updatedInstance.timestampStop > instance.timestampStop
           ) {
-            this.showPaymentQrDialog = false
+            this.qrCodeDialog.show = false
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
               color: 'positive'
             })
             await this.checkInstanceProvisioning(updatedInstance)
           }
-          if (!this.showPaymentQrDialog) {
+          if (!this.qrCodeDialog.show) {
             await this.refreshState()
             clearInterval(retryId)
           }
@@ -899,16 +936,22 @@ export default defineComponent({
         })
       }
     },
-    extendInstance: function (instance) {
+    extendInstance: function (instance, qrCodeData, dataIsUrl = false) {
       this.activeInstance = instance
-      this.showPaymentQrDialog = true
+
+      this.qrCodeDialog.data = qrCodeData || instance.lnurl
+      this.qrCodeDialog.dataIsUrl = dataIsUrl
+      this.qrCodeDialog.show = true
+
       this.checkInstanceStatus(instance)
     },
     qrUrl: function () {
-      return `https://prod.lnbits.com/api/v1/qrcode/${this.activeInstance.lnurl}`
+      const encoded = encodeURIComponent(this.qrCodeDialog.data)
+      // return `https://prod.lnbits.com/api/v1/qrcode?data=${encoded}`
+      return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
     },
     copyData: function () {
-      copyToClipboard(this.activeInstance.lnurl)
+      copyToClipboard(this.qrCodeDialog.data)
 
       this.q.notify({
         message: 'Copied',
