@@ -375,10 +375,6 @@
               : 'Create New Instance'
           }}
         </div>
-        <div>
-          Choose your payment plan and method below to create, or extend, an
-          LNbits instance.
-        </div>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <q-separator></q-separator>
@@ -387,9 +383,9 @@
             v-model="planDialog.subscription"
             spread
             unelevated
-            toggle-color="accent"
+            toggle-color="primary"
             color="white"
-            text-color="black"
+            text-color="grey-5"
             :options="[
               {label: 'Subscription Plan', value: true},
               {label: 'One Time', value: false}
@@ -462,7 +458,8 @@
           <div class="text-subtitle1 q-mb-md">Choose payment method</div>
           <q-btn-toggle
             v-model="planDialog.fiat"
-            toggle-color="accent"
+            toggle-color="primary"
+            text-color="grey-5"
             :options="[
               {label: 'USD', value: true},
               {label: 'BTC', value: false}
