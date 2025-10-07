@@ -70,8 +70,8 @@ const props = defineProps({
     default: true
   },
   link: {
-    type: String,
-    default: '/instances'
+    type: Object,
+    default: {path: '/instances', query: {plan: 'monthly'}}
   },
   popular: {
     type: Boolean,
