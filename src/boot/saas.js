@@ -77,6 +77,17 @@ var saas = {
       }
     })
   },
+  subscribeToPlan: function (instanceId, planName) {
+    return axios({
+      method: 'PUT',
+      url: this.url + '/instance/subscribe',
+      withCredentials: true,
+      data: {
+        instance_id: instanceId,
+        payment_plan_name: planName
+      }
+    })
+  },
   getInstances: async function () {
     const response = await axios({
       method: 'GET',

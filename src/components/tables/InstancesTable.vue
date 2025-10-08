@@ -791,7 +791,28 @@ export default defineComponent({
       }
     },
     async submitSubscriptionPlan() {
-      console.log('### subscribe plan')
+      try {
+        this.planDialog.inProgress = true
+        const {data} = await saas.subscribeToPlan(
+          this.planDialog.instanceId,
+          this.planDialog.plan
+        )
+        console.log('### subscribe data', data)
+        this.planDialog.show = false
+        this.extendInstance(
+          this.data.find(i => i.id === this.planDialog.instanceId),
+          data.checkout_session_url
+        )
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create subscription plan',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+      } finally {
+        this.planDialog.inProgress = false
+      }
     },
     async submitOneTimePlan() {
       try {
