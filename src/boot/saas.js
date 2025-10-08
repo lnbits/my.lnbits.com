@@ -63,6 +63,20 @@ var saas = {
       }
     })
   },
+
+  createOneTimePlan: function (instanceId, planName, quantity, isFiat) {
+    return axios({
+      method: 'PUT',
+      url: this.url + '/instance/buy',
+      withCredentials: true,
+      data: {
+        instance_id: instanceId,
+        quantity: quantity,
+        payment_plan_name: planName,
+        is_fiat: isFiat
+      }
+    })
+  },
   getInstances: async function () {
     const response = await axios({
       method: 'GET',

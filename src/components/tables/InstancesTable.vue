@@ -493,7 +493,13 @@
           color="primary"
           v-close-popup
         ></q-btn>
+        <q-spinner-bars
+          v-if="planDialog.inProgress"
+          color="primary"
+          size="2.55em"
+        ></q-spinner-bars>
         <q-btn
+          v-else
           :disable="!planDialog.plan"
           :label="planDialog.subscription ? 'Subscribe Plan' : 'Buy Now'"
           color="positive"
@@ -681,6 +687,7 @@ export default defineComponent({
       planDialog: {
         show: false,
         subscription: true,
+        inProgress: false,
         fiat: true,
         plan: null,
         count: 1,
@@ -776,10 +783,19 @@ export default defineComponent({
     async submitPlan() {
       // validate planDialog data, make saas request for payment details
       console.log('### planDialog', this.planDialog)
+
       if (this.planDialog.subscription) {
-        console.log('### subscribe plan')
-        return
+        await this.submitSubscriptionPlan()
       } else {
+        await this.submitOneTimePlan()
+      }
+    },
+    async submitSubscriptionPlan() {
+      console.log('### subscribe plan')
+    },
+    async submitOneTimePlan() {
+      try {
+        this.planDialog.inProgress = true
         const {data} = await saas.createOneTimePlan(
           this.planDialog.instanceId,
           this.planDialog.plan,
@@ -787,13 +803,21 @@ export default defineComponent({
           this.planDialog.fiat
         )
         console.log('### one time plan data', data)
+        this.planDialog.show = false
         this.extendInstance(
           this.data.find(i => i.id === this.planDialog.instanceId),
-          data.payment_request,
-          true
+          data.payment_request
         )
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create one time plan',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+      } finally {
+        this.planDialog.inProgress = false
       }
-      return
     },
     resetInstance: function (id) {
       this.confirm(
@@ -979,19 +1003,22 @@ export default defineComponent({
         })
       }
     },
-    extendInstance: function (instance, qrCodeData, dataIsUrl = false) {
+    extendInstance: function (instance, qrCodeData) {
       this.activeInstance = instance
 
       this.qrCodeDialog.data = qrCodeData || instance.lnurl
-      this.qrCodeDialog.dataIsUrl = dataIsUrl
+      this.qrCodeDialog.dataIsUrl = this.isValidUrl(this.qrCodeDialog.data)
       this.qrCodeDialog.show = true
+
+      console.log('### qrCodeDialog', this.qrCodeDialog)
 
       this.checkInstanceStatus(instance)
     },
     qrUrl: function () {
       const encoded = encodeURIComponent(this.qrCodeDialog.data)
+      return `https://prod.lnbits.com/api/v1/qrcode/${encoded}`
       // return `https://prod.lnbits.com/api/v1/qrcode?data=${encoded}`
-      return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
+      // return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
     },
     copyData: function () {
       copyToClipboard(this.qrCodeDialog.data)
@@ -1000,6 +1027,14 @@ export default defineComponent({
         message: 'Copied',
         color: 'grey'
       })
+    },
+    isValidUrl: function (str) {
+      try {
+        new URL(str)
+        return true
+      } catch {
+        return false
+      }
     },
     refreshState: async function () {
       try {
