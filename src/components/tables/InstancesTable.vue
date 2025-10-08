@@ -535,11 +535,13 @@
                   >One Time Payment</q-item-label
                 >
                 <q-item-label caption
-                  >Choose a one time plan, pay in Bitcoin</q-item-label
+                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
-                <q-icon name="currency_bitcoin" color="orange"></q-icon>
+                <q-icon name="currency_bitcoin" color="orange">
+                  <q-icon name="attach_money" color="green"></q-icon>
+                </q-icon>
               </q-item-section>
             </q-item>
             <q-item tag="label">
@@ -555,8 +557,7 @@
                   >Subscription Plans</q-item-label
                 >
                 <q-item-label caption
-                  >Choose a subscription plan, pay in Fiat or
-                  Bitcoin</q-item-label
+                  >Choose a subscription plan, pay in Fiat</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
