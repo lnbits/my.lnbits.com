@@ -51,7 +51,7 @@
       <div class="text-h6 text-white">
         <span>LNbits Instances</span>
         <q-btn
-          @click="createInstance"
+          @click="selectPlan.show = true"
           label="New Instance"
           icon="add_to_queue"
           color="blue"
@@ -508,6 +508,111 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
+      <q-card-section class="q-py-lg bg-secondary text-white column">
+        <div class="text-h6">Select a method</div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div>
+            Choose a subscription plan and we'll automatically renew it for you.
+            Cancel anytime with no commitments or hidden fees.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding class="">
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="one-time"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize"
+                  >One Time Payment</q-item-label
+                >
+                <q-item-label caption
+                  >Choose a one time plan, pay in Bitcoin</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="currency_bitcoin" color="orange"></q-icon>
+              </q-item-section>
+            </q-item>
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="subscription"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize"
+                  >Subscription Plans</q-item-label
+                >
+                <q-item-label caption
+                  >Choose a subscription plan, pay in Fiat or
+                  Bitcoin</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="attach_money" color="green"></q-icon>
+              </q-item-section>
+            </q-item>
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="on-demand"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">On-Demand</q-item-label>
+                <q-item-label caption
+                  >Pay as you go, 21 sats per hour</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="currency_bitcoin" color="orange"></q-icon>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn
+          class="q-mr-auto"
+          flat
+          label="Close"
+          color="primary"
+          v-close-popup
+        ></q-btn>
+        <q-btn
+          :disable="!selectPlan.method"
+          label="Proceed"
+          color="positive"
+          @click="
+            () => {
+              selectPlan.show = false
+              if (selectPlan.method === 'one-time') {
+                subscriptionInstance(null, false)
+              } else if (selectPlan.method === 'subscription') {
+                subscriptionInstance(null, true)
+              } else if (selectPlan.method === 'on-demand') {
+                createInstance()
+              }
+              selectPlan.method = null
+            }
+          "
+        ></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -696,6 +801,10 @@ export default defineComponent({
           tab: false,
           currency: false
         }
+      },
+      selectPlan: {
+        show: false,
+        method: null
       }
     }
   },
