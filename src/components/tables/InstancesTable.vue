@@ -77,17 +77,6 @@
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
             <q-btn
-              @click="extendInstance(props.row)"
-              icon="qr_code_2"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
               type="a"
               :href="props.row.instanceLink"
               target="_blank"
@@ -171,6 +160,17 @@
 
         <template v-slot:body-cell-methods="props">
           <q-td :props="props">
+            <q-btn
+              @click="extendInstance(props.row)"
+              icon="qr_code_2"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Extend the life of this instance per hour. Pay with BTC.
+              </q-tooltip>
+            </q-btn>
             <q-btn
               @click="subscriptionInstance(props.row.id, false)"
               icon="currency_bitcoin"
