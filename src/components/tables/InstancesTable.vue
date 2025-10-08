@@ -411,7 +411,8 @@
         <div>
           <div v-if="planDialog.subscription">
             Choose a subscription plan and we'll automatically renew it for you.
-            Cancel anytime with no commitments or hidden fees.
+            Cancel anytime with no commitments or hidden fees. Fiat payments
+            only.
           </div>
           <div v-else>
             Pay once for immediate access—no recurring charges. Perfect for
@@ -472,7 +473,10 @@
           v-if="!planDialog.subscription && !planDialog.hideFeatures.currency"
           class="flex-center"
         >
-          <div class="text-subtitle1 q-mb-md">Choose payment method</div>
+          <div class="q-mb-md">
+            <div class="text-subtitle1">Choose payment method</div>
+            <div class="text-caption text-grey">(exclusive for One Time)</div>
+          </div>
           <q-btn-toggle
             v-model="planDialog.fiat"
             toggle-color="primary"
@@ -539,9 +543,10 @@
                 >
               </q-item-section>
               <q-item-section side>
-                <q-icon name="currency_bitcoin" color="orange">
-                  <q-icon name="attach_money" color="green"></q-icon>
-                </q-icon>
+                <div>
+                  <q-icon name="attach_money" color="green" size="xs" />
+                  <q-icon name="currency_bitcoin" color="orange" size="xs" />
+                </div>
               </q-item-section>
             </q-item>
             <q-item tag="label">
@@ -561,7 +566,7 @@
                 >
               </q-item-section>
               <q-item-section side>
-                <q-icon name="attach_money" color="green"></q-icon>
+                <q-icon name="attach_money" color="green" size="xs" />
               </q-item-section>
             </q-item>
             <q-item tag="label">
@@ -579,7 +584,7 @@
                 >
               </q-item-section>
               <q-item-section side>
-                <q-icon name="currency_bitcoin" color="orange"></q-icon>
+                <q-icon name="currency_bitcoin" color="orange" size="xs" />
               </q-item-section>
             </q-item>
           </q-list>
@@ -601,7 +606,7 @@
             () => {
               selectPlan.show = false
               if (selectPlan.method === 'one-time') {
-                subscriptionInstance(null, false)
+                planDialog.show = true
               } else if (selectPlan.method === 'subscription') {
                 subscriptionInstance(null, true)
               } else if (selectPlan.method === 'on-demand') {
