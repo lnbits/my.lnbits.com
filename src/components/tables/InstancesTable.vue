@@ -183,6 +183,7 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              v-if="showFeatureFlag"
               @click="subscriptionInstance(props.row.id, 'USD')"
               icon="attach_money"
               size="sm"
@@ -492,7 +493,7 @@
         ></q-btn>
         <div v-else>
           <q-btn
-            v-if="!planDialog.bitcoinOnly"
+            v-if="!planDialog.bitcoinOnly && showFeatureFlag"
             :disable="!planDialog.plan"
             label="Buy with USD"
             color="positive"
@@ -543,12 +544,17 @@
               </q-item-section>
               <q-item-section side>
                 <div>
-                  <q-icon name="attach_money" color="green" size="xs" />
+                  <q-icon
+                    v-if="showFeatureFlag"
+                    name="attach_money"
+                    color="green"
+                    size="xs"
+                  />
                   <q-icon name="currency_bitcoin" color="orange" size="xs" />
                 </div>
               </q-item-section>
             </q-item>
-            <q-item tag="label">
+            <q-item v-if="showFeatureFlag" tag="label">
               <q-item-section avatar top>
                 <q-radio
                   v-model="selectPlan.method"
@@ -627,6 +633,7 @@ export default defineComponent({
   },
   data() {
     return {
+      showFeatureFlag: false,
       data: [],
       qrCodeData: null,
       qrCodeDialog: {
@@ -1211,6 +1218,9 @@ export default defineComponent({
   },
   async created() {
     try {
+      // temporary feature flag for alan
+      this.showFeatureFlag = saas.username === 'alan@lnbits.com'
+
       this.inProgress = true
       await this.refreshState()
     } catch (error) {
