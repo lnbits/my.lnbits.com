@@ -172,7 +172,7 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              @click="subscriptionInstance(props.row.id, false)"
+              @click="subscriptionInstance(props.row.id, 'BTC')"
               icon="currency_bitcoin"
               size="sm"
               flat
@@ -183,7 +183,7 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              @click="subscriptionInstance(props.row.id, true)"
+              @click="subscriptionInstance(props.row.id, 'USD')"
               icon="attach_money"
               size="sm"
               flat
@@ -469,32 +469,13 @@
             />
           </q-list>
         </div>
-        <div
-          v-if="!planDialog.subscription && !planDialog.hideFeatures.currency"
-          class="flex-center"
-        >
-          <div class="q-mb-md">
-            <div class="text-subtitle1">Choose payment method</div>
-            <div class="text-caption text-grey">(exclusive for One Time)</div>
-          </div>
-          <q-btn-toggle
-            v-model="planDialog.fiat"
-            toggle-color="primary"
-            text-color="grey-5"
-            class="no-shadow"
-            :options="[
-              {label: 'USD', value: true},
-              {label: 'BTC', value: false}
-            ]"
-          />
-        </div>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn
           class="q-mr-auto"
-          flat
           label="Close"
           color="primary"
+          outline
           v-close-popup
         ></q-btn>
         <q-spinner-bars
@@ -503,12 +484,28 @@
           size="2.55em"
         ></q-spinner-bars>
         <q-btn
-          v-else
+          v-else-if="planDialog.subscription"
           :disable="!planDialog.plan"
-          :label="planDialog.subscription ? 'Subscribe Plan' : 'Buy Now'"
+          label="Subscribe Plan"
           color="positive"
-          @click="submitPlan"
+          @click="submitPlanRequest"
         ></q-btn>
+        <div v-else>
+          <q-btn
+            :disable="!planDialog.plan"
+            label="Buy with USD"
+            color="positive"
+            outline
+            @click="submitPlanRequest(true)"
+          ></q-btn>
+          <q-btn
+            :disable="!planDialog.plan"
+            label="Buy with BTC"
+            color="positive"
+            class="q-ml-sm"
+            @click="submitPlanRequest"
+          ></q-btn>
+        </div>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -602,19 +599,7 @@
           :disable="!selectPlan.method"
           label="Proceed"
           color="positive"
-          @click="
-            () => {
-              selectPlan.show = false
-              if (selectPlan.method === 'one-time') {
-                planDialog.show = true
-              } else if (selectPlan.method === 'subscription') {
-                subscriptionInstance(null, true)
-              } else if (selectPlan.method === 'on-demand') {
-                createInstance()
-              }
-              selectPlan.method = null
-            }
-          "
+          @click="showNewInstanceProvisioning"
         ></q-btn>
       </q-card-actions>
     </q-card>
@@ -696,20 +681,6 @@ export default defineComponent({
           field: 'progress',
           align: 'left'
         },
-        // {
-        //   name: "enabled",
-        //   label: "Enabled",
-        //   field: "enabled",
-        //   sortable: true,
-        //   align: "left",
-        // },
-        // {
-        //   name: "active",
-        //   label: "Deployed",
-        //   field: "active",
-        //   sortable: true,
-        //   align: "left",
-        // },
 
         {
           name: 'Created Date',
@@ -804,8 +775,7 @@ export default defineComponent({
         count: 1,
         instanceId: null,
         hideFeatures: {
-          tab: false,
-          currency: false
+          tab: false
         }
       },
       selectPlan: {
@@ -842,31 +812,61 @@ export default defineComponent({
     }
   },
   methods: {
-    createInstance: function () {
-      this.confirm(
-        'Create New Instance',
-        'You are about the create a new LNbits instance.' +
-          ' You will be shown a payment request QR code.' +
-          ' Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance.' +
-          ' It costs 21 sats to run an instance for one hour.'
-      ).onOk(async () => {
-        try {
-          this.inProgress = true
-          const {data} = await saas.createInstance()
-          const instance = saas.mapInstance(data)
-          this.data.push(instance)
-          this.extendInstance(instance)
-        } catch (error) {
-          console.warn(error)
-          this.q.notify({
-            message: 'Failed to create instance',
-            caption: saas.mapErrorToString(error),
-            color: 'negative'
-          })
-        } finally {
-          this.inProgress = false
-        }
-      })
+    showNewInstanceProvisioning: async function () {
+      this.selectPlan.show = false
+      if (this.selectPlan.method === 'one-time') {
+        this.planDialog.hideFeatures.tab = true
+        this.planDialog.subscription = false
+        this.planDialog.fiat = false
+        this.planDialog.show = true
+      } else if (this.selectPlan.method === 'subscription') {
+        this.planDialog.plan = 'monthly'
+        this.planDialog.hideFeatures.tab = true
+        this.planDialog.subscription = true
+        this.planDialog.fiat = true
+        this.planDialog.show = true
+      } else if (this.selectPlan.method === 'on-demand') {
+        this.confirm('You are about the create a new LNbits instance.').onOk(
+          async () => {
+            const instance = await this.createInstance()
+            if (instance) {
+              await this.extendInstance(instance)
+            }
+          }
+        )
+      }
+      this.selectPlan.method = null
+    },
+    subscriptionInstance(instanceId, currency) {
+      currency = (currency || 'USD').trim().toUpperCase()
+      this.planDialog.fiat = currency == 'USD'
+      this.planDialog.subscription = currency == 'USD'
+      this.planDialog.plan = 'monthly'
+      if (instanceId) {
+        this.planDialog.instanceId = instanceId
+      }
+      this.planDialog.hideFeatures.tab = currency !== 'USD'
+
+      this.planDialog.show = true
+    },
+
+    createInstance: async function () {
+      try {
+        this.inProgress = true
+        const {data} = await saas.createInstance()
+        const instance = saas.mapInstance(data)
+        this.data.push(instance)
+        return instance
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create instance',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+      } finally {
+        this.inProgress = false
+      }
     },
     resetSubscriptionDialog() {
       this.planDialog = {
@@ -877,33 +877,35 @@ export default defineComponent({
         count: 1,
         instanceId: null,
         hideFeatures: {
-          tab: false,
-          currency: false
+          tab: false
         }
       }
     },
-    subscriptionInstance(id, fiat) {
-      this.planDialog.fiat = fiat
-      this.planDialog.subscription = fiat
-      this.planDialog.plan = 'monthly'
-      if (id) {
-        this.planDialog.instanceId = id
-      }
-      if (!fiat) {
-        this.planDialog.hideFeatures.tab = true
-      }
-      this.planDialog.hideFeatures.currency = true
-      this.planDialog.show = true
-    },
-    async submitPlan() {
+
+    async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
+      this.planDialog.fiat = useFiat === true
       console.log('### planDialog', this.planDialog)
 
-      if (this.planDialog.subscription) {
-        await this.submitSubscriptionPlan()
+      if (this.planDialog.instanceId) {
+        this.submitPlan()
       } else {
-        await this.submitOneTimePlan()
+        this.confirm('You are about the create a new LNbits instance.').onOk(
+          async () => {
+            const instance = await this.createInstance()
+            if (instance) {
+              this.planDialog.instanceId = instance.id
+              await this.submitPlan()
+            }
+          }
+        )
       }
+    },
+    async submitPlan() {
+      if (this.planDialog.subscription) {
+        return await this.submitSubscriptionPlan()
+      }
+      await this.submitOneTimePlan()
     },
     async submitSubscriptionPlan() {
       try {
@@ -918,6 +920,7 @@ export default defineComponent({
           this.data.find(i => i.id === this.planDialog.instanceId),
           data.checkout_session_url
         )
+        return true
       } catch (error) {
         console.warn(error)
         this.q.notify({
@@ -925,6 +928,7 @@ export default defineComponent({
           caption: saas.mapErrorToString(error),
           color: 'negative'
         })
+        return false
       } finally {
         this.planDialog.inProgress = false
       }
@@ -944,6 +948,7 @@ export default defineComponent({
           this.data.find(i => i.id === this.planDialog.instanceId),
           data.payment_request
         )
+        return true
       } catch (error) {
         console.warn(error)
         this.q.notify({
@@ -951,6 +956,7 @@ export default defineComponent({
           caption: saas.mapErrorToString(error),
           color: 'negative'
         })
+        return false
       } finally {
         this.planDialog.inProgress = false
       }
@@ -1140,6 +1146,7 @@ export default defineComponent({
       }
     },
     extendInstance: function (instance, qrCodeData) {
+      console.log('### extendInstance', instance, qrCodeData)
       this.activeInstance = instance
 
       this.qrCodeDialog.data = qrCodeData || instance.lnurl
@@ -1152,9 +1159,9 @@ export default defineComponent({
     },
     qrUrl: function () {
       const encoded = encodeURIComponent(this.qrCodeDialog.data)
-      return `https://prod.lnbits.com/api/v1/qrcode/${encoded}`
+      // return `https://prod.lnbits.com/api/v1/qrcode/${encoded}`
       // return `https://prod.lnbits.com/api/v1/qrcode?data=${encoded}`
-      // return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
+      return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
     },
     copyData: function () {
       copyToClipboard(this.qrCodeDialog.data)
