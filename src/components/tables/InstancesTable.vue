@@ -377,7 +377,7 @@
           {{
             planDialog.instanceId
               ? `${
-                  planDialog.fiat ? 'Add Subscription to' : 'Extend'
+                  planDialog.fiatOnly ? 'Add Subscription to' : 'Extend'
                 } Instance (${planDialog.instanceId})`
               : 'Create New Instance'
           }}
@@ -486,12 +486,13 @@
         <q-btn
           v-else-if="planDialog.subscription"
           :disable="!planDialog.plan"
-          label="Subscribe Plan"
+          label="Subscribe"
           color="positive"
           @click="submitPlanRequest"
         ></q-btn>
         <div v-else>
           <q-btn
+            v-if="!planDialog.bitcoinOnly"
             :disable="!planDialog.plan"
             label="Buy with USD"
             color="positive"
@@ -499,6 +500,7 @@
             @click="submitPlanRequest(true)"
           ></q-btn>
           <q-btn
+            v-if="!planDialog.fiatOnly"
             :disable="!planDialog.plan"
             label="Buy with BTC"
             color="positive"
@@ -817,13 +819,15 @@ export default defineComponent({
       if (this.selectPlan.method === 'one-time') {
         this.planDialog.hideFeatures.tab = true
         this.planDialog.subscription = false
-        this.planDialog.fiat = false
+        this.planDialog.fiatOnly = false
+        this.planDialog.bitcoinOnly = false
         this.planDialog.show = true
       } else if (this.selectPlan.method === 'subscription') {
         this.planDialog.plan = 'monthly'
         this.planDialog.hideFeatures.tab = true
         this.planDialog.subscription = true
-        this.planDialog.fiat = true
+        this.planDialog.fiatOnly = true
+        this.planDialog.bitcoinOnly = false
         this.planDialog.show = true
       } else if (this.selectPlan.method === 'on-demand') {
         this.confirm('You are about the create a new LNbits instance.').onOk(
@@ -839,7 +843,8 @@ export default defineComponent({
     },
     subscriptionInstance(instanceId, currency) {
       currency = (currency || 'USD').trim().toUpperCase()
-      this.planDialog.fiat = currency == 'USD'
+      this.planDialog.fiatOnly = currency == 'USD'
+      this.planDialog.bitcoinOnly = currency == 'BTC'
       this.planDialog.subscription = currency == 'USD'
       this.planDialog.plan = 'monthly'
       if (instanceId) {
@@ -872,7 +877,8 @@ export default defineComponent({
       this.planDialog = {
         show: false,
         subscription: false,
-        fiat: false,
+        fiatOnly: false,
+        bitcoinOnly: false,
         plan: null,
         count: 1,
         instanceId: null,
@@ -884,7 +890,7 @@ export default defineComponent({
 
     async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
-      this.planDialog.fiat = useFiat === true
+      this.planDialog.fiatOnly = useFiat === true
       console.log('### planDialog', this.planDialog)
 
       if (this.planDialog.instanceId) {
@@ -940,7 +946,7 @@ export default defineComponent({
           this.planDialog.instanceId,
           this.planDialog.plan,
           this.planDialog.count,
-          this.planDialog.fiat
+          this.planDialog.fiatOnly
         )
         console.log('### one time plan data', data)
         this.planDialog.show = false
