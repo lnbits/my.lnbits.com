@@ -9,7 +9,9 @@ const routes = [
         component: () => import('pages/Instances.vue'),
         props: route => ({plan: route.query.plan})
       },
-      {path: '/activity', component: () => import('pages/Activity.vue')}
+      {path: '/activity', component: () => import('pages/Activity.vue')},
+      {path: '/subscriptions', component: () => import('pages/Subscriptions.vue')},
+      {path: '/payments', component: () => import('pages/Payments.vue')},
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},

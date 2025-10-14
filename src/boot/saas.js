@@ -114,6 +114,42 @@ var saas = {
 
     return response
   },
+  getUserPayments: async function () {
+    const response = await axios({
+      method: 'GET',
+      url: this.url + '/instance/payments',
+      withCredentials: true
+    })
+
+    return response
+  },
+  getInstancePayments: async function (id) {
+    const response = await axios({
+      method: 'GET',
+      url: this.url + `/instance/${id}/payments`,
+      withCredentials: true
+    })
+
+    return response
+  },
+  getUserSubscriptions: async function () {
+    const response = await axios({
+      method: 'GET',
+      url: this.url + '/instance/subscriptions',
+      withCredentials: true
+    })
+
+    return response
+  },
+  getInstanceSubscriptions: async function (id) {
+    const response = await axios({
+      method: 'GET',
+      url: this.url + `/instance/${id}/subscriptions`,
+      withCredentials: true
+    })
+
+    return response
+  },
   status: async function () {
     const response = await axios({
       method: 'GET',
