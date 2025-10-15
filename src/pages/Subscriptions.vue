@@ -56,10 +56,33 @@
                       :key="col.name"
                     >
                       <q-item-section>
-                        <q-item-label>{{ col.label }}</q-item-label>
+                        <q-item-label>
+                          <span v-text="col.label"></span>
+                        </q-item-label>
                       </q-item-section>
                       <q-item-section side>
-                        <q-item-label caption>{{ col.value }}</q-item-label>
+                        <q-item-label caption>
+                          <q-btn
+                            v-if="col.field === 'instance_name'"
+                            type="a"
+                            :href="`/activity?instance_id=${props.row.id}`"
+                            :label="props.row.instance_name"
+                            no-caps
+                            flat
+                            dense
+                          >
+                            <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                              <span
+                                v-text="
+                                  `Show activity for instance ${props.row.id}`
+                                "
+                              >
+                              </span>
+                            </q-tooltip>
+                          </q-btn>
+
+                          <span v-else v-text="col.value"></span
+                        ></q-item-label>
                       </q-item-section>
                     </q-item>
                   </q-list>
@@ -129,7 +152,6 @@ export default defineComponent({
         page: 1
       },
       columns: [
-        {name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true},
         {
           name: 'instance_name',
           label: 'Instance',
@@ -287,7 +309,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
 .bg-custom {
   background: #26a69a;
   background: linear-gradient(
@@ -296,6 +317,4 @@ export default defineComponent({
     rgba(237, 178, 83, 1) 190%
   );
 }
-
 </style>
-
