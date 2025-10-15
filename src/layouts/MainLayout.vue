@@ -50,12 +50,12 @@
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/activity" active-class="q-item-no-link-highlighting">
+        <q-item to="/payments" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="manage_history" />
+            <q-icon name="payment" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Activity</q-item-label>
+            <q-item-label>Payments</q-item-label>
           </q-item-section>
         </q-item>
         <q-item
@@ -70,12 +70,13 @@
             <q-item-label>Subscriptions</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/payments" active-class="q-item-no-link-highlighting">
+
+        <q-item to="/activity" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
-            <q-icon name="payment" />
+            <q-icon name="manage_history" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Payments</q-item-label>
+            <q-item-label>Activity</q-item-label>
           </q-item-section>
         </q-item>
 

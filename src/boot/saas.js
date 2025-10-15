@@ -88,6 +88,17 @@ var saas = {
       }
     })
   },
+  unsubscribe: function (instanceId, subscriptionRequestId) {
+    return axios({
+      method: 'PUT',
+      url: this.url + '/instance/unsubscribe',
+      withCredentials: true,
+      data: {
+        instance_id: instanceId,
+        subscription_request_id: subscriptionRequestId
+      }
+    })
+  },
   getInstances: async function () {
     const response = await axios({
       method: 'GET',

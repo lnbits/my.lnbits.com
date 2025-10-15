@@ -45,19 +45,9 @@
             :columns="columns"
             :pagination.sync="pagination"
           >
-            <!-- <template v-slot:body-cell-id="props">
-              <q-td :props="props">
-
-                <q-btn label="End Subscription" color="negative" outline>
-                  <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                    <span> Show activity for this instance. </span>
-                  </q-tooltip>
-                </q-btn>
-              </q-td>
-            </template> -->
             <template v-slot:item="props">
               <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card>
+                <q-card class="my-card" flat bordered>
                   <q-list dense>
                     <q-item
                       v-for="col in props.cols.filter(
@@ -80,6 +70,12 @@
                   >
                     <q-btn
                       v-if="props.row.is_enabled"
+                      @click="
+                        requestUnsubscribe(
+                          props.row.instance_id,
+                          props.row.subscription_request_id
+                        )
+                      "
                       label="End Subscription"
                       color="negative"
                       outline
@@ -101,11 +97,27 @@
 </template>
 
 <script>
+import {useQuasar} from 'quasar'
 import {defineComponent} from 'vue'
 import {saas} from 'src/boot/saas'
 
 export default defineComponent({
   name: 'Subscriptions',
+  setup() {
+    const $q = useQuasar()
+
+    return {
+      q: $q,
+      confirm(title, message) {
+        return $q.dialog({
+          title,
+          message,
+          cancel: true,
+          persistent: true
+        })
+      }
+    }
+  },
   data() {
     return {
       inProgress: false,
@@ -149,12 +161,37 @@ export default defineComponent({
     }
   },
   methods: {
+    requestUnsubscribe: async function (instanceId, subscriptionRequestId) {
+      this.confirm('You are about to end this subscription.').onOk(async () => {
+        await this.unsubscribe(instanceId, subscriptionRequestId)
+      })
+    },
+    unsubscribe: async function (instanceId, subscriptionRequestId) {
+      try {
+        this.inProgress = true
+        await saas.unsubscribe(instanceId, subscriptionRequestId)
+        this.$q.notify({
+          message: 'Subscription ended',
+          color: 'positive',
+          icon: 'check_circle'
+        })
+        this.showSubscriptions(this.selectedInstance)
+      } catch (error) {
+        console.warn(error)
+        this.$q.notify({
+          message: 'Failed to end subscription!',
+          caption: this.saas.mapErrorToString(error),
+          color: 'negative',
+          icon: 'warning'
+        })
+      } finally {
+        this.inProgress = false
+      }
+    },
     showSubscriptions: async function (instance) {
       try {
-        console.log('### show subscriptions', instance)
         this.inProgress = true
         if (!instance) {
-          console.log('### fetch user subscriptions 1000')
           await this.fetchUserSubscriptions()
         } else {
           await this.fetchInstanceSubscriptions(instance.value)
@@ -249,4 +286,16 @@ export default defineComponent({
 })
 </script>
 
-<style></style>
+<style scoped>
+
+.bg-custom {
+  background: #26a69a;
+  background: linear-gradient(
+    145deg,
+    var(--q-secondary) 0%,
+    rgba(237, 178, 83, 1) 190%
+  );
+}
+
+</style>
+
