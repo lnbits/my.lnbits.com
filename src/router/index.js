@@ -1,13 +1,13 @@
-import { route } from "quasar/wrappers";
+import {route} from 'quasar/wrappers'
 import {
   createRouter,
   createMemoryHistory,
   createWebHistory,
-  createWebHashHistory,
-} from "vue-router";
-import routes from "./routes";
+  createWebHashHistory
+} from 'vue-router'
+import routes from './routes'
 
-import { saas } from "boot/saas";
+import {saas} from 'boot/saas'
 
 /*
  * If not building with SSR mode, you can
@@ -21,31 +21,29 @@ import { saas } from "boot/saas";
 export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === "history"
+    : process.env.VUE_ROUTER_MODE === 'history'
     ? createWebHistory
-    : createWebHashHistory;
+    : createWebHashHistory
 
   const router = createRouter({
-    scrollBehavior: () => ({ left: 0, top: 0 }),
+    scrollBehavior: () => ({left: 0, top: 0}),
     routes,
 
     // Leave this as is and make changes in quasar.conf.js instead!
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
-    history: createHistory(process.env.VUE_ROUTER_BASE),
-  });
+    history: createHistory(process.env.VUE_ROUTER_BASE)
+  })
 
   router.beforeEach((to, from, next) => {
-
-    if (to.path !== '/login' && !saas.username) {
-      return next("/login");
+    if (to.path !== '/login' && to.path !== '/pricing' && !saas.username) {
+      return next('/login')
     }
     if (to.path == '/login' && saas.username) {
-      return next("/");
+      return next('/')
     }
-    next(true);
+    next(true)
+  })
 
-  });
-
-  return router;
-});
+  return router
+})

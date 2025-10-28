@@ -51,7 +51,7 @@
       <div class="text-h6 text-white">
         <span>LNbits Instances</span>
         <q-btn
-          @click="createInstance"
+          @click="selectPlan.show = true"
           label="New Instance"
           icon="add_to_queue"
           color="blue"
@@ -76,17 +76,6 @@
       >
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
-            <q-btn
-              @click="extendInstance(props.row)"
-              icon="qr_code_2"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance.
-              </q-tooltip>
-            </q-btn>
             <q-btn
               type="a"
               :href="props.row.instanceLink"
@@ -164,6 +153,45 @@
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Destroy: destroying will delete your instance and every bit of
                 data.
+              </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+
+        <template v-slot:body-cell-methods="props">
+          <q-td :props="props">
+            <q-btn
+              @click="extendInstance(props.row)"
+              icon="qr_code_2"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Extend the life of this instance per hour. Pay with BTC.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              @click="subscriptionInstance(props.row.id, 'BTC')"
+              icon="currency_bitcoin"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Pay for a one-time plan with BTC.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              v-if="showFeatureFlag"
+              @click="subscriptionInstance(props.row.id, 'USD')"
+              icon="attach_money"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Get a subscription plan or pay once with USD.
               </q-tooltip>
             </q-btn>
           </q-td>
@@ -251,20 +279,34 @@
       </q-table>
     </q-card-section>
   </q-card>
-  <q-dialog v-model="showPaymentQrDialog" position="top">
+  <q-dialog v-model="qrCodeDialog.show" position="top">
     <q-card style="min-height: 200px" class="q-pa-lg">
-      <h3>
+      <h5 class="q-mt-sm">
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
-      </h3>
-      <p>
+      </h5>
+      <div v-if="qrCodeDialog.dataIsUrl">
+        <p>
+          Scan the QR code to open the link for the checkount page. Or open the
+          link in a new tab.
+          <q-btn
+            type="a"
+            :href="qrCodeDialog.data"
+            target="_blank"
+            class="full-width"
+            outline
+            >Open Checkout Page</q-btn
+          >
+        </p>
+      </div>
+      <p v-else>
         Scan the QR code below using a lightning wallet to add credit to your
         balance for this instance.
       </p>
 
-      <p style="color: white">
+      <p style="color: white" class="text-center">
         <q-img
           class="qrcode"
-          style="width: 100%; height: auto"
+          style="width: 100%; height: auto; max-width: 350px"
           :src="qrUrl()"
           alt="LNURLp"
         />
@@ -272,14 +314,14 @@
       <h5><span v-text="activeInstance.name"></span></h5>
       <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <div class="row q-mt-md">
-        <q-btn color="deep-purple" @click="copyData" v-text="'Copy'"></q-btn>
         <q-btn
           v-close-popup
           flat
-          color="grey"
-          class="q-ml-auto"
+          color="primary"
+          class="q-mr-auto"
           v-text="'Close'"
         ></q-btn>
+        <q-btn color="primary" @click="copyData" v-text="'Copy'"></q-btn>
       </div>
     </q-card>
   </q-dialog>
@@ -324,6 +366,252 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog
+    v-model="planDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+    @hide="resetSubscriptionDialog"
+  >
+    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
+      <q-card-section class="q-py-lg bg-secondary text-white column">
+        <div class="text-h6">
+          {{
+            planDialog.instanceId
+              ? `${
+                  planDialog.fiatOnly ? 'Add Subscription to' : 'Extend'
+                } Instance (${planDialog.instanceId})`
+              : 'Create New Instance'
+          }}
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pa-none">
+        <div v-if="!planDialog.hideFeatures.tab">
+          <q-btn-toggle
+            v-model="planDialog.subscription"
+            spread
+            style="border-radius: 0"
+            unelevated
+            toggle-color="primary"
+            color="white"
+            text-color="grey-5"
+            :disable="planDialog.disabled_tab"
+            :options="[
+              {
+                label: 'Subscription Plan',
+                value: true
+              },
+              {
+                label: 'One Time',
+                value: false
+              }
+            ]"
+          />
+        </div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div v-if="planDialog.subscription">
+            Choose a subscription plan and we'll automatically renew it for you.
+            Cancel anytime with no commitments or hidden fees. Fiat payments
+            only.
+          </div>
+          <div v-else>
+            Pay once for immediate access—no recurring charges. Perfect for
+            temporary projects or when you need flexibility without a
+            subscription.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding class="">
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
+                  : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
+              "
+              :price="2.99"
+              :min="1"
+              :max="8"
+              :step="1"
+              plan-value="weekly"
+            />
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Best value for regular use. Renews monthly and saves you 25% compared to weekly billing. Cancel anytime, no questions asked.'
+                  : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
+              "
+              :price="10.99"
+              :min="1"
+              :max="12"
+              :step="1"
+              plan-value="monthly"
+            />
+            <ItemPricing
+              v-model:plan="planDialog.plan"
+              v-model:count="planDialog.count"
+              :subscription="planDialog.subscription"
+              :caption="
+                planDialog.subscription
+                  ? 'Maximum savings with 38% off—like getting 2+ months free. Renews annually. Perfect for businesses and power users.'
+                  : 'Pay once for 365 days of access. Maximum value with 38% savings and zero subscription management. Set it and forget it.'
+              "
+              :price="109.99"
+              :min="1"
+              :max="5"
+              :step="1"
+              plan-value="yearly"
+            />
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn
+          class="q-mr-auto"
+          label="Close"
+          color="primary"
+          outline
+          v-close-popup
+        ></q-btn>
+        <q-spinner-bars
+          v-if="planDialog.inProgress"
+          color="primary"
+          size="2.55em"
+        ></q-spinner-bars>
+        <q-btn
+          v-else-if="planDialog.subscription"
+          :disable="!planDialog.plan"
+          label="Subscribe"
+          color="positive"
+          @click="submitPlanRequest"
+        ></q-btn>
+        <div v-else>
+          <q-btn
+            v-if="!planDialog.bitcoinOnly && showFeatureFlag"
+            :disable="!planDialog.plan"
+            label="Buy with USD"
+            color="positive"
+            outline
+            @click="submitPlanRequest(true)"
+          ></q-btn>
+          <q-btn
+            v-if="!planDialog.fiatOnly"
+            :disable="!planDialog.plan"
+            label="Buy with BTC"
+            color="positive"
+            class="q-ml-sm"
+            @click="submitPlanRequest"
+          ></q-btn>
+        </div>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
+      <q-card-section class="q-py-lg bg-secondary text-white column">
+        <div class="text-h6">Select a method</div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div>
+            Choose a subscription plan and we'll automatically renew it for you.
+            Cancel anytime with no commitments or hidden fees.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding class="">
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="one-time"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize"
+                  >One Time Payment</q-item-label
+                >
+                <q-item-label caption
+                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <div>
+                  <q-icon
+                    v-if="showFeatureFlag"
+                    name="attach_money"
+                    color="green"
+                    size="xs"
+                  />
+                  <q-icon name="currency_bitcoin" color="orange" size="xs" />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-item v-if="showFeatureFlag" tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="subscription"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize"
+                  >Subscription Plans</q-item-label
+                >
+                <q-item-label caption
+                  >Choose a subscription plan, pay in Fiat</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="attach_money" color="green" size="xs" />
+              </q-item-section>
+            </q-item>
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="selectPlan.method"
+                  val="on-demand"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">On-Demand</q-item-label>
+                <q-item-label caption
+                  >Pay as you go, 21 sats per hour</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="currency_bitcoin" color="orange" size="xs" />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn
+          class="q-mr-auto"
+          flat
+          label="Close"
+          color="primary"
+          v-close-popup
+        ></q-btn>
+        <q-btn
+          :disable="!selectPlan.method"
+          label="Proceed"
+          color="positive"
+          @click="showNewInstanceProvisioning"
+        ></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -333,13 +621,26 @@ import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
 
+import ItemPricing from 'components/cards/ItemPricing.vue'
+
 export default defineComponent({
   name: 'TableDarkMode',
-
+  props: {
+    plan: String
+  },
+  components: {
+    ItemPricing
+  },
   data() {
     return {
+      showFeatureFlag: false,
       data: [],
-      showPaymentQrDialog: false,
+      qrCodeData: null,
+      qrCodeDialog: {
+        show: false,
+        data: null,
+        dataIsUrl: false
+      },
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
@@ -354,6 +655,13 @@ export default defineComponent({
           field: 'action',
           sortable: false,
           align: 'center'
+        },
+        {
+          name: 'methods',
+          label: 'Payment Plans',
+          field: 'methods',
+          sortable: false,
+          align: 'left'
         },
         {
           name: 'name',
@@ -382,20 +690,6 @@ export default defineComponent({
           field: 'progress',
           align: 'left'
         },
-        // {
-        //   name: "enabled",
-        //   label: "Enabled",
-        //   field: "enabled",
-        //   sortable: true,
-        //   align: "left",
-        // },
-        // {
-        //   name: "active",
-        //   label: "Deployed",
-        //   field: "active",
-        //   sortable: true,
-        //   align: "left",
-        // },
 
         {
           name: 'Created Date',
@@ -480,7 +774,23 @@ export default defineComponent({
           description:
             'LNbits works with Bitcoin ATMs, Point of Sale devices, Bolt Cards, and more, making it easy to bring bitcoin into shops, events, and everyday transactions. Visit the shop at shop.lnbits.com'
         }
-      ]
+      ],
+      planDialog: {
+        show: false,
+        subscription: true,
+        inProgress: false,
+        fiat: true,
+        plan: null,
+        count: 1,
+        instanceId: null,
+        hideFeatures: {
+          tab: false
+        }
+      },
+      selectPlan: {
+        show: false,
+        method: null
+      }
     }
   },
   setup() {
@@ -511,31 +821,158 @@ export default defineComponent({
     }
   },
   methods: {
-    createInstance: function () {
-      this.confirm(
-        'Create New Instance',
-        'You are about the create a new LNbits instance.' +
-          ' You will be shown a payment request QR code.' +
-          ' Scan this QR code with a lightning wallet and deposit at least 21 sats to start your LNbits instance.' +
-          ' It costs 21 sats to run an instance for one hour.'
-      ).onOk(async () => {
-        try {
-          this.inProgress = true
-          const {data} = await saas.createInstance()
-          const instance = saas.mapInstance(data)
-          this.data.push(instance)
-          this.extendInstance(instance)
-        } catch (error) {
-          console.warn(error)
-          this.q.notify({
-            message: 'Failed to create instance',
-            caption: saas.mapErrorToString(error),
-            color: 'negative'
-          })
-        } finally {
-          this.inProgress = false
+    showNewInstanceProvisioning: async function () {
+      this.selectPlan.show = false
+      if (this.selectPlan.method === 'one-time') {
+        this.planDialog.hideFeatures.tab = true
+        this.planDialog.subscription = false
+        this.planDialog.fiatOnly = false
+        this.planDialog.bitcoinOnly = false
+        this.planDialog.show = true
+      } else if (this.selectPlan.method === 'subscription') {
+        this.planDialog.plan = 'monthly'
+        this.planDialog.hideFeatures.tab = true
+        this.planDialog.subscription = true
+        this.planDialog.fiatOnly = true
+        this.planDialog.bitcoinOnly = false
+        this.planDialog.show = true
+      } else if (this.selectPlan.method === 'on-demand') {
+        this.confirm('You are about the create a new LNbits instance.').onOk(
+          async () => {
+            const instance = await this.createInstance()
+            if (instance) {
+              await this.extendInstance(instance)
+            }
+          }
+        )
+      }
+      this.selectPlan.method = null
+    },
+    subscriptionInstance(instanceId, currency) {
+      currency = (currency || 'USD').trim().toUpperCase()
+      this.planDialog.fiatOnly = currency == 'USD'
+      this.planDialog.bitcoinOnly = currency == 'BTC'
+      this.planDialog.subscription = currency == 'USD'
+      this.planDialog.plan = 'monthly'
+      if (instanceId) {
+        this.planDialog.instanceId = instanceId
+      }
+      this.planDialog.hideFeatures.tab = currency !== 'USD'
+
+      this.planDialog.show = true
+    },
+
+    createInstance: async function () {
+      try {
+        this.inProgress = true
+        const {data} = await saas.createInstance()
+        const instance = saas.mapInstance(data)
+        this.data.push(instance)
+        return instance
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create instance',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+      } finally {
+        this.inProgress = false
+      }
+    },
+    resetSubscriptionDialog() {
+      this.planDialog = {
+        show: false,
+        subscription: false,
+        fiatOnly: false,
+        bitcoinOnly: false,
+        plan: null,
+        count: 1,
+        instanceId: null,
+        hideFeatures: {
+          tab: false
         }
-      })
+      }
+    },
+
+    async submitPlanRequest(useFiat) {
+      // validate planDialog data, make saas request for payment details
+      this.planDialog.fiatOnly = useFiat === true
+      console.log('### planDialog', this.planDialog)
+
+      if (this.planDialog.instanceId) {
+        this.submitPlan()
+      } else {
+        this.confirm('You are about the create a new LNbits instance.').onOk(
+          async () => {
+            const instance = await this.createInstance()
+            if (instance) {
+              this.planDialog.instanceId = instance.id
+              await this.submitPlan()
+            }
+          }
+        )
+      }
+    },
+    async submitPlan() {
+      if (this.planDialog.subscription) {
+        return await this.submitSubscriptionPlan()
+      }
+      await this.submitOneTimePlan()
+    },
+    async submitSubscriptionPlan() {
+      try {
+        this.planDialog.inProgress = true
+        const {data} = await saas.subscribeToPlan(
+          this.planDialog.instanceId,
+          this.planDialog.plan
+        )
+        console.log('### subscribe data', data)
+        this.planDialog.show = false
+        this.extendInstance(
+          this.data.find(i => i.id === this.planDialog.instanceId),
+          data.checkout_session_url
+        )
+        return true
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create subscription plan',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+        return false
+      } finally {
+        this.planDialog.inProgress = false
+      }
+    },
+    async submitOneTimePlan() {
+      try {
+        this.planDialog.inProgress = true
+        const {data} = await saas.createOneTimePlan(
+          this.planDialog.instanceId,
+          this.planDialog.plan,
+          this.planDialog.count,
+          this.planDialog.fiatOnly
+        )
+        console.log('### one time plan data', data)
+        this.planDialog.show = false
+        this.extendInstance(
+          this.data.find(i => i.id === this.planDialog.instanceId),
+          data.payment_request
+        )
+        return true
+      } catch (error) {
+        console.warn(error)
+        this.q.notify({
+          message: 'Failed to create one time plan',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+        return false
+      } finally {
+        this.planDialog.inProgress = false
+      }
     },
     resetInstance: function (id) {
       this.confirm(
@@ -653,21 +1090,20 @@ export default defineComponent({
           const updatedInstance = (data || [])
             .map(i => saas.mapInstance(i))
             .find(i => i.id === instance.id)
-          console.log('checking instance', instance.id, updatedInstance)
           if (
             updatedInstance &&
             updatedInstance.timestampStop > instance.timestampStop
           ) {
-            this.showPaymentQrDialog = false
+            this.qrCodeDialog.show = false
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) extended!`,
               color: 'positive'
             })
+            await this.checkInstanceProvisioning(updatedInstance)
           }
-          if (!this.showPaymentQrDialog) {
+          if (!this.qrCodeDialog.show) {
             await this.refreshState()
             clearInterval(retryId)
-            await this.checkInstanceProvisioning(updatedInstance)
           }
         } catch (error) {
           console.warn(error)
@@ -722,21 +1158,39 @@ export default defineComponent({
         })
       }
     },
-    extendInstance: function (instance) {
+    extendInstance: function (instance, qrCodeData) {
+      console.log('### extendInstance', instance, qrCodeData)
       this.activeInstance = instance
-      this.showPaymentQrDialog = true
+
+      this.qrCodeDialog.data = qrCodeData || instance.lnurl
+      this.qrCodeDialog.dataIsUrl = this.isValidUrl(this.qrCodeDialog.data)
+      this.qrCodeDialog.show = true
+
+      console.log('### qrCodeDialog', this.qrCodeDialog)
+
       this.checkInstanceStatus(instance)
     },
     qrUrl: function () {
-      return `https://prod.lnbits.com/api/v1/qrcode/${this.activeInstance.lnurl}`
+      const encoded = encodeURIComponent(this.qrCodeDialog.data)
+      // return `https://prod.lnbits.com/api/v1/qrcode/${encoded}`
+      // return `https://prod.lnbits.com/api/v1/qrcode?data=${encoded}`
+      return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
     },
     copyData: function () {
-      copyToClipboard(this.activeInstance.lnurl)
+      copyToClipboard(this.qrCodeDialog.data)
 
       this.q.notify({
         message: 'Copied',
         color: 'grey'
       })
+    },
+    isValidUrl: function (str) {
+      try {
+        new URL(str)
+        return true
+      } catch {
+        return false
+      }
     },
     refreshState: async function () {
       try {
@@ -764,12 +1218,23 @@ export default defineComponent({
   },
   async created() {
     try {
+      // temporary feature flag for alan
+      this.showFeatureFlag = saas.username === 'alan@lnbits.com'
+
       this.inProgress = true
       await this.refreshState()
     } catch (error) {
       console.warn(error)
     } finally {
       this.inProgress = false
+      if (this.plan) {
+        this.planDialog.plan = this.plan
+        this.planDialog.show = true
+        // remove query params from URL
+        this.$router.replace({query: null}).catch(() => {
+          // Ignore errors
+        })
+      }
     }
   }
 })
