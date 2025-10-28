@@ -50,27 +50,6 @@
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/payments" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="payment" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Payments</q-item-label>
-          </q-item-section>
-        </q-item>
-        <q-item
-          v-if="showFeatureFlag"
-          to="/subscriptions"
-          active-class="q-item-no-link-highlighting"
-        >
-          <q-item-section avatar>
-            <q-icon name="subscriptions" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Subscriptions</q-item-label>
-          </q-item-section>
-        </q-item>
-
         <q-item to="/activity" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="manage_history" />
@@ -79,7 +58,6 @@
             <q-item-label>Activity</q-item-label>
           </q-item-section>
         </q-item>
-
         <q-item to="/pricing" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="currency_bitcoin" />
@@ -98,79 +76,56 @@
 </template>
 
 <script>
-import EssentialLink from 'components/EssentialLink.vue'
+import EssentialLink from "components/EssentialLink.vue";
 
-import {defineComponent, ref} from 'vue'
-import {useQuasar} from 'quasar'
-import {saas} from 'boot/saas'
+import { defineComponent, ref } from "vue";
+import { useQuasar } from "quasar";
+import { saas } from "boot/saas";
 
 export default defineComponent({
-  name: 'MainLayout',
+  name: "MainLayout",
 
   components: {
-    EssentialLink
-  },
-  data() {
-    return {
-      showFeatureFlag: false
-    }
+    EssentialLink,
   },
 
   setup() {
-    const $q = useQuasar()
-    const leftDrawerOpen = ref(false)
+    const $q = useQuasar();
+    const leftDrawerOpen = ref(false);
 
     return {
       q: $q,
       leftDrawerOpen,
       toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
+        leftDrawerOpen.value = !leftDrawerOpen.value;
+      },
+    };
   },
   computed: {
     username: function () {
-      return saas.username
-    }
+      return saas.username;
+    },
   },
   methods: {
     logout: async function () {
       try {
-        await saas.logout()
+        await saas.logout();
         this.q.notify({
-          message: 'Logged out!',
-          color: 'positive'
-        })
-        setTimeout(() => (window.location.href = '/login'), 500)
+          message: "Logged out!",
+          color: "positive",
+        });
+        setTimeout(() => (window.location.href = "/login"), 500);
       } catch (error) {
         this.q.notify({
-          message: 'Failed to logout!',
+          message: "Failed to logout!",
           caption: saas.mapErrorToString(error),
-          color: 'negative',
-          icon: 'warning'
-        })
+          color: "negative",
+          icon: "warning",
+        });
       }
-    }
+    },
   },
-  async created() {
-    try {
-      // temporary feature flag for alan
-      this.showFeatureFlag = saas.username === 'alan@lnbits.com'
-    } catch (error) {
-      console.warn(error)
-    } finally {
-      this.inProgress = false
-      if (this.plan) {
-        this.planDialog.plan = this.plan
-        this.planDialog.show = true
-        // remove query params from URL
-        this.$router.replace({query: null}).catch(() => {
-          // Ignore errors
-        })
-      }
-    }
-  }
-})
+});
 </script>
 
 <style>

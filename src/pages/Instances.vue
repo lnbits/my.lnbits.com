@@ -1,30 +1,23 @@
 <template>
   <q-page class="q-pa-sm">
-    <instances-table :plan="plan"></instances-table>
+    <instances-table></instances-table>
   </q-page>
 </template>
 
 <script>
-import {defineComponent, defineAsyncComponent} from 'vue'
+import { defineComponent, defineAsyncComponent } from "vue";
 
 export default defineComponent({
-  name: 'Instances',
+  name: "Instances",
   components: {
     InstancesTable: defineAsyncComponent(() =>
-      import('components/tables/InstancesTable.vue')
-    )
+      import("components/tables/InstancesTable.vue")
+    ),
   },
   data() {
-    return {
-      plan: null
-    }
+    return {};
   },
-  created() {
-    if (this.$route.query.plan) {
-      this.plan = this.$route.query.plan
-    }
-  }
-})
+});
 </script>
 
 <style></style>
