@@ -304,12 +304,13 @@
       </p>
 
       <p style="color: white" class="text-center">
-        <q-img
-          class="qrcode"
-          style="width: 100%; height: auto; max-width: 350px"
-          :src="qrUrl()"
-          alt="LNURLp"
-        />
+        <q-responsive :ratio="1" class="q-mx-xl">
+          <qrcode-vue
+            :value="qrCodeDialog.data"
+            :options="{width: 340}"
+            class="rounded-borders"
+          ></qrcode-vue>
+        </q-responsive>
       </p>
       <h5><span v-text="activeInstance.name"></span></h5>
       <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
@@ -620,6 +621,7 @@ import {defineComponent} from 'vue'
 import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
+import QrcodeVue from 'qrcode.vue'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
 
@@ -629,7 +631,8 @@ export default defineComponent({
     plan: String
   },
   components: {
-    ItemPricing
+    ItemPricing,
+    QrcodeVue
   },
   data() {
     return {
@@ -1169,12 +1172,6 @@ export default defineComponent({
       console.log('### qrCodeDialog', this.qrCodeDialog)
 
       this.checkInstanceStatus(instance)
-    },
-    qrUrl: function () {
-      const encoded = encodeURIComponent(this.qrCodeDialog.data)
-      // return `https://prod.lnbits.com/api/v1/qrcode/${encoded}`
-      // return `https://prod.lnbits.com/api/v1/qrcode?data=${encoded}`
-      return `http://localhost:5000/api/v1/qrcode?data=${encoded}`
     },
     copyData: function () {
       copyToClipboard(this.qrCodeDialog.data)
