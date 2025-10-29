@@ -7,7 +7,7 @@
       <q-item-label class="text-capitalize">{{ planValue }}</q-item-label>
       <q-item-label caption>{{ caption }}</q-item-label>
       <div v-if="!subscription && activePlan" class="q-mt-md">
-        <div>How many:</div>
+        <div>{{ sliderString }}</div>
         <q-slider
           v-model="localCount"
           :min="min"
@@ -50,7 +50,7 @@ const props = defineProps({
   subscription: Boolean,
   planValue: {type: String, default: 'monthly'},
   caption: {type: String, default: '...'},
-  price: {type: Number, default: 5.00},
+  price: {type: Number, default: 5.0},
   min: {type: Number, default: 1},
   max: {type: Number, default: 12},
   step: {type: Number, default: 1}
@@ -60,6 +60,18 @@ const emits = defineEmits(['update:plan', 'update:count'])
 const localPlan = ref(props.plan)
 const localCount = ref(props.count)
 const activePlan = computed(() => props.plan === props.planValue)
+const sliderString = computed(() => {
+  switch (localPlan.value) {
+    case 'weekly':
+      return 'How many weeks:'
+    case 'monthly':
+      return 'How many months:'
+    case 'yearly':
+      return 'How many years:'
+    default:
+      return 'How many:'
+  }
+})
 
 watch(
   () => props.plan,
