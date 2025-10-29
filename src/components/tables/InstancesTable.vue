@@ -308,6 +308,8 @@
           <qrcode-vue
             :value="qrCodeDialog.data"
             :options="{width: 340}"
+            level="Q"
+            render-as="svg"
             class="rounded-borders"
           ></qrcode-vue>
         </q-responsive>
