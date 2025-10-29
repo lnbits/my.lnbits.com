@@ -1,8 +1,5 @@
 <template>
-  <q-layout
-    view="lHh Lpr lFf"
-    style="background: linear-gradient(135deg, #5b6a82 10%, #162b4d 100%)"
-  >
+  <q-layout view="lHh Lpr lFf" class="bg-image">
     <q-header class="bg-transparent text-white">
       <q-toolbar class="q-pa-md">
         <q-toolbar-title> </q-toolbar-title>
@@ -26,34 +23,39 @@
 
     <q-page-container>
       <section
-        style="min-height: 25vh"
+        style="min-height: 20vh"
         class="flex text-white flex-center layout_bg"
       >
         <div style="position: relative">
-          <div class="text-h2 q-mb-lg text-center">LNbits</div>
+          <div class="text-h2 q-mb-lg text-center">
+            <span class="text-weight-bold">LN</span>bits
+          </div>
           <div class="text-h4 text-center">
             The world's most powerful suite of bitcoin tools.
           </div>
-          <div class="text-subtitle2 q-pt-sm text-center">
+          <div class="text-subtitle1 q-pt-sm text-center">
             Run for yourself, for others, or as part of a stack.
           </div>
         </div>
       </section>
+      <section>
+        <div class="text-h5 text-center q-mt-xl q-mb-md text-white">
+          Pricing plans
+        </div>
+      </section>
       <section class="q-pa-xl">
-        <div class="row q-col-gutter-sm q-px-sm q-ml-xl q-mr-xl">
-          <div
-            class="col-lg-4 col-md-4 col-xs-12 col-sm-12"
-            v-for="pricing_item in pricing_data"
-          >
+        <div class="row q-col-gutter-md q-mx-auto" style="max-width: 1200px">
+          <div class="col-12 col-md-4" v-for="pricing_item in pricing_data">
             <card-pricing
-              class="q-ml-lg q-mr-lg"
               :title="pricing_item.title"
-              :icon="pricing_item.icon"
+              :subtitle="pricing_item.subtitle"
+              :description="pricing_item.description"
               :price="pricing_item.price"
+              :price_text="pricing_item.price_text"
+              :price_savings="pricing_item.price_savings"
               :active="pricing_item.active"
               :link="pricing_item.link"
-              :background_image="pricing_item.background_image"
-              :text="pricing_item.text"
+              :popular="pricing_item.popular"
             ></card-pricing>
           </div>
         </div>
@@ -65,47 +67,65 @@
 </template>
 
 <script>
-import { defineComponent, defineAsyncComponent } from "vue";
+import {defineComponent, defineAsyncComponent} from 'vue'
 
 const pricing_data = [
+  // {
+  //   title: 'Daily',
+  //   subtitle: 'Pay As You Go',
+  //   description: 'Perfect for testing and short-term projects',
+  //   price: 0.49,
+  //   price_text: 'USD / per day',
+  //   price_savings: 'Just $0.021 per hour',
+  //   active: true,
+  //   link: {path: '/instances', query: {plan: 'daily'}}
+  // },
   {
-    title: "Hourly",
-    price: "21 sats per hour",
+    title: 'Weekly',
+    subtitle: 'Great Start',
+    description: 'Perfect for testing and short-term projects',
+    price: 1.50,
+    price_text: 'USD / per week',
+    price_savings: '',
     active: true,
-    link: "/instances",
-    icon: "hourglass_top",
-    background_image: "linear-gradient(to right, #ed6ea0 0%, #ec8c69 100%)",
-    text: "Start Now",
+    link: {path: '/instances', query: {plan: 'weekly'}}
   },
   {
-    title: "Daily",
-    price: "_ _ _ sats per day",
-    icon: "today",
-    background_image: "linear-gradient(-225deg, #5D9FFF 0%, #6BBBFF 100%)",
-    text: "Coming Soon",
+    title: 'Monthly',
+    subtitle: 'Most Popular',
+    description: 'Ideal for developers and growing businesses',
+    price: 5.00,
+    price_text: 'USD / per month',
+    price_savings: '',
+    active: true,
+    link: {path: '/instances', query: {plan: 'monthly'}},
+    popular: true
   },
   {
-    title: "Weekly",
-    price: "_ _ _ sats per week",
-    icon: "calendar_view_week",
-    background_image: "linear-gradient(to right, #2B86C5 0%, #2B86C5 100%)",
-    text: "Coming Soon",
-  },
-];
+    title: 'Yearly',
+    subtitle: 'Best Value',
+    description: 'For businesses and power users',
+    price: 50.00,
+    price_text: 'USD / per year',
+    price_savings: '',
+    active: true,
+    link: {path: '/instances', query: {plan: 'yearly'}}
+  }
+]
 export default defineComponent({
-  name: "Pricing",
+  name: 'Pricing',
   components: {
     CardPricing: defineAsyncComponent(() =>
-      import("components/cards/CardPricing.vue")
-    ),
+      import('components/cards/CardPricing.vue')
+    )
   },
   setup() {
     return {
       year: new Date().getFullYear(),
-      pricing_data,
-    };
-  },
-});
+      pricing_data
+    }
+  }
+})
 </script>
 
 <style scoped></style>
