@@ -10,13 +10,13 @@ http://localhost:9090 {
 
 	handle @saas {
 		uri strip_prefix /api
-		reverse_proxy https://api.lnbits.com {
+		reverse_proxy http://localhost:8888 {
 			header_up Host api.lnbits.com
 		}
 	}
 
 	handle /* {
-		reverse_proxy localhost:5005
-		
+		reverse_proxy localhost:8080
+
 	}
 }
