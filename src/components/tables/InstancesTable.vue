@@ -433,7 +433,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.99"
+              :price="1.50"
               :min="1"
               :max="8"
               :step="1"
@@ -445,10 +445,10 @@
               :subscription="planDialog.subscription"
               :caption="
                 planDialog.subscription
-                  ? 'Best value for regular use. Renews monthly and saves you 25% compared to weekly billing. Cancel anytime, no questions asked.'
+                  ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="10.99"
+              :price="5.00"
               :min="1"
               :max="12"
               :step="1"
@@ -460,10 +460,10 @@
               :subscription="planDialog.subscription"
               :caption="
                 planDialog.subscription
-                  ? 'Maximum savings with 38% off—like getting 2+ months free. Renews annually. Perfect for businesses and power users.'
-                  : 'Pay once for 365 days of access. Maximum value with 38% savings and zero subscription management. Set it and forget it.'
+                  ? 'Renews annually. Perfect for businesses and power users.'
+                  : 'Pay once for 365 days of access. Set it and forget it.'
               "
-              :price="109.99"
+              :price="50"
               :min="1"
               :max="5"
               :step="1"

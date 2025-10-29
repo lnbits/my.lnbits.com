@@ -84,9 +84,9 @@ const pricing_data = [
     title: 'Weekly',
     subtitle: 'Great Start',
     description: 'Perfect for testing and short-term projects',
-    price: 2.99,
+    price: 1.50,
     price_text: 'USD / per week',
-    price_savings: 'Just $0.43/day',
+    price_savings: '',
     active: true,
     link: {path: '/instances', query: {plan: 'weekly'}}
   },
@@ -94,9 +94,9 @@ const pricing_data = [
     title: 'Monthly',
     subtitle: 'Most Popular',
     description: 'Ideal for developers and growing businesses',
-    price: 10.99,
+    price: 5.00,
     price_text: 'USD / per month',
-    price_savings: 'Save 25% • Only $0.37/day',
+    price_savings: '',
     active: true,
     link: {path: '/instances', query: {plan: 'monthly'}},
     popular: true
@@ -105,9 +105,9 @@ const pricing_data = [
     title: 'Yearly',
     subtitle: 'Best Value',
     description: 'For businesses and power users',
-    price: 109.99,
+    price: 50.00,
     price_text: 'USD / per year',
-    price_savings: 'Save 38% • 2+ months FREE',
+    price_savings: '',
     active: true,
     link: {path: '/instances', query: {plan: 'yearly'}}
   }

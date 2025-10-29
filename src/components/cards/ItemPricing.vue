@@ -50,7 +50,7 @@ const props = defineProps({
   subscription: Boolean,
   planValue: {type: String, default: 'monthly'},
   caption: {type: String, default: '...'},
-  price: {type: Number, default: 10.99},
+  price: {type: Number, default: 5.00},
   min: {type: Number, default: 1},
   max: {type: Number, default: 12},
   step: {type: Number, default: 1}
