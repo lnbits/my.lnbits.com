@@ -332,8 +332,15 @@
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
       <q-card-section class="row items-center q-py-lg bg-secondary text-white">
         <div>
-          <div class="text-h6">Your VPS is being provisioned...</div>
-          <div>
+          <div
+            class="text-h6"
+            v-text="
+              isProvisioning
+                ? 'Your VPS is being provisioned...'
+                : 'Provisioned'
+            "
+          ></div>
+          <div v-if="isProvisioning">
             Please wait while we set up your server. This may take a few
             minutes.
           </div>
@@ -653,7 +660,8 @@ export default defineComponent({
         page: 1
       },
       inProgress: false,
-      showProvisioning: true,
+      showProvisioning: false,
+      isProvisioning: true,
       columns: [
         {
           name: 'action',
@@ -1129,7 +1137,11 @@ export default defineComponent({
             `https://${instance.name}/static/i18n/en.js`
           )
           if (response.status === 200) {
-            this.showProvisioning = false
+            this.isProvisioning = false
+            setTimeout(() => {
+              this.showProvisioning = false
+              this.isProvisioning = true
+            }, 20000)
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) is ready!`,
               color: 'positive'
