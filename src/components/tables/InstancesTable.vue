@@ -340,15 +340,21 @@
                 : 'Provisioned'
             "
           ></div>
-          <div v-if="isProvisioning">
-            Please wait while we set up your server. This may take a few
-            minutes.
-          </div>
+          <div
+            v-text="
+              isProvisioning
+                ? 'Please wait while we set up your server. This may take a few minutes.'
+                : 'Your VPS is ready!'
+            "
+          ></div>
         </div>
         <q-space></q-space>
         <q-btn icon="close" flat round dense v-close-popup></q-btn>
       </q-card-section>
-      <q-linear-progress indeterminate></q-linear-progress>
+      <q-linear-progress
+        v-if="isProvisioning"
+        indeterminate
+      ></q-linear-progress>
       <q-carousel
         v-model="slide"
         arrows
