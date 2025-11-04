@@ -435,7 +435,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="1.50"
+              :price="2.00"
               :min="1"
               :max="8"
               :step="1"
@@ -450,7 +450,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="5.00"
+              :price="7.00"
               :min="1"
               :max="12"
               :step="1"
@@ -462,10 +462,10 @@
               :subscription="planDialog.subscription"
               :caption="
                 planDialog.subscription
-                  ? 'Renews annually. Perfect for businesses and power users.'
-                  : 'Pay once for 365 days of access. Set it and forget it.'
+                  ? 'Renews annually. Buy 12 months for the price of 10.'
+                  : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="50"
+              :price="70.00"
               :min="1"
               :max="5"
               :step="1"
@@ -1101,10 +1101,10 @@ export default defineComponent({
           ) {
             this.qrCodeDialog.show = false
             this.q.notify({
-              message: `Instance ${instance.name} (${instance.id}) extended!`,
+              message: `Instance ${instance.id} extended!`,
               color: 'positive'
             })
-            await this.checkInstanceProvisioning(updatedInstance)
+            await this.checkInstanceProvisioning(updatedInstance.id)
           }
           if (!this.qrCodeDialog.show) {
             await this.refreshState()
@@ -1115,11 +1115,15 @@ export default defineComponent({
         }
       }, 3000)
     },
-    async checkInstanceProvisioning(instance) {
+    async checkInstanceProvisioning(instanceId) {
       let timeout = 5 * 60 * 1000 // 5 minutes max wait
       this.showProvisioning = true
       const intervalId = setInterval(async () => {
         try {
+          const instance = this.data.find(i => i.id === instanceId)
+          if (!instance) {
+            throw new Error(`Instance ${instanceId} not found`)
+          }
           const response = await fetch(
             `https://${instance.name}/static/i18n/en.js`
           )
