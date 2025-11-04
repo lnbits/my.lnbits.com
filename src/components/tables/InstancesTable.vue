@@ -330,11 +330,16 @@
   </q-dialog>
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
-        <div class="text-h6">Your VPS is being provisioned...</div>
+      <q-card-section class="row items-center q-py-lg bg-secondary text-white">
         <div>
-          Please wait while we set up your server. This may take a few minutes.
+          <div class="text-h6">Your VPS is being provisioned...</div>
+          <div>
+            Please wait while we set up your server. This may take a few
+            minutes.
+          </div>
         </div>
+        <q-space></q-space>
+        <q-btn icon="close" flat round dense v-close-popup></q-btn>
       </q-card-section>
       <q-linear-progress indeterminate></q-linear-progress>
       <q-carousel
@@ -363,10 +368,6 @@
           </div>
         </q-carousel-slide>
       </q-carousel>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
-      </q-card-actions>
     </q-card>
   </q-dialog>
   <q-dialog
@@ -435,7 +436,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.00"
+              :price="2.0"
               :min="1"
               :max="8"
               :step="1"
@@ -450,7 +451,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.00"
+              :price="7.0"
               :min="1"
               :max="12"
               :step="1"
@@ -465,7 +466,7 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.00"
+              :price="70.0"
               :min="1"
               :max="5"
               :step="1"
@@ -652,7 +653,7 @@ export default defineComponent({
         page: 1
       },
       inProgress: false,
-      showProvisioning: false,
+      showProvisioning: true,
       columns: [
         {
           name: 'action',
