@@ -330,13 +330,31 @@
   </q-dialog>
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
-        <div class="text-h6">Your VPS is being provisioned...</div>
+      <q-card-section class="row items-center q-py-lg bg-secondary text-white">
         <div>
-          Please wait while we set up your server. This may take a few minutes.
+          <div
+            class="text-h6"
+            v-text="
+              isProvisioning
+                ? 'Your VPS is being provisioned...'
+                : 'Provisioned'
+            "
+          ></div>
+          <div
+            v-text="
+              isProvisioning
+                ? 'Please wait while we set up your server. This may take a few minutes.'
+                : 'Your VPS is ready!'
+            "
+          ></div>
         </div>
+        <q-space></q-space>
+        <q-btn icon="close" flat round dense v-close-popup></q-btn>
       </q-card-section>
-      <q-linear-progress indeterminate></q-linear-progress>
+      <q-linear-progress
+        v-if="isProvisioning"
+        indeterminate
+      ></q-linear-progress>
       <q-carousel
         v-model="slide"
         arrows
@@ -363,10 +381,6 @@
           </div>
         </q-carousel-slide>
       </q-carousel>
-
-      <q-card-actions align="right">
-        <q-btn flat label="Close" color="primary" v-close-popup></q-btn>
-      </q-card-actions>
     </q-card>
   </q-dialog>
   <q-dialog
@@ -653,6 +667,7 @@ export default defineComponent({
       },
       inProgress: false,
       showProvisioning: false,
+      isProvisioning: true,
       columns: [
         {
           name: 'action',
@@ -1128,7 +1143,11 @@ export default defineComponent({
             `https://${instance.name}/static/i18n/en.js`
           )
           if (response.status === 200) {
-            this.showProvisioning = false
+            this.isProvisioning = false
+            setTimeout(() => {
+              this.showProvisioning = false
+              this.isProvisioning = true
+            }, 20000)
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) is ready!`,
               color: 'positive'
