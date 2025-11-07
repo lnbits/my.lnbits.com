@@ -464,7 +464,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.0"
+              :price="7.00"
               :min="1"
               :max="12"
               :step="1"
