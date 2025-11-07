@@ -479,7 +479,7 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.0"
+              :price="70.00"
               :min="1"
               :max="5"
               :step="1"
