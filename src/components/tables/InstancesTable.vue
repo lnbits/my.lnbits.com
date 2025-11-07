@@ -449,7 +449,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.0"
+              :price="2.00"
               :min="1"
               :max="8"
               :step="1"
