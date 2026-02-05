@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh Lpr lFf">
+    <q-header class="bg-transparent" style="color: inherit">
       <q-toolbar>
         <q-btn
           flat
@@ -10,38 +10,46 @@
           icon="menu"
           aria-label="Menu"
         />
-        <q-toolbar-title> My Bits </q-toolbar-title>
+        <q-toolbar-title>
+          <span class="text-subtitle1 text-italic text-weight-light">my</span>
+          <span class="q-ml-xs text-weight-bold">Bits</span>
+        </q-toolbar-title>
         <q-space />
-        <div class="q-gutter-sm row items-center no-wrap">
-          <span v-text="username"></span>
-
-          <q-btn
-            round
-            dense
-            flat
-            color="white"
-            icon="fab fa-github"
-            type="a"
-            href="https://github.com/lnbits"
-            target="_blank"
-          >
-          </q-btn>
-
-          <q-btn round flat>
-            <q-avatar @click="logout()" icon="logout" size="26px"> </q-avatar>
-          </q-btn>
+        <div class="q-mr-md">
+          <q-icon name="light_mode" size="xs" />
+          <q-toggle
+            v-model="darkMode"
+            @update:model-value="toggleDarkMode"
+            :icon="darkMode ? 'light_mode' : 'dark_mode'"
+            color="accent"
+          ></q-toggle>
+          <q-icon name="dark_mode" size="xs" />
         </div>
+        <q-btn-dropdown icon="account_circle" flat>
+          <q-list>
+            <q-item>
+              <q-item-section>
+                <q-item-label>
+                  {{ username }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable @click="logout()">
+              <q-item-section>
+                <q-item-label>Logout</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="logout" />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-      class="bg-primary text-white"
-    >
-      <q-list>
-        <q-item></q-item>
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+      <q-list class="q-mt-xl">
         <q-item to="/instances" active-class="q-item-no-link-highlighting">
           <q-item-section avatar>
             <q-icon name="table_chart" />
@@ -91,7 +99,7 @@
       </q-list>
     </q-drawer>
 
-    <q-page-container class="bg-grey-2">
+    <q-page-container>
       <router-view />
     </q-page-container>
   </q-layout>
@@ -112,7 +120,11 @@ export default defineComponent({
   },
   data() {
     return {
-      showFeatureFlag: false
+      showFeatureFlag: false,
+      toggleDarkMode: () => {
+        this.q.dark.toggle()
+      },
+      darkMode: this.q.dark.isActive
     }
   },
 
