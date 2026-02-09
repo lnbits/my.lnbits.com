@@ -1,20 +1,15 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="bg-image">
-    <q-header class="bg-transparent text-white">
+  <q-layout view="lHh Lpr lFf" class="">
+    <q-header class="bg-transparent" style="color: inherit">
       <q-toolbar class="q-pa-md">
-        <q-toolbar-title> </q-toolbar-title>
+        <q-toolbar-title>
+          <span class="text-subtitle1 text-italic text-weight-light">my</span>
+          <span class="q-ml-xs text-weight-bold">Bits</span>
+        </q-toolbar-title>
         <q-space />
 
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn
-            square
-            dense
-            flat
-            color="text-grey-7"
-            to="/"
-            label="Home"
-            icon="dashboard"
-          >
+          <q-btn square dense flat to="/" label="Home" icon="dashboard">
             <q-tooltip>Home</q-tooltip>
           </q-btn>
         </div>
@@ -22,10 +17,7 @@
     </q-header>
 
     <q-page-container>
-      <section
-        style="min-height: 20vh"
-        class="flex text-white flex-center layout_bg"
-      >
+      <section style="min-height: 20vh" class="flex flex-center layout_bg">
         <div style="position: relative">
           <div class="text-h2 q-mb-lg text-center">
             <span class="text-weight-bold">LN</span>bits
@@ -39,9 +31,7 @@
         </div>
       </section>
       <section>
-        <div class="text-h5 text-center q-mt-xl q-mb-md text-white">
-          Pricing plans
-        </div>
+        <div class="text-h5 text-center q-mt-lg q-mb-md">Pricing plans</div>
       </section>
       <section class="q-pa-xl">
         <div class="row q-col-gutter-md q-mx-auto" style="max-width: 1200px">
@@ -61,13 +51,15 @@
         </div>
       </section>
     </q-page-container>
-
-    <section class="flex row flex-center q-py-sm"></section>
   </q-layout>
 </template>
 
-<script>
-import {defineComponent, defineAsyncComponent} from 'vue'
+<script setup>
+import CardPricing from 'src/components/cards/CardPricing.vue'
+import {ref, onMounted} from 'vue'
+import {useQuasar} from 'quasar'
+
+const q = useQuasar()
 
 const pricing_data = [
   // {
@@ -84,7 +76,7 @@ const pricing_data = [
     title: 'Weekly',
     subtitle: 'Great Start',
     description: 'Perfect for testing and short-term projects',
-    price: 2.00,
+    price: 2.0,
     price_text: 'USD / per week',
     price_savings: '',
     active: true,
@@ -94,7 +86,7 @@ const pricing_data = [
     title: 'Monthly',
     subtitle: 'Most Popular',
     description: 'Ideal for developers and growing businesses',
-    price: 7.00,
+    price: 7.0,
     price_text: 'USD / per month',
     price_savings: '',
     active: true,
@@ -105,26 +97,18 @@ const pricing_data = [
     title: 'Yearly',
     subtitle: 'Best Value',
     description: 'Buy 12 months for the price of 10.',
-    price: 70.00,
+    price: 70.0,
     price_text: 'USD / per year',
     price_savings: '',
     active: true,
     link: {path: '/instances', query: {plan: 'yearly'}}
   }
 ]
-export default defineComponent({
-  name: 'Pricing',
-  components: {
-    CardPricing: defineAsyncComponent(() =>
-      import('components/cards/CardPricing.vue')
-    )
-  },
-  setup() {
-    return {
-      year: new Date().getFullYear(),
-      pricing_data
-    }
-  }
+const darkMode = ref(false)
+
+onMounted(() => {
+  darkMode.value = localStorage.getItem('darkMode') === 'true'
+  q.dark.set(darkMode.value)
 })
 </script>
 

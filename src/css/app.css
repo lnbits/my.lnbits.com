@@ -2,3 +2,16 @@
 .bg-image {
   background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
 }
+
+.table-bg {
+  /* background-color: #162b4d; */
+  background-color: var(--surface-variant);
+}
+
+.gradient-bg--primary {
+  background: linear-gradient(
+    135deg,
+    var(--q-primary) 0%,
+    var(--q-secondary) 100%
+  );
+}

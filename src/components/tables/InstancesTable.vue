@@ -7,27 +7,19 @@
           :key="index"
           class="col-md-3 col-sm-12 col-xs-12"
         >
-          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
-            <q-item-section
-              side
-              :style="`background-color: ${item.color2}`"
-              class="q-pa-lg q-mr-none text-white"
-            >
-              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
-            </q-item-section>
-            <q-item-section class="q-pa-md q-ml-none text-white">
-              <q-item-label class="text-white text-h6 text-weight-bolder">{{
-                item.value
-              }}</q-item-label>
-              <q-item-label>{{ item.title }}</q-item-label>
-            </q-item-section>
-          </q-item>
+          <CardStats
+            :title="item.title"
+            :icon="item.icon"
+            :value="item.value"
+          />
         </div>
       </div>
     </q-card-section>
-    <q-card-section class="q-pa-none">
-      <div class="row q-col-gutter-sm q-mt-md">
-        <div class="col">
+  </q-card>
+  <q-card class="no-shadow">
+    <q-card-section class="q-pa-none q-mb-md">
+      <div class="row q-mt-md">
+        <div class="col-12">
           <q-item class="q-pa-none bg-grey-8">
             <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
               <q-icon name="info" color="white" size="24px"></q-icon>
@@ -46,34 +38,25 @@
       </div>
     </q-card-section>
   </q-card>
-  <q-card class="table-bg no-shadow" bordered>
-    <q-card-section>
-      <div class="text-h6 text-white">
-        <span>LNbits Instances</span>
-        <q-btn
-          @click="selectPlan.show = true"
-          label="New Instance"
-          icon="add_to_queue"
-          color="blue"
-          class="float-right text-capitalize shadow-3"
-        />
-      </div>
-    </q-card-section>
-    <q-linear-progress
-      v-if="inProgress"
-      indeterminate
-      color="secondary"
-      class="q-mt-sm"
-    />
-    <q-separator color="white" />
+  <q-card class="no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table
-        dark
         class="table-bg"
         :rows="data"
         :columns="columns"
         :pagination.sync="pagination"
+        title="LNbits Instances"
+        :loading="inProgress"
       >
+        <template v-slot:top-right>
+          <q-btn
+            @click="selectPlan.show = true"
+            label="New Instance"
+            icon="add_to_queue"
+            color="primary"
+            class="float-right text-capitalize"
+          />
+        </template>
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
             <q-btn
@@ -207,7 +190,6 @@
               class="float-right"
             ></span>
             <q-linear-progress
-              dark
               :color="getColor(props.row.progress)"
               :value="props.row.progress / 100"
               class="q-mt-sm"
@@ -330,7 +312,9 @@
   </q-dialog>
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
-      <q-card-section class="row items-center q-py-lg bg-secondary text-white">
+      <q-card-section
+        class="row items-center q-py-lg gradient-bg--primary text-white"
+      >
         <div>
           <div
             class="text-h6"
@@ -389,8 +373,8 @@
     persistent
     @hide="resetSubscriptionDialog"
   >
-    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <div class="text-h6">
           {{
             planDialog.instanceId
@@ -449,7 +433,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.00"
+              :price="2.0"
               :min="1"
               :max="8"
               :step="1"
@@ -464,7 +448,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.00"
+              :price="7.0"
               :min="1"
               :max="12"
               :step="1"
@@ -479,7 +463,7 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.00"
+              :price="70.0"
               :min="1"
               :max="5"
               :step="1"
@@ -530,8 +514,8 @@
     </q-card>
   </q-dialog>
   <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
-    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <div class="text-h6">Select a method</div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
@@ -640,6 +624,7 @@ import {secondsToDhm} from 'src/boot/utils'
 import QrcodeVue from 'qrcode.vue'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
+import CardStats from 'components/cards/CardStats.vue'
 
 export default defineComponent({
   name: 'TableDarkMode',
@@ -648,6 +633,7 @@ export default defineComponent({
   },
   components: {
     ItemPricing,
+    CardStats,
     QrcodeVue
   },
   data() {
@@ -1263,10 +1249,6 @@ export default defineComponent({
 </script>
 
 <style>
-.table-bg {
-  background-color: #162b4d;
-}
-
 .custom-caption {
   padding: 12px;
   color: white;

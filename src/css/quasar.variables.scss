@@ -8,11 +8,6 @@ $accent : #9A73B5; // accent-200 - medium purple accent
 $dark : #4A4A4A; // text-100 - dark text
 $dark-page : #E9E4ED; // bg-200 - light page background
 
-$positive : #21BA45; // Keep for success states
-$negative : #C10015; // Keep for error states
-$info : #8B5FBF; // Use primary for info
-$warning : #F2C037; // Keep for warnings
-
 // Additional theme colors
 $background: #F5F3F7; // bg-100 - main background
 $text-color: #4A4A4A; // text-100
@@ -22,10 +17,6 @@ $text-secondary: #878787; // text-200
 $surface-light: #FFFFFF; // bg-300
 $surface-variant: #E9E4ED; // bg-200
 
-// body {
-//     color: $text-color;
-//     background-color: $background;
-// }
 
 // ===== DARK THEME =====
 .body--dark {
@@ -37,15 +28,10 @@ $surface-variant: #E9E4ED; // bg-200
     --q-dark: #EEEEEE; // text-100 - light text
     --q-dark-page: #222831; // bg-100 - dark page background
 
-    --q-positive: #21BA45;
-    --q-negative: #ff5252; // Slightly softer red for dark mode
-    --q-info: #BC6FF1; // Use secondary for info in dark
-    --q-warning: #ffd740;
-
     // Background hierarchy
     --q-background: #222831; // bg-100 - darkest
-    --q-surface: #393E46; // bg-200 - cards/panels
-    --q-surface-variant: #454e59; // bg-300 - elevated surfaces
+    --surface: #393E46; // bg-200 - cards/panels
+    --surface-variant: #454e59; // bg-300 - elevated surfaces
 
     // Text colors
     --q-text-color: #EEEEEE; // text-100 - primary text
@@ -54,10 +40,9 @@ $surface-variant: #E9E4ED; // bg-200
     // Optional: border colors
     --q-border: rgba(188, 111, 241, 0.12);
 }
-
 // ===== CSS Custom Properties (for both themes) =====
 :root {
-    // Light mode
+    
     --surface: #{$surface-light};
     --surface-variant: #{$surface-variant};
 
@@ -87,3 +72,7 @@ $secondary-shades: (
     'light': lighten($secondary, 15%),
     'dark': darken($secondary, 10%)
 );
+
+// Card and surface styling
+$card-border-radius: 12px;
+$generic-border-radius: 12px;

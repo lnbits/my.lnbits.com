@@ -7,64 +7,37 @@
           :key="index"
           class="col-md-3 col-sm-12 col-xs-12"
         >
-          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
-            <q-item-section
-              side
-              :style="`background-color: ${item.color2}`"
-              class="q-pa-lg q-mr-none text-white"
-            >
-              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
-            </q-item-section>
-            <q-item-section class="q-pa-md q-ml-none text-white">
-              <q-item-label class="text-white text-h6 text-weight-bolder">{{
-                item.value
-              }}</q-item-label>
-              <q-item-label>{{ item.title }}</q-item-label>
-            </q-item-section>
-          </q-item>
+          <card-stats
+            :title="item.title"
+            :icon="item.icon"
+            :value="item.value"
+          />
         </div>
       </div>
     </q-card-section>
   </q-card>
-  <q-card class="table-bg no-shadow" bordered>
-    <q-card-section>
-      <div class="row">
-        <div class="col-9">
-          <div class="text-h6 text-white">
-            <span>Instances Activity</span>
-          </div>
-        </div>
-        <div class="col-3">
-          <q-select
-            @update:model-value="showActivty"
-            v-model="selectedInstance"
-            :options="instances"
-            outlined
-            dark
-            dense
-            color="white"
-            clearable
-            label="Select Instance"
-          ></q-select>
-        </div>
-      </div>
-    </q-card-section>
-    <q-linear-progress
-      v-if="inProgress"
-      indeterminate
-      color="secondary"
-      class="q-mt-sm"
-    />
-    <q-separator color="white" />
+  <q-card class="no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table
-        dark
         dense
         class="table-bg"
         :rows="data"
         :columns="columns"
         :pagination.sync="pagination"
+        title="Instances Activity"
+        :loading="inProgress"
       >
+        <template v-slot:top-right>
+          <q-select
+            @update:model-value="showActivty"
+            v-model="selectedInstance"
+            :options="instances"
+            outlined
+            dense
+            clearable
+            label="Select Instance"
+          ></q-select>
+        </template>
         <template v-slot:body-cell-success="props">
           <q-td :props="props">
             <q-icon
@@ -81,13 +54,18 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import {defineComponent} from 'vue'
 
-import { useQuasar } from "quasar";
-import { saas } from "src/boot/saas";
+import {useQuasar} from 'quasar'
+import {saas} from 'src/boot/saas'
+import CardStats from '../cards/CardStats.vue'
 
 export default defineComponent({
-  name: "TableDarkMode",
+  name: 'TableDarkMode',
+
+  components: {
+    CardStats
+  },
 
   data() {
     return {
@@ -97,102 +75,102 @@ export default defineComponent({
 
       activityStats: [
         {
-          title: "Instances",
-          icon: "dns",
+          title: 'Instances',
+          icon: 'dns',
           value: 0,
-          color1: "#546bfa",
-          color2: "#3e51b5",
+          color1: '#546bfa',
+          color2: '#3e51b5'
         },
         {
-          title: "Hours Bought",
-          icon: "timer",
-          value: "20",
-          color1: "#3a9688",
-          color2: "#3e51b5",
+          title: 'Hours Bought',
+          icon: 'timer',
+          value: '20',
+          color1: '#3a9688',
+          color2: '#3e51b5'
         },
         {
-          title: "Sats Paid",
-          icon: "currency_bitcoin",
-          value: "321",
-          color1: "#7cb342",
-          color2: "#3e51b5",
+          title: 'Sats Paid',
+          icon: 'currency_bitcoin',
+          value: '321',
+          color1: '#7cb342',
+          color2: '#3e51b5'
         },
         {
-          title: "Activity Entries",
-          icon: "reorder",
-          value: "82",
-          color1: "#f88c2b",
-          color2: "#3e51b5",
-        },
+          title: 'Activity Entries',
+          icon: 'reorder',
+          value: '82',
+          color1: '#f88c2b',
+          color2: '#3e51b5'
+        }
       ],
 
       pagination: {
         rowsPerPage: 20,
-        page: 1,
+        page: 1
       },
       inProgress: false,
       columns: [
         {
-          name: "success",
-          label: "",
-          field: "success",
+          name: 'success',
+          label: '',
+          field: 'success',
           sortable: false,
-          align: "center",
+          align: 'center'
         },
         {
-          name: "id",
-          label: "Instance ID",
-          field: "instance_id",
+          name: 'id',
+          label: 'Instance ID',
+          field: 'instance_id',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "instance_name",
-          label: "Instance Name",
-          field: "instance_name",
+          name: 'instance_name',
+          label: 'Instance Name',
+          field: 'instance_name',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "name",
-          label: "Action",
-          field: "name",
+          name: 'name',
+          label: 'Action',
+          field: 'name',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "description",
-          label: "Description",
-          field: "description",
+          name: 'description',
+          label: 'Description',
+          field: 'description',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "time",
-          label: "Time",
-          field: "time",
+          name: 'time',
+          label: 'Time',
+          field: 'time',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "cost_sats",
-          label: "Sats",
-          field: "cost_sats",
+          name: 'cost_sats',
+          label: 'Sats',
+          field: 'cost_sats',
           sortable: true,
-          align: "left",
+          align: 'left'
         },
         {
-          name: "extra_hours",
-          label: "Hours",
-          field: "extra_hours",
+          name: 'extra_hours',
+          label: 'Hours',
+          field: 'extra_hours',
           sortable: true,
-          align: "left",
-        },
-      ],
-    };
+          align: 'left'
+        }
+      ]
+    }
   },
   setup() {
-    const $q = useQuasar();
+    const $q = useQuasar()
 
     return {
       q: $q,
@@ -201,109 +179,103 @@ export default defineComponent({
           title,
           message,
           cancel: true,
-          persistent: true,
-        });
-      },
-    };
+          persistent: true
+        })
+      }
+    }
   },
   methods: {
     fetchUserActivity: async function () {
       try {
-        const { data } = await saas.getUserInstancesLogs();
-        this.data = this.mapInstanceLogs(data);
+        const {data} = await saas.getUserInstancesLogs()
+        this.data = this.mapInstanceLogs(data)
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to fetch activity!",
+          message: 'Failed to fetch activity!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-        });
+          color: 'negative'
+        })
       }
     },
     fetchInstanceActivity: async function (id) {
       try {
-        const { data } = await saas.getInstancesLogs(id);
-        this.data = this.mapInstanceLogs(data);
+        const {data} = await saas.getInstancesLogs(id)
+        this.data = this.mapInstanceLogs(data)
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to fetch instance activity!",
+          message: 'Failed to fetch instance activity!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-        });
+          color: 'negative'
+        })
       }
     },
     fetchUserInstances: async function () {
       try {
-        const { data } = await saas.getInstances();
-        this.activityStats[0].value = data.length;
-        this.instances = data.map((i) => ({
+        const {data} = await saas.getInstances()
+        this.activityStats[0].value = data.length
+        this.instances = data.map(i => ({
           value: i.id,
           label: `[${i.id}] ${i.domain}`,
-          name: i.domain,
-        }));
+          name: i.domain
+        }))
       } catch (error) {
-        console.warn(error);
+        console.warn(error)
         this.q.notify({
-          message: "Failed to fetch instances!",
+          message: 'Failed to fetch instances!',
           caption: saas.mapErrorToString(error),
-          color: "negative",
-        });
+          color: 'negative'
+        })
       }
     },
     showActivty: async function (instance) {
       try {
-        this.inProgress = true;
+        this.inProgress = true
         if (!instance) {
-          await this.fetchUserActivity();
+          await this.fetchUserActivity()
         } else {
-          await this.fetchInstanceActivity(instance.value);
+          await this.fetchInstanceActivity(instance.value)
         }
       } catch (error) {
       } finally {
-        this.inProgress = false;
+        this.inProgress = false
       }
     },
     instanceNameFromId: function (id) {
-      const instance = this.instances.find((i) => i.value === id);
+      const instance = this.instances.find(i => i.value === id)
       if (instance) {
-        return instance.name;
+        return instance.name
       }
-      return "?";
+      return '?'
     },
     mapInstanceLogs: function (logs) {
-      this.activityStats[1].value = logs.reduce((t, l) => t + l.extra_hours, 0);
-      this.activityStats[2].value = logs.reduce((t, l) => t + l.cost_sats, 0);
-      this.activityStats[3].value = logs.length;
+      this.activityStats[1].value = logs.reduce((t, l) => t + l.extra_hours, 0)
+      this.activityStats[2].value = logs.reduce((t, l) => t + l.cost_sats, 0)
+      this.activityStats[3].value = logs.length
       return logs
-        .map((i) => ({
+        .map(i => ({
           ...i,
           instance_name: this.instanceNameFromId(i.instance_id),
-          time: new Date(i.timestamp * 1000).toLocaleString(),
+          time: new Date(i.timestamp * 1000).toLocaleString()
         }))
-        .reverse();
-    },
+        .reverse()
+    }
   },
   async created() {
     try {
-      this.inProgress = true;
-      await this.fetchUserInstances();
-      const urlParams = new URLSearchParams(window.location.search);
+      this.inProgress = true
+      await this.fetchUserInstances()
+      const urlParams = new URLSearchParams(window.location.search)
 
       this.selectedInstance = this.instances.find(
-        (i) => `${i.value}` === urlParams.get("instance_id")
-      );
-      this.showActivty(this.selectedInstance);
+        i => `${i.value}` === urlParams.get('instance_id')
+      )
+      this.showActivty(this.selectedInstance)
     } catch (error) {
     } finally {
-      this.inProgress = false;
+      this.inProgress = false
     }
-  },
-});
+  }
+})
 </script>
-
-<style>
-.table-bg {
-  background-color: #162b4d;
-}
-</style>

@@ -21,7 +21,7 @@
             v-model="darkMode"
             @update:model-value="toggleDarkMode"
             :icon="darkMode ? 'light_mode' : 'dark_mode'"
-            color="accent"
+            color="primary"
           ></q-toggle>
           <q-icon name="dark_mode" size="xs" />
         </div>
@@ -50,49 +50,49 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list class="q-mt-xl">
-        <q-item to="/instances" active-class="q-item-no-link-highlighting">
+        <q-item to="/instances" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="table_chart" />
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="text-dark">
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/payments" active-class="q-item-no-link-highlighting">
+        <q-item to="/payments" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="payment" />
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="text-dark">
             <q-item-label>Payments</q-item-label>
           </q-item-section>
         </q-item>
         <q-item
           v-if="showFeatureFlag"
           to="/subscriptions"
-          active-class="q-item-no-link-highlighting"
+          active-class="text-primary"
         >
           <q-item-section avatar>
             <q-icon name="subscriptions" />
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="text-dark">
             <q-item-label>Subscriptions</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item to="/activity" active-class="q-item-no-link-highlighting">
+        <q-item to="/activity" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="manage_history" />
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="text-dark">
             <q-item-label>Activity</q-item-label>
           </q-item-section>
         </q-item>
 
-        <q-item to="/pricing" active-class="q-item-no-link-highlighting">
+        <q-item to="/pricing" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="currency_bitcoin" />
           </q-item-section>
-          <q-item-section>
+          <q-item-section class="text-dark">
             <q-item-label>Pricing</q-item-label>
           </q-item-section>
         </q-item>
@@ -123,8 +123,9 @@ export default defineComponent({
       showFeatureFlag: false,
       toggleDarkMode: () => {
         this.q.dark.toggle()
+        localStorage.setItem('darkMode', this.q.dark.isActive)
       },
-      darkMode: this.q.dark.isActive
+      darkMode: false
     }
   },
 
@@ -162,9 +163,19 @@ export default defineComponent({
           icon: 'warning'
         })
       }
+    },
+    isLinkActive(link) {
+      return this.$route.path === link
     }
   },
   async created() {
+    this.darkMode = localStorage.getItem('darkMode') === 'true'
+    this.q.dark.set(this.darkMode)
+    if (this.$route.path === '/') {
+      this.$router.replace('/instances').catch(() => {
+        // Ignore errors
+      })
+    }
     try {
       // temporary feature flag for alan
       this.showFeatureFlag = saas.username === 'alan@lnbits.com'

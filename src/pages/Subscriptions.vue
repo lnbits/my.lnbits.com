@@ -1,50 +1,34 @@
 <template>
   <q-page class="q-pa-sm">
     <div class="q-gutter-y-md">
-      <q-card class="table-bg no-shadow" bordered>
-        <q-card-section>
-          <div class="row">
-            <div class="col-9">
-              <div class="text-h6 text-white">
-                <span>Subscriptions</span>
-              </div>
-            </div>
-            <div class="col-3">
-              <q-select
-                @update:model-value="showSubscriptions"
-                v-model="selectedInstance"
-                :options="instances"
-                outlined
-                dark
-                dense
-                clearable
-                color="white"
-                label="Select Instance"
-              ></q-select>
-            </div>
-          </div>
-        </q-card-section>
-        <q-linear-progress
-          v-if="inProgress"
-          indeterminate
-          color="secondary"
-          class="q-mt-sm"
-        />
-        <q-separator color="white" />
-
+      <q-card class="no-shadow" bordered>
         <q-card-section class="q-pa-none">
           <q-table
-            dark
             grid
             flat
             bordered
-            card-class="bg-primary text-white"
+            card-class="gradient-bg--primary text-white"
             hide-header
             class="table-bg"
             :rows="subscriptions"
             :columns="columns"
             :pagination.sync="pagination"
+            title="Subscriptions"
+            :loading="inProgress"
           >
+            <template v-slot:top-right>
+              <q-btn
+                @click="showSubscriptions(selectedInstance)"
+                label="Refresh"
+                color="primary"
+                outline
+                :loading="inProgress"
+              >
+                <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                  <span> Refresh subscriptions. </span>
+                </q-tooltip>
+              </q-btn>
+            </template>
             <template v-slot:item="props">
               <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
                 <q-card class="my-card" flat bordered>
