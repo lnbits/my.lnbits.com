@@ -3,13 +3,6 @@
     <q-card-section class="">
       <q-btn round unelevated color="primary" :icon="icon" />
     </q-card-section>
-    <!-- <q-item>
-      <q-item-section avatar>
-        <q-avatar>
-        </q-avatar>
-      </q-item-section>
-    </q-item> -->
-
     <q-separator />
     <q-card-section>
       <div class="text-subtitle1">
