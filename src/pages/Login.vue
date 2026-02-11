@@ -7,7 +7,7 @@
             <q-avatar
               size="150px"
               class="absolute-center shadow-10"
-              color="primary"
+              color="grey-10"
             >
               <img src="profile.svg" class="q-pa-md" />
             </q-avatar>

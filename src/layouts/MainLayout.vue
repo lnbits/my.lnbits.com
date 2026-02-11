@@ -54,7 +54,7 @@
           <q-item-section avatar>
             <q-icon name="table_chart" />
           </q-item-section>
-          <q-item-section class="text-dark">
+          <q-item-section>
             <q-item-label>Instances</q-item-label>
           </q-item-section>
         </q-item>
@@ -62,7 +62,7 @@
           <q-item-section avatar>
             <q-icon name="payment" />
           </q-item-section>
-          <q-item-section class="text-dark">
+          <q-item-section>
             <q-item-label>Payments</q-item-label>
           </q-item-section>
         </q-item>
@@ -74,7 +74,7 @@
           <q-item-section avatar>
             <q-icon name="subscriptions" />
           </q-item-section>
-          <q-item-section class="text-dark">
+          <q-item-section>
             <q-item-label>Subscriptions</q-item-label>
           </q-item-section>
         </q-item>
@@ -83,7 +83,7 @@
           <q-item-section avatar>
             <q-icon name="manage_history" />
           </q-item-section>
-          <q-item-section class="text-dark">
+          <q-item-section>
             <q-item-label>Activity</q-item-label>
           </q-item-section>
         </q-item>
@@ -92,7 +92,7 @@
           <q-item-section avatar>
             <q-icon name="currency_bitcoin" />
           </q-item-section>
-          <q-item-section class="text-dark">
+          <q-item-section>
             <q-item-label>Pricing</q-item-label>
           </q-item-section>
         </q-item>

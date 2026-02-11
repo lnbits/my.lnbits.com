@@ -1,6 +1,6 @@
 <template>
   <q-card class="table-bg q-pa-md no-shadow" bordered>
-    <q-card-section class="">
+    <q-card-section>
       <q-btn round unelevated color="primary" :icon="icon" />
     </q-card-section>
     <q-separator />

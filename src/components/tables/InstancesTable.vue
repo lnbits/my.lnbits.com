@@ -302,7 +302,8 @@
         <q-btn
           v-close-popup
           flat
-          color="primary"
+          outline
+          color="grey-6"
           class="q-mr-auto"
           v-text="'Close'"
         ></q-btn>
@@ -357,7 +358,6 @@
           :key="index"
           :name="index"
           :img-src="slide.image"
-          class=""
         >
           <div class="absolute-bottom custom-caption">
             <div class="text-h5">{{ slide.title }}</div>
@@ -423,7 +423,7 @@
           </div>
         </div>
         <div class="q-py-lg">
-          <q-list padding class="">
+          <q-list padding>
             <ItemPricing
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
@@ -472,11 +472,11 @@
           </q-list>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn
           class="q-mr-auto"
           label="Close"
-          color="primary"
+          color="grey-6"
           outline
           v-close-popup
         ></q-btn>
@@ -526,7 +526,7 @@
           </div>
         </div>
         <div class="q-py-lg">
-          <q-list padding class="">
+          <q-list padding>
             <q-item tag="label">
               <q-item-section avatar top>
                 <q-radio
@@ -596,12 +596,13 @@
           </q-list>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn
           class="q-mr-auto"
+          outline
           flat
           label="Close"
-          color="primary"
+          color="grey-6"
           v-close-popup
         ></q-btn>
         <q-btn
