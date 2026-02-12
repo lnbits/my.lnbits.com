@@ -262,7 +262,7 @@
     </q-card-section>
   </q-card>
   <q-dialog v-model="qrCodeDialog.show" position="top">
-    <q-card style="min-height: 200px" class="q-pa-lg">
+    <q-card style="min-height: 200px" class="q-pa-lg q-mx-sm">
       <h5 class="q-mt-sm">
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
       </h5>
@@ -289,9 +289,10 @@
         <q-responsive :ratio="1" class="q-mx-xl">
           <qrcode-vue
             :value="qrCodeDialog.data"
-            :options="{width: 340}"
+            size="200"
             level="Q"
             render-as="svg"
+            margin="2"
             class="rounded-borders"
           ></qrcode-vue>
         </q-responsive>

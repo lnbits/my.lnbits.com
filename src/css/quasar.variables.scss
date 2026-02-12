@@ -6,7 +6,7 @@ $secondary : #61398F; // primary-200 - deeper purple
 $accent : #9A73B5; // accent-200 - medium purple accent
 
 $dark : #4A4A4A; // text-100 - dark text
-$dark-page : #E9E4ED; // bg-200 - light page background
+$dark-page : #222831; // bg-200 - light page background
 
 // Additional theme colors
 $background: #F5F3F7; // bg-100 - main background
@@ -24,9 +24,6 @@ $surface-variant: #E9E4ED; // bg-200
     --q-primary: #892CDC; // primary-100 - vibrant purple
     --q-secondary: #BC6FF1; // primary-200 - lighter purple
     --q-accent: #D9ACF5; // accent-100 - soft purple accent
-
-    --q-dark: #EEEEEE; // text-100 - light text
-    --q-dark-page: #222831; // bg-100 - dark page background
 
     // Background hierarchy
     --q-background: #222831; // bg-100 - darkest
