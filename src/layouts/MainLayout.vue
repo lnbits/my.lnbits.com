@@ -103,10 +103,11 @@
       <router-view />
     </q-page-container>
   </q-layout>
+  <chat-card />
 </template>
-
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
+import ChatCard from 'src/components/cards/ChatCard.vue'
 
 import {defineComponent, ref} from 'vue'
 import {useQuasar} from 'quasar'
@@ -116,7 +117,8 @@ export default defineComponent({
   name: 'MainLayout',
 
   components: {
-    EssentialLink
+    EssentialLink,
+    ChatCard
   },
   data() {
     return {
