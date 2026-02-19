@@ -149,10 +149,17 @@
               class="q-ml-sm"
               flat
               dense
+              :disable="props.row.enabled"
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Destroy: destroying will delete your instance and every bit of
-                data.
+                <span v-if="props.row.enabled">
+                  Destroy: you can only destroy a disabled instance. Please
+                  disable it first.
+                </span>
+                <span v-else>
+                  Destroy: destroying will delete your instance and every bit of
+                  data.</span
+                >
               </q-tooltip>
             </q-btn>
           </q-td>
@@ -1074,6 +1081,13 @@ export default defineComponent({
       )
     },
     destroyInstance: function (id) {
+      if (this.data.find(i => i.id === id)?.enabled) {
+        return this.q.notify({
+          message:
+            'You can only destroy a disabled instance. Please disable it first.',
+          color: 'warning'
+        })
+      }
       this.confirm(
         `Destroy ${id}`,
         'Are you sure you want to destroy?' +
