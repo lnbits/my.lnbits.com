@@ -5,10 +5,10 @@
     </q-card-section>
     <q-separator />
     <q-card-section>
-      <div class="text-subtitle1">
+      <div class="text-subtitle1 stat-title">
         {{ title }}
       </div>
-      <div class="text-h4 text-weight-bolder">
+      <div class="text-h4 text-weight-bolder stat-value">
         {{ value }}
       </div>
     </q-card-section>

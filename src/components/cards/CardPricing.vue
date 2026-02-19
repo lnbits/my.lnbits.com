@@ -1,6 +1,6 @@
 <template>
-  <q-card class="table-bg q-mx-auto no-shadow" :class="{popular: popular}">
-    <q-card-section class="gradient-bg--primary text-white">
+  <q-card class="pricing-card q-mx-auto no-shadow" :class="{popular: popular}">
+    <q-card-section class="pricing-card__header text-white">
       <div class="text-h6">{{ title }}</div>
       <div class="text-subtitle2">{{ subtitle }}</div>
       <div class="text-body2 q-mt-sm ellipsis">{{ description }}</div>

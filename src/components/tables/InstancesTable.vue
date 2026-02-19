@@ -5,7 +5,7 @@
         <div
           v-for="(item, index) in activityStats"
           :key="index"
-          class="col-md-3 col-sm-12 col-xs-12"
+          class="col-md-3 col-sm-6 col-xs-6"
         >
           <CardStats
             :title="item.title"
@@ -16,28 +16,26 @@
       </div>
     </q-card-section>
   </q-card>
-  <q-card class="no-shadow">
-    <q-card-section class="q-pa-none q-mb-md">
-      <div class="row q-mt-md">
-        <div class="col-12">
-          <q-item class="q-pa-none bg-grey-8">
-            <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
-              <q-icon name="info" color="white" size="24px"></q-icon>
-            </q-item-section>
-            <q-item-section class="q-pa-md q-ml-none text-white">
-              <q-item-label class="text-white text-h6 text-weight-bolder"
-                >New Instances Creation</q-item-label
-              >
-              <q-item-label
-                >It takes a few minutes to create a new instance after the
-                payment is confirmed. Please wait.</q-item-label
-              >
-            </q-item-section>
-          </q-item>
-        </div>
+  <div class="q-mb-md">
+    <div class="row q-mt-md">
+      <div class="col-12">
+        <q-item class="q-pa-none bg-grey-8">
+          <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
+            <q-icon name="info" color="white" size="24px"></q-icon>
+          </q-item-section>
+          <q-item-section class="q-pa-md q-ml-none text-white">
+            <q-item-label class="text-white text-h6 text-weight-bolder"
+              >New Instances Creation</q-item-label
+            >
+            <q-item-label
+              >It takes a few minutes to create a new instance after the
+              payment is confirmed. Please wait.</q-item-label
+            >
+          </q-item-section>
+        </q-item>
       </div>
-    </q-card-section>
-  </q-card>
+    </div>
+  </div>
   <q-card class="no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table

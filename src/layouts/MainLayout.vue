@@ -169,7 +169,8 @@ export default defineComponent({
     }
   },
   async created() {
-    this.darkMode = localStorage.getItem('darkMode') === 'true'
+    const storedDarkMode = localStorage.getItem('darkMode')
+    this.darkMode = storedDarkMode === null ? true : storedDarkMode === 'true'
     this.q.dark.set(this.darkMode)
     if (this.$route.path === '/') {
       this.$router.replace('/instances').catch(() => {

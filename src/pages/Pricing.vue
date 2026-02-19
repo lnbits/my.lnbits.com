@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" class="pricing-shell">
     <q-header class="bg-transparent" style="color: inherit">
       <q-toolbar class="q-pa-md">
         <q-toolbar-title>
@@ -17,24 +17,27 @@
     </q-header>
 
     <q-page-container>
-      <section style="min-height: 20vh" class="flex flex-center layout_bg">
-        <div style="position: relative">
-          <div class="text-h2 q-mb-lg text-center">
+      <section class="flex flex-center pricing-hero">
+        <div class="pricing-hero__content">
+          <div class="text-h2 q-mb-md text-center">
             <span class="text-weight-bold">LN</span>bits
           </div>
-          <div class="text-h4 text-center">
+          <div class="text-h4 text-center pricing-hero__title">
             The world's most powerful suite of bitcoin tools.
           </div>
-          <div class="text-subtitle1 q-pt-sm text-center">
+          <div class="text-subtitle1 q-pt-sm text-center pricing-hero__subtitle">
             Run for yourself, for others, or as part of a stack.
           </div>
         </div>
       </section>
-      <section>
-        <div class="text-h5 text-center q-mt-lg q-mb-md">Pricing plans</div>
+      <section class="pricing-intro">
+        <div class="text-h5 text-center">Pricing plans</div>
+        <div class="text-subtitle2 text-center pricing-intro__hint">
+          Choose a plan that fits your timeline.
+        </div>
       </section>
-      <section class="q-pa-xl">
-        <div class="row q-col-gutter-md q-mx-auto" style="max-width: 1200px">
+      <section class="q-pa-xl pricing-section">
+        <div class="row q-col-gutter-md q-mx-auto pricing-grid">
           <div class="col-12 col-md-4" v-for="pricing_item in pricing_data">
             <card-pricing
               :title="pricing_item.title"
