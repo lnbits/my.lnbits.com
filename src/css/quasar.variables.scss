@@ -1,56 +1,48 @@
 // quasar-variables.scss
 
 // ===== LIGHT THEME (Default) =====
-$primary : #8B5FBF; // primary-100 - main purple
-$secondary : #61398F; // primary-200 - deeper purple
-$accent : #9A73B5; // accent-200 - medium purple accent
+$primary : #B238FF;
+$secondary : #6D3CFF;
+$accent : #FF4FD8;
 
-$dark : #4A4A4A; // text-100 - dark text
-$dark-page : #222831; // bg-200 - light page background
+$dark : #0E0A18;
+$dark-page : #1A1026;
 
-// Additional theme colors
-$background: #F5F3F7; // bg-100 - main background
-$text-color: #4A4A4A; // text-100
-$text-secondary: #878787; // text-200
+$background: #F6F3FA;
+$text-color: #1A1026;
+$text-secondary: #4A3A5F;
 
-// Surface colors for cards, panels, etc.
-$surface-light: #FFFFFF; // bg-300
-$surface-variant: #E9E4ED; // bg-200
-
+$surface-light: #FFFFFF;
+$surface-variant: #EFE7F7;
 
 // ===== DARK THEME =====
 .body--dark {
-    // Core colors
-    --q-primary: #892CDC; // primary-100 - vibrant purple
-    --q-secondary: #BC6FF1; // primary-200 - lighter purple
-    --q-accent: #D9ACF5; // accent-100 - soft purple accent
+    --q-primary: #B238FF;
+    --q-secondary: #6D3CFF;
+    --q-accent: #FF4FD8;
 
-    // Background hierarchy
-    --q-background: #222831; // bg-100 - darkest
-    --surface: #393E46; // bg-200 - cards/panels
-    --surface-variant: #454e59; // bg-300 - elevated surfaces
+    --q-background: #0E0A18;
+    --surface: rgba(20, 12, 32, 0.88);
+    --surface-variant: rgba(28, 16, 46, 0.88);
 
-    // Text colors
-    --q-text-color: #EEEEEE; // text-100 - primary text
-    --q-text-secondary: #FDEBED; // text-200 - secondary text
+    --q-text-color: #F4EEFF;
+    --q-text-secondary: #C9B8E6;
 
-    // Optional: border colors
-    --q-border: rgba(188, 111, 241, 0.12);
+    --q-border: rgba(178, 56, 255, 0.22);
 }
+
 // ===== CSS Custom Properties (for both themes) =====
 :root {
-    
     --surface: #{$surface-light};
     --surface-variant: #{$surface-variant};
 
-    // Border and divider
-    --border-color: rgba(138, 95, 191, 0.12);
-    --divider-color: rgba(74, 74, 74, 0.12);
+    --border-color: rgba(109, 60, 255, 0.18);
+    --divider-color: rgba(26, 16, 38, 0.12);
 }
 
 .body--dark {
-    --border-color: rgba(188, 111, 241, 0.12);
-    --divider-color: rgba(238, 238, 238, 0.12);
+    --border-color: rgba(178, 56, 255, 0.22);
+    --divider-color: rgba(244, 238, 255, 0.12);
 
     .q-drawer {
         background: inherit !important;
@@ -58,8 +50,6 @@ $surface-variant: #E9E4ED; // bg-200
 }
 
 // ===== Additional Quasar Variable Overrides =====
-
-// Adjust default shade variations if needed
 $primary-shades: (
     'light': lighten($primary, 15%),
     'dark': darken($primary, 10%)
@@ -70,6 +60,5 @@ $secondary-shades: (
     'dark': darken($secondary, 10%)
 );
 
-// Card and surface styling
-$card-border-radius: 12px;
-$generic-border-radius: 12px;
+$card-border-radius: 16px;
+$generic-border-radius: 14px;

@@ -369,6 +369,34 @@
     </q-card>
   </q-dialog>
   <q-dialog
+    v-model="readyDialog.show"
+    backdrop-filter="blur(6px)"
+    @hide="readyDialog.instance = null"
+  >
+    <q-card style="width: 95%; max-width: 520px" class="q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white">
+        <div class="text-h6">Congratulations 🎉</div>
+        <div>Your instance is now ready.</div>
+      </q-card-section>
+      <q-card-section>
+        <div v-if="readyDialog.instance" class="text-subtitle2 q-mb-sm">
+          {{ readyDialog.instance.name }}
+        </div>
+        <div class="row items-center q-gutter-sm">
+          <q-btn
+            v-if="readyDialog.instance"
+            type="a"
+            :href="readyDialog.instance.instanceLink"
+            target="_blank"
+            label="Open Instance"
+            color="primary"
+          />
+          <q-btn flat outline color="grey-6" v-close-popup label="Close" />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+  <q-dialog
     v-model="planDialog.show"
     backdrop-filter="blur(4px)"
     persistent
@@ -647,6 +675,10 @@ export default defineComponent({
         show: false,
         data: null,
         dataIsUrl: false
+      },
+      readyDialog: {
+        show: false,
+        instance: null
       },
       activeInstance: null,
       pagination: {
@@ -1132,10 +1164,10 @@ export default defineComponent({
           )
           if (response.status === 200) {
             this.isProvisioning = false
-            setTimeout(() => {
-              this.showProvisioning = false
-              this.isProvisioning = true
-            }, 20000)
+            this.showProvisioning = false
+            this.readyDialog.instance = instance
+            this.readyDialog.show = true
+            this.isProvisioning = true
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) is ready!`,
               color: 'positive'
