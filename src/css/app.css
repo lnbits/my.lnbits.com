@@ -3,9 +3,34 @@
   background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
 }
 
+.q-drawer {
+  background: inherit !important;
+}
+
 .table-bg {
   /* background-color: #162b4d; */
+  background-image: linear-gradient(
+    135deg,
+    var(--surface),
+    var(--surface-variant)
+  );
   background-color: var(--surface-variant);
+}
+
+.body-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--surface),
+    var(--light-page-gradient)
+  ) !important;
+}
+
+.body--dark .body-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--q-dark-page),
+    var(--dark-page-gradient)
+  ) !important;
 }
 
 .gradient-bg--primary {

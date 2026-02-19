@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr lFf">
+  <q-layout view="hHh Lpr lFf" class="body-gradient">
     <q-header class="bg-transparent" style="color: inherit">
       <q-toolbar>
         <q-btn

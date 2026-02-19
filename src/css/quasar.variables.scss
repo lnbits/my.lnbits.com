@@ -1,44 +1,43 @@
 // quasar-variables.scss
 
 // ===== LIGHT THEME (Default) =====
-$primary : #8B5FBF; // primary-100 - main purple
-$secondary : #61398F; // primary-200 - deeper purple
-$accent : #9A73B5; // accent-200 - medium purple accent
+$primary : #ad4bb1;; // primary-100 - main purple
+$secondary : #713274; // primary-200 - deeper purple
+$accent : #9fc771; // accent-200 - medium purple accent
 
 $dark : #4A4A4A; // text-100 - dark text
-$dark-page : #222831; // bg-200 - light page background
+$dark-page : #0f0f14; // bg-200 - light page background
+$dark-page-gradient: darken($primary, 42%); // Gradient for dark theme background
+$light-page-gradient: lighten($primary, 45%); // Gradient for light theme background
 
 // Additional theme colors
-$background: #F5F3F7; // bg-100 - main background
-$text-color: #4A4A4A; // text-100
-$text-secondary: #878787; // text-200
+$background: #f8f8fc; // bg-100 - main background
+$text-color: #1a1a2e; // text-100
+$text-secondary: #4e4e5e; // text-200
 
 // Surface colors for cards, panels, etc.
-$surface-light: #FFFFFF; // bg-300
-$surface-variant: #E9E4ED; // bg-200
+$surface-light: #f8f8fc; // bg-300
+$surface-variant: #fff8ff; // bg-200
 
 
 // ===== DARK THEME =====
-.body--dark {
-    // Core colors
-    --q-primary: #892CDC; // primary-100 - vibrant purple
-    --q-secondary: #BC6FF1; // primary-200 - lighter purple
-    --q-accent: #D9ACF5; // accent-100 - soft purple accent
+// .body--dark {
+//     --surface: #1c1c26; // bg-200 - cards/panels
+//     --surface-variant: #16161e; // bg-300 - elevated surfaces
 
-    // Background hierarchy
-    --q-background: #222831; // bg-100 - darkest
-    --surface: #393E46; // bg-200 - cards/panels
-    --surface-variant: #454e59; // bg-300 - elevated surfaces
+//     // Text colors
+//     --q-text-color: #e4e4ef; // text-100 - primary text
+//     --q-text-secondary: #7a7a8e; // text-200 - secondary text
 
-    // Text colors
-    --q-text-color: #EEEEEE; // text-100 - primary text
-    --q-text-secondary: #FDEBED; // text-200 - secondary text
+//     // Optional: border colors
+//     --q-border: rgba(188, 111, 241, 0.12);
 
-    // Optional: border colors
-    --q-border: rgba(188, 111, 241, 0.12);
-}
+//     background: linear-gradient(135deg, $dark-page, darken($primary, 52%)) !important; // Force dark background for the entire app
+// }
 // ===== CSS Custom Properties (for both themes) =====
 :root {
+    --light-page-gradient: #{$light-page-gradient};
+    --dark-page-gradient: #{$dark-page-gradient};
     
     --surface: #{$surface-light};
     --surface-variant: #{$surface-variant};
@@ -49,12 +48,26 @@ $surface-variant: #E9E4ED; // bg-200
 }
 
 .body--dark {
+    --q-primary: #aa14af; // primary-100 - main purple (same as light theme)
+    --q-secondary: #650d77; // primary-200 - deeper purple (same as light theme)
+    --q-accent: #8bc34a; // accent
+    --surface: #1c1c26; // bg-200 - cards/panels
+    --surface-variant: #16161e; // bg-300 - elevated surfaces
+
+    // Text colors
+    --q-text-color: #e4e4ef; // text-100 - primary text
+    --q-text-secondary: #7a7a8e; // text-200 - secondary text
+
+    // Optional: border colors
+    --q-border: rgba(188, 111, 241, 0.12);
+
+
     --border-color: rgba(188, 111, 241, 0.12);
     --divider-color: rgba(238, 238, 238, 0.12);
 
-    .q-drawer {
-        background: inherit !important;
-    }
+    // .q-drawer {
+    //     background: inherit !important;
+    // }
 }
 
 // ===== Additional Quasar Variable Overrides =====
