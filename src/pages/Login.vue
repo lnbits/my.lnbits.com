@@ -7,7 +7,7 @@
             <q-avatar
               size="150px"
               class="absolute-center shadow-10"
-              color="primary"
+              color="grey-10"
             >
               <img src="profile.svg" class="q-pa-md" />
             </q-avatar>
@@ -233,9 +233,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<!-- <style>
-.bg-image {
-  background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
-}
-</style> -->

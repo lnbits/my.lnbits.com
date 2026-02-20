@@ -1,11 +1,64 @@
+// quasar-variables.scss
 
-$primary   : rgba(15, 23, 42, 0.89);
-$secondary : #26A69A;
-$accent    : #dd4b39;
+// ===== LIGHT THEME (Default) =====
+$primary : #B238FF;
+$secondary : #6D3CFF;
+$accent : #FF4FD8;
 
-$dark      : #1D1D1D;
+$dark : #0E0A18;
+$dark-page : #1A1026;
 
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+$background: #F6F3FA;
+$text-color: #1A1026;
+$text-secondary: #4A3A5F;
+
+$surface-light: #FFFFFF;
+$surface-variant: #EFE7F7;
+
+// ===== DARK THEME =====
+.body--dark {
+    --q-primary: #B238FF;
+    --q-secondary: #6D3CFF;
+    --q-accent: #FF4FD8;
+
+    --q-background: #0E0A18;
+    --surface: rgba(20, 12, 32, 0.88);
+    --surface-variant: rgba(28, 16, 46, 0.88);
+
+    --q-text-color: #F4EEFF;
+    --q-text-secondary: #C9B8E6;
+
+    --q-border: rgba(178, 56, 255, 0.22);
+}
+
+// ===== CSS Custom Properties (for both themes) =====
+:root {
+    --surface: #{$surface-light};
+    --surface-variant: #{$surface-variant};
+
+    --border-color: rgba(109, 60, 255, 0.18);
+    --divider-color: rgba(26, 16, 38, 0.12);
+}
+
+.body--dark {
+    --border-color: rgba(178, 56, 255, 0.22);
+    --divider-color: rgba(244, 238, 255, 0.12);
+
+    .q-drawer {
+        background: inherit !important;
+    }
+}
+
+// ===== Additional Quasar Variable Overrides =====
+$primary-shades: (
+    'light': lighten($primary, 15%),
+    'dark': darken($primary, 10%)
+);
+
+$secondary-shades: (
+    'light': lighten($secondary, 15%),
+    'dark': darken($secondary, 10%)
+);
+
+$card-border-radius: 16px;
+$generic-border-radius: 14px;

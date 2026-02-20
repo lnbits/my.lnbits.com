@@ -1,6 +1,6 @@
 <template>
-  <q-card class="price-card q-mx-auto" :class="{popular: popular}">
-    <q-card-section class="bg-custom text-white">
+  <q-card class="pricing-card q-mx-auto no-shadow" :class="{popular: popular}">
+    <q-card-section class="pricing-card__header text-white">
       <div class="text-h6">{{ title }}</div>
       <div class="text-subtitle2">{{ subtitle }}</div>
       <div class="text-body2 q-mt-sm ellipsis">{{ description }}</div>
@@ -16,9 +16,6 @@
         }}
       </div>
       <div class="text-body2">{{ price_text }}</div>
-      <div class="text-body2 text-green q-mt-lg">
-        {{ price_savings || '&nbsp;' }}
-      </div>
     </q-card-section>
     <q-card-section class="q-py-lg">
       <q-btn
@@ -81,18 +78,7 @@ const props = defineProps({
 </script>
 
 <style scoped>
-.price-card {
-  /* max-width: 350px; */
-}
-.bg-custom {
-  background: #26a69a;
-  background: linear-gradient(
-    145deg,
-    var(--q-secondary) 0%,
-    rgba(237, 178, 83, 1) 190%
-  );
-}
 .popular {
-  /* border: 2px solid var(--q-secondary); */
+  /* border: 1px solid var(--q-secondary); */
 }
 </style>

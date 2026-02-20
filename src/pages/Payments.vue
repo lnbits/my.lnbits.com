@@ -1,45 +1,28 @@
 <template>
   <q-page class="q-pa-sm">
     <div class="q-gutter-y-md">
-      <q-card class="table-bg no-shadow" bordered>
-        <q-card-section>
-          <div class="row">
-            <div class="col-9">
-              <div class="text-h6 text-white">
-                <span>Payments</span>
-              </div>
-            </div>
-            <div class="col-3">
-              <q-select
-                @update:model-value="showPayments"
-                v-model="selectedInstance"
-                :options="instances"
-                outlined
-                dark
-                dense
-                clearable
-                color="white"
-                label="Select Instance"
-              ></q-select>
-            </div>
-          </div>
-        </q-card-section>
-        <q-linear-progress
-          v-if="inProgress"
-          indeterminate
-          color="secondary"
-          class="q-mt-sm"
-        />
-        <q-separator color="white" />
+      <q-card class="no-shadow" bordered>
         <q-card-section class="q-pa-none">
           <q-table
-            dark
             dense
             class="table-bg"
             :rows="payments"
             :columns="columns"
             :pagination.sync="pagination"
+            title="Payments"
+            :loading="inProgress"
           >
+            <template v-slot:top-right>
+              <q-select
+                @update:model-value="showPayments"
+                v-model="selectedInstance"
+                :options="instances"
+                outlined
+                dense
+                clearable
+                label="Select Instance"
+              ></q-select>
+            </template>
             <template v-slot:body-cell-success="props">
               <q-td :props="props">
                 <q-icon
@@ -211,5 +194,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style></style>

@@ -5,75 +5,56 @@
         <div
           v-for="(item, index) in activityStats"
           :key="index"
-          class="col-md-3 col-sm-12 col-xs-12"
+          class="col-md-3 col-sm-6 col-xs-6"
         >
-          <q-item :style="`background-color: ${item.color1}`" class="q-pa-none">
-            <q-item-section
-              side
-              :style="`background-color: ${item.color2}`"
-              class="q-pa-lg q-mr-none text-white"
-            >
-              <q-icon :name="item.icon" color="white" size="24px"></q-icon>
-            </q-item-section>
-            <q-item-section class="q-pa-md q-ml-none text-white">
-              <q-item-label class="text-white text-h6 text-weight-bolder">{{
-                item.value
-              }}</q-item-label>
-              <q-item-label>{{ item.title }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </div>
-      </div>
-    </q-card-section>
-    <q-card-section class="q-pa-none">
-      <div class="row q-col-gutter-sm q-mt-md">
-        <div class="col">
-          <q-item class="q-pa-none bg-grey-8">
-            <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
-              <q-icon name="info" color="white" size="24px"></q-icon>
-            </q-item-section>
-            <q-item-section class="q-pa-md q-ml-none text-white">
-              <q-item-label class="text-white text-h6 text-weight-bolder"
-                >New Instances Creation</q-item-label
-              >
-              <q-item-label
-                >It takes a few minutes to create a new instance after the
-                payment is confirmed. Please wait.</q-item-label
-              >
-            </q-item-section>
-          </q-item>
+          <CardStats
+            :title="item.title"
+            :icon="item.icon"
+            :value="item.value"
+          />
         </div>
       </div>
     </q-card-section>
   </q-card>
-  <q-card class="table-bg no-shadow" bordered>
-    <q-card-section>
-      <div class="text-h6 text-white">
-        <span>LNbits Instances</span>
-        <q-btn
-          @click="selectPlan.show = true"
-          label="New Instance"
-          icon="add_to_queue"
-          color="blue"
-          class="float-right text-capitalize shadow-3"
-        />
+  <div class="q-mb-md">
+    <div class="row q-mt-md">
+      <div class="col-12">
+        <q-item class="q-pa-none bg-grey-8">
+          <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
+            <q-icon name="info" color="white" size="24px"></q-icon>
+          </q-item-section>
+          <q-item-section class="q-pa-md q-ml-none text-white">
+            <q-item-label class="text-white text-h6 text-weight-bolder"
+              >New Instances Creation</q-item-label
+            >
+            <q-item-label
+              >It takes a few minutes to create a new instance after the
+              payment is confirmed. Please wait.</q-item-label
+            >
+          </q-item-section>
+        </q-item>
       </div>
-    </q-card-section>
-    <q-linear-progress
-      v-if="inProgress"
-      indeterminate
-      color="secondary"
-      class="q-mt-sm"
-    />
-    <q-separator color="white" />
+    </div>
+  </div>
+  <q-card class="no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table
-        dark
         class="table-bg"
         :rows="data"
         :columns="columns"
         :pagination.sync="pagination"
+        title="LNbits Instances"
+        :loading="inProgress"
       >
+        <template v-slot:top-right>
+          <q-btn
+            @click="selectPlan.show = true"
+            label="New Instance"
+            icon="add_to_queue"
+            color="primary"
+            class="float-right text-capitalize"
+          />
+        </template>
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
             <q-btn
@@ -214,7 +195,6 @@
               class="float-right"
             ></span>
             <q-linear-progress
-              dark
               :color="getColor(props.row.progress)"
               :value="props.row.progress / 100"
               class="q-mt-sm"
@@ -287,7 +267,7 @@
     </q-card-section>
   </q-card>
   <q-dialog v-model="qrCodeDialog.show" position="top">
-    <q-card style="min-height: 200px" class="q-pa-lg">
+    <q-card style="min-height: 200px" class="q-pa-lg q-mx-sm">
       <h5 class="q-mt-sm">
         <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
       </h5>
@@ -314,9 +294,10 @@
         <q-responsive :ratio="1" class="q-mx-xl">
           <qrcode-vue
             :value="qrCodeDialog.data"
-            :options="{width: 340}"
+            size="200"
             level="Q"
             render-as="svg"
+            margin="2"
             class="rounded-borders"
           ></qrcode-vue>
         </q-responsive>
@@ -327,7 +308,8 @@
         <q-btn
           v-close-popup
           flat
-          color="primary"
+          outline
+          color="grey-6"
           class="q-mr-auto"
           v-text="'Close'"
         ></q-btn>
@@ -337,7 +319,9 @@
   </q-dialog>
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
-      <q-card-section class="row items-center q-py-lg bg-secondary text-white">
+      <q-card-section
+        class="row items-center q-py-lg gradient-bg--primary text-white"
+      >
         <div>
           <div
             class="text-h6"
@@ -380,7 +364,6 @@
           :key="index"
           :name="index"
           :img-src="slide.image"
-          class=""
         >
           <div class="absolute-bottom custom-caption">
             <div class="text-h5">{{ slide.title }}</div>
@@ -391,13 +374,41 @@
     </q-card>
   </q-dialog>
   <q-dialog
+    v-model="readyDialog.show"
+    backdrop-filter="blur(6px)"
+    @hide="readyDialog.instance = null"
+  >
+    <q-card style="width: 95%; max-width: 520px" class="q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white">
+        <div class="text-h6">Congratulations 🎉</div>
+        <div>Your instance is now ready.</div>
+      </q-card-section>
+      <q-card-section>
+        <div v-if="readyDialog.instance" class="text-subtitle2 q-mb-sm">
+          {{ readyDialog.instance.name }}
+        </div>
+        <div class="row items-center q-gutter-sm">
+          <q-btn
+            v-if="readyDialog.instance"
+            type="a"
+            :href="readyDialog.instance.instanceLink"
+            target="_blank"
+            label="Open Instance"
+            color="primary"
+          />
+          <q-btn flat outline color="grey-6" v-close-popup label="Close" />
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+  <q-dialog
     v-model="planDialog.show"
     backdrop-filter="blur(4px)"
     persistent
     @hide="resetSubscriptionDialog"
   >
-    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <div class="text-h6">
           {{
             planDialog.instanceId
@@ -446,7 +457,7 @@
           </div>
         </div>
         <div class="q-py-lg">
-          <q-list padding class="">
+          <q-list padding>
             <ItemPricing
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
@@ -456,7 +467,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.00"
+              :price="2.0"
               :min="1"
               :max="8"
               :step="1"
@@ -471,7 +482,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.00"
+              :price="7.0"
               :min="1"
               :max="12"
               :step="1"
@@ -486,7 +497,7 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.00"
+              :price="70.0"
               :min="1"
               :max="5"
               :step="1"
@@ -495,11 +506,11 @@
           </q-list>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn
           class="q-mr-auto"
           label="Close"
-          color="primary"
+          color="grey-6"
           outline
           v-close-popup
         ></q-btn>
@@ -537,8 +548,8 @@
     </q-card>
   </q-dialog>
   <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
-    <q-card style="width: 95%; max-width: 700px" class="q-mx-auto">
-      <q-card-section class="q-py-lg bg-secondary text-white column">
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <div class="text-h6">Select a method</div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
@@ -549,7 +560,7 @@
           </div>
         </div>
         <div class="q-py-lg">
-          <q-list padding class="">
+          <q-list padding>
             <q-item tag="label">
               <q-item-section avatar top>
                 <q-radio
@@ -619,12 +630,13 @@
           </q-list>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn
           class="q-mr-auto"
+          outline
           flat
           label="Close"
-          color="primary"
+          color="grey-6"
           v-close-popup
         ></q-btn>
         <q-btn
@@ -647,6 +659,7 @@ import {secondsToDhm} from 'src/boot/utils'
 import QrcodeVue from 'qrcode.vue'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
+import CardStats from 'components/cards/CardStats.vue'
 
 export default defineComponent({
   name: 'TableDarkMode',
@@ -655,6 +668,7 @@ export default defineComponent({
   },
   components: {
     ItemPricing,
+    CardStats,
     QrcodeVue
   },
   data() {
@@ -666,6 +680,10 @@ export default defineComponent({
         show: false,
         data: null,
         dataIsUrl: false
+      },
+      readyDialog: {
+        show: false,
+        instance: null
       },
       activeInstance: null,
       pagination: {
@@ -1158,10 +1176,10 @@ export default defineComponent({
           )
           if (response.status === 200) {
             this.isProvisioning = false
-            setTimeout(() => {
-              this.showProvisioning = false
-              this.isProvisioning = true
-            }, 20000)
+            this.showProvisioning = false
+            this.readyDialog.instance = instance
+            this.readyDialog.show = true
+            this.isProvisioning = true
             this.q.notify({
               message: `Instance ${instance.name} (${instance.id}) is ready!`,
               color: 'positive'
@@ -1277,10 +1295,6 @@ export default defineComponent({
 </script>
 
 <style>
-.table-bg {
-  background-color: #162b4d;
-}
-
 .custom-caption {
   padding: 12px;
   color: white;
