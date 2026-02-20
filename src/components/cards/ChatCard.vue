@@ -3,7 +3,6 @@
     <iframe
       id="lnbits-chat-embed-iframe"
       ref="chatIframe"
-      src="https://v1.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us"
       style="
         position: fixed;
         right: 24px;
@@ -23,17 +22,27 @@
 
 <script setup>
 import {onMounted, ref} from 'vue'
+import {saas} from 'src/boot/saas'
 
 const chatIframe = ref(null)
 
 onMounted(() => {
   const iframe = chatIframe.value
   if (!iframe) return
+  let chatUrl = localStorage.getItem('chatUrl') || saas.chatUrl
+  iframe.src = chatUrl
   const minHeight = 56
   const maxHeight = 520
   window.addEventListener('message', function (event) {
     if (!event.data || event.data.source !== 'lnbits-chat-embed') return
+    if (event.data.url && event.data.url !== chatUrl) {
+      chatUrl = event.data.url
+      localStorage.setItem('chatUrl', chatUrl)
+      iframe.src = chatUrl
+    }
     iframe.style.height = event.data.open ? maxHeight + 'px' : minHeight + 'px'
+
   })
+
 })
 </script>
