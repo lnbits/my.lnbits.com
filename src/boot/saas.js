@@ -7,6 +7,8 @@ var saas = {
   // for local development togegther with Caddy
   // url: '/api',
   serverTime: null,
+  chatUrl: 'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
+
 
   username: localStorage.getItem('username'),
 
