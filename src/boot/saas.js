@@ -10,27 +10,28 @@ var saas = {
   chatUrl: 'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
 
 
-  username: localStorage.getItem('username'),
+  email: localStorage.getItem('email'),
 
-  signup: async function (username, password, password2) {
+  signup: async function (email, password, password2) {
     const {data} = await axios({
       method: 'POST',
       url: this.url + '/signup',
       withCredentials: true,
       data: {
-        username,
+        email: email,
         password,
         password_repeat: password2
       }
     })
 
-    localStorage.setItem('username', username)
+    localStorage.setItem('email', email)
 
     return data
   },
-  login: async function (username, password) {
+  login: async function (email, password) {
     const formData = new FormData()
-    formData.append('username', username)
+    formData.append('email', email)
+    formData.append('username', email)
     formData.append('password', password)
     const {data} = await axios({
       method: 'POST',
@@ -41,7 +42,7 @@ var saas = {
         'Content-Type': 'multipart/form-data'
       }
     })
-    localStorage.setItem('username', username)
+    localStorage.setItem('email', email)
 
     return data
   },
@@ -180,7 +181,7 @@ var saas = {
       url: this.url + '/logout',
       withCredentials: true
     })
-    this.username = null
+    this.email = null
     localStorage.clear()
     return response
   },

@@ -1273,7 +1273,7 @@ export default defineComponent({
   async created() {
     try {
       // temporary feature flag for alan
-      this.showFeatureFlag = saas.username === 'alan@lnbits.com'
+      this.showFeatureFlag = saas.email === 'alan@lnbits.com'
 
       this.inProgress = true
       await this.refreshState()

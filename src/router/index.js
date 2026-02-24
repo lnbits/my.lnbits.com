@@ -36,10 +36,10 @@ export default route(function (/* { store, ssrContext } */) {
   })
 
   router.beforeEach((to, from, next) => {
-    if (to.path !== '/login' && to.path !== '/pricing' && !saas.username) {
+    if (to.path !== '/login' && to.path !== '/pricing' && !saas.email) {
       return next('/login')
     }
-    if (to.path == '/login' && saas.username) {
+    if (to.path == '/login' && saas.email) {
       return next('/')
     }
     next(true)

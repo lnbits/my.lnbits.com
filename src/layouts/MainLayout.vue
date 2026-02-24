@@ -30,7 +30,7 @@
             <q-item>
               <q-item-section>
                 <q-item-label>
-                  {{ username }}
+                  {{ email }}
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -144,8 +144,8 @@ export default defineComponent({
     }
   },
   computed: {
-    username: function () {
-      return saas.username
+    email: function () {
+      return saas.email
     }
   },
   methods: {
@@ -181,7 +181,7 @@ export default defineComponent({
     }
     try {
       // temporary feature flag for alan
-      this.showFeatureFlag = saas.username === 'alan@lnbits.com'
+      this.showFeatureFlag = saas.email === 'alan@lnbits.com'
     } catch (error) {
       console.warn(error)
     } finally {

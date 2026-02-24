@@ -29,9 +29,11 @@
             <q-form @submit="onSubmit">
               <q-input
                 filled
-                v-model="username"
-                :rules="[checkUsername]"
-                label="Username"
+                type="email"
+                autocomplete="email"
+                v-model="email"
+                :rules="[checkEmail]"
+                label="Email"
                 lazy-rules
               />
 
@@ -110,7 +112,7 @@ export default defineComponent({
     const $q = useQuasar()
     return {
       q: $q,
-      username: ref(''),
+      email: ref(''),
       password: ref(''),
       passwordRepeat: ref(''),
       isSignupRequest: ref(false),
@@ -131,7 +133,7 @@ export default defineComponent({
           })
           return false
         }
-        await saas.login(this.username, this.password)
+        await saas.login(this.email, this.password)
         this.q.notify({
           message: 'Logged in!',
           color: 'positive'
@@ -150,9 +152,10 @@ export default defineComponent({
         this.inProgress = false
       }
     },
-    checkUsername(val) {
+    checkEmail(val) {
       return (
-        (val && val.length >= 3) || 'Username must have at least 3 characters'
+        (val && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) ||
+        'Please enter a valid email address'
       )
     },
     checkPassword(val) {
@@ -161,9 +164,9 @@ export default defineComponent({
       )
     },
     validateForm() {
-      const usernameMessage = this.checkUsername(this.username)
-      if (usernameMessage !== true) {
-        return usernameMessage
+      const emailMessage = this.checkEmail(this.email)
+      if (emailMessage !== true) {
+        return emailMessage
       }
       const passwordMessage = this.checkPassword(this.password)
       if (passwordMessage !== true) {
@@ -211,7 +214,7 @@ export default defineComponent({
 
       try {
         this.inProgress = true
-        await saas.signup(this.username, this.password, this.passwordRepeat)
+        await saas.signup(this.email, this.password, this.passwordRepeat)
         this.q.notify({
           message: 'Signed Up!',
           color: 'positive'
