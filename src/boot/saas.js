@@ -31,6 +31,7 @@ var saas = {
   login: async function (email, password) {
     const formData = new FormData()
     formData.append('email', email)
+    formData.append('username', email)
     formData.append('password', password)
     const {data} = await axios({
       method: 'POST',
