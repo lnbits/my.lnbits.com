@@ -72,6 +72,19 @@
             </q-btn>
             <q-btn
               type="a"
+              :href="props.row.instanceInstallLink"
+              target="_blank"
+              icon="launch"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Open the First Install in a new tab.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              type="a"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
               target="_blank"
@@ -391,7 +404,7 @@
           <q-btn
             v-if="readyDialog.instance"
             type="a"
-            :href="readyDialog.instance.instanceLink"
+            :href="readyDialog.instance.instanceInstallLink"
             target="_blank"
             label="Open Instance"
             color="primary"

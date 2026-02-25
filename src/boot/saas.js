@@ -215,7 +215,8 @@ var saas = {
     )
     return {
       id: instance.id,
-      instanceLink: `https://${instance.domain}?token=${instance.installtoken}`,
+      instanceLink: `https://${instance.domain}/wallet`,
+      instanceInstallLink: `https://${instance.domain}/first_install?token=${instance.installtoken}`,
       backupLink: `https://${instance.domain}/admin/api/v1/backup`,
       enabled: instance.is_enabled,
       active: instance.is_active,
