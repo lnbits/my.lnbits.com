@@ -71,6 +71,19 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              @click="copyInstallToken(props.row.installToken)"
+              icon="key"
+              label="first_install_token"
+              size="sm"
+              flat
+              dense
+              no-caps
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Copy first_install_token.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
               type="a"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
@@ -391,9 +404,9 @@
           <q-btn
             v-if="readyDialog.instance"
             type="a"
-            :href="readyDialog.instance.instanceLink"
+            :href="readyDialog.instance.firstInstallLink"
             target="_blank"
-            label="Open Instance"
+            label="Open First Install"
             color="primary"
           />
           <q-btn flat outline color="grey-6" v-close-popup label="Close" />
@@ -1235,6 +1248,22 @@ export default defineComponent({
 
       this.q.notify({
         message: 'Copied',
+        color: 'grey'
+      })
+    },
+    copyInstallToken: function (token) {
+      if (!token) {
+        this.q.notify({
+          message: 'Missing first_install_token',
+          color: 'negative'
+        })
+        return
+      }
+
+      copyToClipboard(token)
+
+      this.q.notify({
+        message: 'first_install_token copied',
         color: 'grey'
       })
     },
