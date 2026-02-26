@@ -35,6 +35,10 @@ const routes = [
   {
     path: '/payment-confirmation',
     component: () => import('pages/PaymentConfirmation.vue')
+  },
+  {
+    path: '/confirm',
+    component: () => import('pages/Confirmation.vue')
   }
 ]
 
