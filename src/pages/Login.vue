@@ -235,6 +235,7 @@ export default defineComponent({
         this.inProgress = false
       }
     }
-  }
+  },
+
 })
 </script>

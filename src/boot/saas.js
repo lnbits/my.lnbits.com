@@ -46,6 +46,16 @@ var saas = {
 
     return data
   },
+  confirmEmail: async function (token) {
+    const {data} = await axios({
+      method: 'GET',
+      url: this.url + `/confirm-email?email_confirmation_token=${token}`,
+      withCredentials: true
+    })
+    localStorage.setItem('email', data.email)
+
+    return data
+  },
 
   createInstance: async function () {
     return axios({
@@ -246,6 +256,9 @@ var saas = {
     }
     if (typeof data === 'string') {
       return data
+    }
+    if (typeof data.detail === 'string') {
+      return data.detail
     }
     return data?.detail?.map(d => d.msg).join(', ')
   }
