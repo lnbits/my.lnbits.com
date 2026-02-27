@@ -164,10 +164,10 @@ export default defineComponent({
       )
     },
     validateForm() {
-      const emailMessage = this.checkEmail(this.email)
-      if (emailMessage !== true) {
-        return emailMessage
-      }
+      // const emailMessage = this.checkEmail(this.email)
+      // if (emailMessage !== true) {
+      //   return emailMessage
+      // }
       const passwordMessage = this.checkPassword(this.password)
       if (passwordMessage !== true) {
         return passwordMessage
