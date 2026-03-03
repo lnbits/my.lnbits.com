@@ -28,9 +28,9 @@ export default defineComponent({
     }
   },
   methods: {
-    async checkEmailConfirmation() {
+    async checkEmailConfirmation(token) {
       try {
-        const data = await saas.checkEmailConfirmation()
+        const data = await saas.confirmEmail(token)
         if (data.status === 'success') {
           this.$q.notify({
             message: 'Email confirmed!',
@@ -54,14 +54,14 @@ export default defineComponent({
           icon: 'warning'
         })
       }
-    },
-    async created() {
-      const urlParams = new URLSearchParams(window.location.search)
-      const emailConfirmationToken = urlParams.get('email_confirmation_token')
+    }
+  },
+  async created() {
+    const urlParams = new URLSearchParams(window.location.search)
+    const emailConfirmationToken = urlParams.get('email_confirmation_token')
 
-      if (emailConfirmationToken) {
-        await this.checkEmailConfirmation()
-      }
+    if (emailConfirmationToken) {
+      await this.checkEmailConfirmation(emailConfirmationToken)
     }
   }
 })
