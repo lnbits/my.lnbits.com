@@ -73,7 +73,6 @@
             <q-btn
               @click="copyInstallToken(props.row.installToken)"
               icon="key"
-              label="first_install_token"
               size="sm"
               flat
               dense
