@@ -40,6 +40,7 @@ export default route(function (/* { store, ssrContext } */) {
       to.path !== '/login' &&
       to.path !== '/pricing' &&
       to.path !== '/payment-confirmation' &&
+      to.path !== '/confirm' &&
       !saas.email
     ) {
       return next('/login')
