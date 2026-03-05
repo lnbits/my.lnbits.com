@@ -919,12 +919,12 @@ export default defineComponent({
       this.newInstanceDialog.action = null
 
       if (action === 'on-demand') {
-        const instance = await this.createInstance()
+        const instance = await this.createInstance(provider)
         if (instance) {
           await this.extendInstance(instance)
         }
       } else if (action === 'plan-request') {
-        const instance = await this.createInstance()
+        const instance = await this.createInstance(provider)
         if (instance) {
           this.planDialog.instanceId = instance.id
           await this.submitPlan()
@@ -965,10 +965,10 @@ export default defineComponent({
       this.planDialog.show = true
     },
 
-    createInstance: async function () {
+    createInstance: async function (provider) {
       try {
         this.inProgress = true
-        const {data} = await saas.createInstance()
+        const {data} = await saas.createInstance(provider)
         const instance = saas.mapInstance(data)
         this.data.push(instance)
         return instance
