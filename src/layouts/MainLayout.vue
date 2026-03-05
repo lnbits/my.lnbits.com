@@ -92,6 +92,14 @@
             <q-item-label>Pricing</q-item-label>
           </q-item-section>
         </q-item>
+        <q-item to="/terms-of-service" active-class="text-primary">
+          <q-item-section avatar>
+            <q-icon name="description" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Terms of Service</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
