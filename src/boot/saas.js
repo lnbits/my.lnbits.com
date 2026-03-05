@@ -7,8 +7,8 @@ var saas = {
   // for local development togegther with Caddy
   // url: '/api',
   serverTime: null,
-  chatUrl: 'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
-
+  chatUrl:
+    'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
 
   email: localStorage.getItem('email'),
 
@@ -43,6 +43,16 @@ var saas = {
       }
     })
     localStorage.setItem('email', email)
+
+    return data
+  },
+  confirmEmail: async function (token) {
+    const {data} = await axios({
+      method: 'GET',
+      url: this.url + `/confirm-email?email_confirmation_token=${token}`,
+      withCredentials: true
+    })
+    localStorage.setItem('email', data.email)
 
     return data
   },
@@ -215,7 +225,9 @@ var saas = {
     )
     return {
       id: instance.id,
-      instanceLink: `https://${instance.domain}?token=${instance.installtoken}`,
+      instanceLink: `https://${instance.domain}/wallet`,
+      firstInstallLink: `https://${instance.domain}/first_install?token=${instance.installtoken}`,
+      installToken: instance.installtoken,
       backupLink: `https://${instance.domain}/admin/api/v1/backup`,
       enabled: instance.is_enabled,
       active: instance.is_active,
@@ -244,6 +256,9 @@ var saas = {
     }
     if (typeof data === 'string') {
       return data
+    }
+    if (typeof data.detail === 'string') {
+      return data.detail
     }
     return data?.detail?.map(d => d.msg).join(', ')
   }

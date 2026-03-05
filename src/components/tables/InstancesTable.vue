@@ -28,8 +28,8 @@
               >New Instances Creation</q-item-label
             >
             <q-item-label
-              >It takes a few minutes to create a new instance after the
-              payment is confirmed. Please wait.</q-item-label
+              >It takes a few minutes to create a new instance after the payment
+              is confirmed. Please wait.</q-item-label
             >
           </q-item-section>
         </q-item>
@@ -68,6 +68,18 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Open the instance in a new tab.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              @click="copyInstallToken(props.row.installToken)"
+              icon="key"
+              size="sm"
+              flat
+              dense
+              no-caps
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Copy first_install_token.
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -171,7 +183,6 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              v-if="showFeatureFlag"
               @click="subscriptionInstance(props.row.id, 'USD')"
               icon="attach_money"
               size="sm"
@@ -391,9 +402,9 @@
           <q-btn
             v-if="readyDialog.instance"
             type="a"
-            :href="readyDialog.instance.instanceLink"
+            :href="readyDialog.instance.firstInstallLink"
             target="_blank"
-            label="Open Instance"
+            label="Open First Install"
             color="primary"
           />
           <q-btn flat outline color="grey-6" v-close-popup label="Close" />
@@ -528,7 +539,7 @@
         ></q-btn>
         <div v-else>
           <q-btn
-            v-if="!planDialog.bitcoinOnly && showFeatureFlag"
+            v-if="!planDialog.bitcoinOnly"
             :disable="!planDialog.plan"
             label="Buy with USD"
             color="positive"
@@ -579,17 +590,12 @@
               </q-item-section>
               <q-item-section side>
                 <div>
-                  <q-icon
-                    v-if="showFeatureFlag"
-                    name="attach_money"
-                    color="green"
-                    size="xs"
-                  />
+                  <q-icon name="attach_money" color="green" size="xs" />
                   <q-icon name="currency_bitcoin" color="orange" size="xs" />
                 </div>
               </q-item-section>
             </q-item>
-            <q-item v-if="showFeatureFlag" tag="label">
+            <q-item tag="label">
               <q-item-section avatar top>
                 <q-radio
                   v-model="selectPlan.method"
@@ -1235,6 +1241,22 @@ export default defineComponent({
 
       this.q.notify({
         message: 'Copied',
+        color: 'grey'
+      })
+    },
+    copyInstallToken: function (token) {
+      if (!token) {
+        this.q.notify({
+          message: 'Missing first_install_token',
+          color: 'negative'
+        })
+        return
+      }
+
+      copyToClipboard(token)
+
+      this.q.notify({
+        message: 'first_install_token copied',
         color: 'grey'
       })
     },

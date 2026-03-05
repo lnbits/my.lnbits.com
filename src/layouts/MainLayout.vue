@@ -66,11 +66,7 @@
             <q-item-label>Payments</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item
-          v-if="showFeatureFlag"
-          to="/subscriptions"
-          active-class="text-primary"
-        >
+        <q-item to="/subscriptions" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="subscriptions" />
           </q-item-section>

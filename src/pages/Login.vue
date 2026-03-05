@@ -164,10 +164,10 @@ export default defineComponent({
       )
     },
     validateForm() {
-      const emailMessage = this.checkEmail(this.email)
-      if (emailMessage !== true) {
-        return emailMessage
-      }
+      // const emailMessage = this.checkEmail(this.email)
+      // if (emailMessage !== true) {
+      //   return emailMessage
+      // }
       const passwordMessage = this.checkPassword(this.password)
       if (passwordMessage !== true) {
         return passwordMessage
@@ -219,7 +219,9 @@ export default defineComponent({
           message: 'Signed Up!',
           color: 'positive'
         })
-        setTimeout(() => (window.location.href = '/'), 500)
+        setTimeout(() => {
+          this.$router.push('/confirm')
+        }, 500)
       } catch (error) {
         console.warn(error)
         this.q.notify({
@@ -233,6 +235,7 @@ export default defineComponent({
         this.inProgress = false
       }
     }
-  }
+  },
+
 })
 </script>
