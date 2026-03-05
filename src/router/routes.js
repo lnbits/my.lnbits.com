@@ -29,6 +29,10 @@ const routes = [
     component: () => import('pages/Pricing.vue')
   },
   {
+    path: '/terms-of-service',
+    component: () => import('pages/TermsOfService.vue')
+  },
+  {
     path: '/login',
     component: () => import('pages/Login.vue')
   },
