@@ -671,17 +671,25 @@
       <q-card-section>
         You are about the create a new LNbits instance.
       </q-card-section>
-      <q-card-actions align="right" class="q-pa-md">
+      <q-card-actions v-if="showFeatureFlag" align="right" class="q-pa-md">
         <q-btn
           label="I have my own lightning node"
           color="primary"
           outline
-          @click="confirmNewInstanceProvider('own-node')"
+          @click="confirmNewInstanceProvider('lnbits')"
         />
         <q-btn
           label="Use Spark L2 to connect to Lightning Network"
           color="positive"
-          @click="confirmNewInstanceProvider('spark-l2')"
+          @click="confirmNewInstanceProvider('lnbits-spark-l2')"
+        />
+      </q-card-actions>
+      <q-card-actions v-else align="right" class="q-pa-md">
+        <q-btn
+          label="OK, let's do it!"
+          color="primary"
+          outline
+          @click="confirmNewInstanceProvider('lnbits')"
         />
       </q-card-actions>
     </q-card>
