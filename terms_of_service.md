@@ -1,97 +1,83 @@
 # LNbits SaaS Terms of Service
 
-**Last Updated:** 01/06/2025
+**Last Updated:** 5th March 2026
 
-By accessing or using the **LNbits Inc. hosted LNbits SaaS service** ("Service"), you acknowledge that you have read, understood, and agree to be bound by the following Terms of Service ("Terms").
+By accessing or using the hosted **LNbits SaaS service** (the "Service") operated by **LNbits Inc.** ("LNbits", "we", "us", or "our"), you agree to be bound by these Terms of Service ("Terms").
 
-If you do not agree with these Terms, you must not access or use the Service.
+If you do not agree with these Terms, you must not use the Service.
 
-These Terms constitute a legally binding agreement between you ("User", "you", or "your") and **LNbits Inc.** ("LNbits", "we", "us", or "our") governing your use of the Service.
+These Terms constitute a legally binding agreement between you ("User", "you") and LNbits Inc.
 
 ---
 
-# 1. Description of the Service
+# 1. The Service
 
-LNbits Inc. operates a hosted version of the LNbits software platform which provides tools for interacting with Bitcoin, the Lightning Network, and related payment technologies.
+LNbits Inc. operates a hosted version of the LNbits software platform that provides tools for interacting with Bitcoin, the Lightning Network, and related payment infrastructure.
 
-The Service may include functionality such as:
+The Service may include:
 
 * Lightning wallet management
 * merchant and point-of-sale tools
 * payment processing interfaces
 * APIs and developer tools
 * integrations with third-party payment providers
-* extensions and plugins
-* experimental or beta features
+* optional extensions and plugins
 
-LNbits software itself is open-source. The hosted Service provided by LNbits Inc. is a convenience service for users who prefer not to self-host the software.
+LNbits software itself is open-source. The hosted Service is provided as a convenience for users who prefer not to self-host.
+
+LNbits Inc. provides **software infrastructure only**.
+
+LNbits Inc. does **not control the Bitcoin network, the Lightning Network, or any third-party payment systems**.
 
 ---
 
-# 2. Beta and Experimental Service
+# 2. Beta and Experimental Software
 
-The Service is provided as a **beta and experimental service**.
+The Service is provided as **experimental and beta software**.
 
-You acknowledge and agree that:
+You acknowledge that:
 
-* The Service may contain bugs or security vulnerabilities
-* Features may change without notice
-* The Service may experience interruptions or outages
-* Data loss or unexpected behavior may occur
-
-You should **only use the Service with funds you are prepared to lose**.
+* the Service may contain bugs or vulnerabilities
+* features may change or be removed at any time
+* downtime or unexpected behavior may occur
 
 The Service should not be relied upon for mission-critical financial infrastructure.
 
+You should only use the Service with funds you can afford to lose.
+
 ---
 
-# 3. Responsibility for Funds
+# 3. User Responsibility
 
-LNbits Inc. **does not custody user funds**.
+Users remain fully responsible for:
 
-Users remain solely responsible for:
-
-* their Lightning nodes
 * their Bitcoin wallets
-* their private keys
-* their backend funding sources
-* their node configuration
-* their API keys and authentication credentials
+* Lightning nodes and channels
+* private keys
+* API keys and credentials
+* backend funding sources
+* payment configuration
 
 LNbits Inc. **does not have access to private keys** and cannot recover lost funds.
 
 Bitcoin and Lightning transactions are **irreversible**.
 
-LNbits Inc. is **not responsible for any loss of funds**, including but not limited to losses resulting from:
-
-* software bugs
-* configuration errors
-* user mistakes
-* Lightning Network failures
-* node outages
-* security breaches
-* extension behavior
-* third-party integrations
-* malicious actors
-
-Use of the Service is entirely at your own risk.
-
 ---
 
 # 4. Hot Wallet Risk
 
-Users acknowledge that Lightning Network wallets and payment channels may function as **hot wallets** connected to internet-accessible infrastructure.
+Lightning wallets and payment infrastructure connected to the Service may function as **internet-connected hot wallets**.
 
-Hot wallets inherently carry elevated security risks including:
+Hot wallets carry inherent risks including:
 
 * server compromise
 * credential theft
-* infrastructure vulnerabilities
-* Lightning node exploits
+* software vulnerabilities
+* infrastructure failures
 
-Users are strongly encouraged **not to store large amounts of funds** within wallets connected to the Service.
+Users should not store significant funds within wallets connected to the Service.
 
-LNbits Inc. shall not be responsible for any loss of funds resulting from hot wallet exposure.
+LNbits Inc. is not responsible for losses resulting from hot wallet exposure.
 
 ---
 
@@ -99,129 +85,90 @@ LNbits Inc. shall not be responsible for any loss of funds resulting from hot wa
 
 The Lightning Network is an **experimental distributed payment network**.
 
-Users acknowledge that Lightning payments may fail due to:
+Payments may fail due to:
 
 * routing failures
 * liquidity shortages
-* channel closures
 * node downtime
+* channel closures
 * network congestion
-* protocol-level limitations
 
-LNbits Inc. **does not guarantee successful payment routing or settlement**.
-
-Lightning transactions may fail, be delayed, or behave unpredictably.
+LNbits Inc. does **not guarantee payment routing, settlement, or availability of liquidity**.
 
 ---
 
-# 6. No Financial Services
-
-LNbits Inc. provides **software infrastructure only**.
-
-LNbits Inc. does not:
-
-* operate as a bank
-* act as a custodian of funds
-* provide brokerage services
-* provide investment advice
-* guarantee payments or settlement
-
-All financial activity conducted through the Service occurs **directly between users and the payment infrastructure they choose to connect**.
-
----
-
-# 7. Regulatory Compliance
-
-You are solely responsible for ensuring your use of the Service complies with all applicable laws and regulations in your jurisdiction.
-
-This may include:
-
-* tax obligations
-* accounting requirements
-* anti-money laundering regulations
-* licensing or registration requirements
-* consumer protection obligations
-
-LNbits Inc. does not monitor or enforce regulatory compliance.
-
-Use of the Service in jurisdictions where such technology is restricted is entirely at your own risk.
-
----
-
-# 8. Third-Party Services
+# 6. Third-Party Services
 
 The Service may integrate with third-party systems including:
 
 * Lightning nodes
 * payment processors
-* banking providers
-* APIs
-* plugins and extensions
-* external software services
+* banks
+* external APIs
+* extensions or plugins
 
-LNbits Inc. does not control and is not responsible for the reliability, security, or performance of third-party services.
-
-Use of third-party services is entirely at your own risk.
+LNbits Inc. does not control and is not responsible for the reliability, security, or operation of third-party services.
 
 ---
 
-# 9. Extensions and Plugins
+# 7. Extensions
 
 LNbits supports a modular extension system.
 
-Extensions may be developed by:
+Extensions may be developed by LNbits Inc., open-source contributors, or third parties.
 
-* LNbits Inc.
-* open-source contributors
-* independent third parties
+Extensions may interact with wallets and payment systems.
 
-Extensions may interact with wallets, APIs, and external systems.
+LNbits Inc. does not audit or guarantee the security or reliability of extensions.
 
-LNbits Inc. does not guarantee the security, safety, or reliability of extensions.
-
-Users install and use extensions **at their own risk**.
+Users install and use extensions at their own risk.
 
 ---
 
-# 10. Security
+# 8. Regulatory Compliance
 
-While LNbits Inc. takes reasonable steps to maintain the security of the Service, no online system can be guaranteed to be secure.
+Users are solely responsible for ensuring their use of the Service complies with all laws and regulations applicable in their jurisdiction.
 
-Users are responsible for:
+This may include:
 
-* protecting their credentials
-* safeguarding API keys
-* monitoring wallet activity
-* securing connected Lightning nodes
+* tax obligations
+* licensing requirements
+* accounting obligations
+* AML/KYC requirements
 
-LNbits Inc. is not liable for losses resulting from:
-
-* compromised credentials
-* user negligence
-* software defects
-* infrastructure failures
-* third-party vulnerabilities
+LNbits Inc. does not monitor or enforce regulatory compliance.
 
 ---
 
-# 11. Service Availability
+# 9. Security
 
-The Service may become unavailable due to:
+While LNbits Inc. takes reasonable measures to maintain the security of the Service, **no online system can be guaranteed to be secure**.
+
+Users are responsible for protecting:
+
+* login credentials
+* API keys
+* connected infrastructure
+
+---
+
+# 10. Service Availability
+
+The Service may experience interruptions due to:
 
 * maintenance
-* upgrades
 * infrastructure failures
 * denial-of-service attacks
-* software issues
+* software updates
 * force majeure events
 
-LNbits Inc. makes **no guarantee of uptime or availability**.
+LNbits Inc. does not guarantee uptime or availability.
 
 ---
 
-# 12. Limitation of Liability
+# 11. Limitation of Liability
 
-To the maximum extent permitted by law, **LNbits Inc., its directors, employees, contractors, and contributors shall not be liable for any damages** arising from the use of the Service.
+To the maximum extent permitted by law, LNbits Inc., its directors, employees, and contributors shall not be liable for any damages arising from the use of the Service.
 
 This includes but is not limited to:
 
@@ -229,78 +176,94 @@ This includes but is not limited to:
 * loss of profits
 * loss of business
 * loss of data
-* indirect damages
-* incidental damages
-* consequential damages
+* indirect or consequential damages
+
+Use of the Service is entirely at your own risk.
 
 ---
 
-# 13. Liability Cap
+# 12. Liability Cap
 
-To the maximum extent permitted by applicable law, the **total liability of LNbits Inc. for any claim relating to the Service shall not exceed the total fees paid by the user to LNbits Inc. during the twelve (12) months preceding the claim**, or **£100**, whichever amount is greater.
+To the maximum extent permitted by law, the total liability of LNbits Inc. for any claim relating to the Service shall not exceed:
 
----
+**the greater of:**
 
-# 14. Indemnification
-
-You agree to indemnify and hold harmless LNbits Inc., its officers, employees, and contributors from any claims, liabilities, damages, losses, or expenses arising from:
-
-* your use of the Service
-* your violation of these Terms
-* your violation of applicable laws
-* your use of the Service for business or commercial purposes
+* £100, or
+* the total fees paid by the user to LNbits Inc. during the previous twelve (12) months.
 
 ---
 
-# 15. Acceptable Use
+# 13. Acceptable Use
 
-You agree not to use the Service for unlawful or abusive activities including but not limited to:
+Users may not use the Service for unlawful or abusive purposes including but not limited to:
 
 * fraud
 * money laundering
 * sanctions violations
 * distribution of malware
 * attacks against network infrastructure
-* interference with the operation of the Service
 
 LNbits Inc. reserves the right to suspend or terminate accounts that violate these Terms.
 
 ---
 
-# 16. Termination
+# 14. Termination
 
 LNbits Inc. may suspend or terminate access to the Service at any time if:
 
 * these Terms are violated
 * the Service is abused
-* there is a security risk
-* continued operation is no longer feasible
+* security risks are identified
 
 Users may stop using the Service at any time.
 
 ---
 
-# 17. Changes to Terms
+# 15. Changes to Terms
 
-LNbits Inc. may update these Terms at any time.
+LNbits Inc. may update these Terms periodically.
 
-Continued use of the Service after updates constitutes acceptance of the revised Terms.
+Continued use of the Service constitutes acceptance of the updated Terms.
 
 ---
 
-# 18. Open Source Software
+# 16. Open Source Software
 
 LNbits software is primarily licensed under open-source licenses.
 
-Use of the hosted Service operated by LNbits Inc. is separate from the licensing of the LNbits open-source codebase.
+Use of the hosted Service operated by LNbits Inc. is separate from the licensing of the open-source codebase.
 
-Users are free to self-host LNbits subject to the applicable open-source licenses.
+Users are free to self-host LNbits subject to the applicable licenses.
 
 ---
 
-# 19. Governing Law
+# 17. Governing Law
 
-These Terms shall be governed by and interpreted in accordance with the laws of **England and Wales**.
+These Terms shall be governed by and construed in accordance with the laws of the **State of Delaware, United States**, without regard to conflict of law principles.
+
+---
+
+# 18. Dispute Resolution and Arbitration
+
+Any dispute, claim, or controversy arising out of or relating to these Terms or the use of the Service shall be resolved through **binding arbitration**, rather than in court, except where prohibited by applicable law.
+
+The arbitration shall be conducted in accordance with the rules of the **American Arbitration Association (AAA)** or a similar arbitration body agreed upon by the parties.
+
+The arbitration shall take place in **Delaware, United States**, unless otherwise agreed by the parties.
+
+The arbitrator’s decision shall be final and binding.
+
+Nothing in this section prevents either party from seeking **injunctive or equitable relief** in a court of competent jurisdiction where necessary to protect intellectual property rights or confidential information.
+
+---
+
+# 19. Class Action Waiver
+
+To the fullest extent permitted by law, you agree that **any dispute resolution proceedings will be conducted only on an individual basis** and not in a class, consolidated, or representative action.
+
+You waive any right to participate in a **class action lawsuit, class-wide arbitration, or representative proceeding** against LNbits Inc.
+
+If this class action waiver is found to be unenforceable, then the entirety of the arbitration provision shall be considered void to the extent required by applicable law.
 
 ---
 
