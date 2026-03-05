@@ -57,11 +57,14 @@ var saas = {
     return data
   },
 
-  createInstance: async function () {
+  createInstance: async function (instanceType) {
     return axios({
       method: 'POST',
       url: this.url + '/instance',
-      withCredentials: true
+      withCredentials: true,
+      data: {
+        instance_type: instanceType
+      }
     })
   },
 

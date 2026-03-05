@@ -17,25 +17,6 @@
     </q-header>
 
     <q-page-container>
-      <section class="flex flex-center pricing-hero">
-        <div class="pricing-hero__content">
-          <div class="text-h2 q-mb-md text-center">
-            <span class="text-weight-bold">LN</span>bits
-          </div>
-          <div class="text-h4 text-center pricing-hero__title">
-            Terms of Service
-          </div>
-          <div class="text-subtitle1 q-pt-sm text-center pricing-hero__subtitle">
-            Please review these terms before using the hosted service.
-          </div>
-        </div>
-      </section>
-      <section class="pricing-intro">
-        <div class="text-h5 text-center">Terms of Service</div>
-        <div class="text-subtitle2 text-center pricing-intro__hint">
-          This page contains the complete service terms.
-        </div>
-      </section>
       <section class="q-pa-xl pricing-section">
         <div class="q-mx-auto tos-grid">
           <q-card class="pricing-card no-shadow">
@@ -180,6 +161,11 @@ onMounted(() => {
   border: none;
   height: 1px;
   margin: 1.25rem 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
 }
 </style>

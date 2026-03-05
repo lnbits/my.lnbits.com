@@ -654,6 +654,51 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
+    <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+        <q-btn
+          icon="close"
+          flat
+          round
+          dense
+          color="white"
+          class="absolute-top-right q-ma-sm"
+          v-close-popup
+        />
+        <div class="text-h6">New LNbits Instance</div>
+      </q-card-section>
+      <q-card-section>
+        You are about the create a new LNbits instance.
+      </q-card-section>
+      <q-card-actions v-if="showFeatureFlag" vertical class="q-pa-md q-ma-md q-gutter-md">
+        <q-btn
+          label="Advanced: I have my own bitcoin lightning funding source"
+          color="primary"
+          outline
+          class="full-width"
+          @click="confirmNewInstanceProvider('lnbits')"
+        />
+        <br />
+
+        <q-btn
+          label="Simple: use Spark L2 to connect to bitcoin lightning"
+          color="positive"
+          class="full-width"
+          @click="confirmNewInstanceProvider('lnbits-spark-l2')"
+        />
+      </q-card-actions>
+      <q-card-actions v-else vertical class="q-pa-md">
+        <q-btn
+          label="OK, let's do it!"
+          color="primary"
+          outline
+          class="full-width"
+          @click="confirmNewInstanceProvider('lnbits')"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -841,6 +886,10 @@ export default defineComponent({
       selectPlan: {
         show: false,
         method: null
+      },
+      newInstanceDialog: {
+        show: false,
+        action: null
       }
     }
   },
@@ -872,6 +921,29 @@ export default defineComponent({
     }
   },
   methods: {
+    openNewInstanceDialog(action) {
+      this.newInstanceDialog.action = action
+      this.newInstanceDialog.show = true
+    },
+    async confirmNewInstanceProvider(provider) {
+      console.log('### new instance provider', provider)
+      const action = this.newInstanceDialog.action
+      this.newInstanceDialog.show = false
+      this.newInstanceDialog.action = null
+
+      if (action === 'on-demand') {
+        const instance = await this.createInstance(provider)
+        if (instance) {
+          await this.extendInstance(instance)
+        }
+      } else if (action === 'plan-request') {
+        const instance = await this.createInstance(provider)
+        if (instance) {
+          this.planDialog.instanceId = instance.id
+          await this.submitPlan()
+        }
+      }
+    },
     showNewInstanceProvisioning: async function () {
       this.selectPlan.show = false
       if (this.selectPlan.method === 'one-time') {
@@ -888,14 +960,7 @@ export default defineComponent({
         this.planDialog.bitcoinOnly = false
         this.planDialog.show = true
       } else if (this.selectPlan.method === 'on-demand') {
-        this.confirm('You are about the create a new LNbits instance.').onOk(
-          async () => {
-            const instance = await this.createInstance()
-            if (instance) {
-              await this.extendInstance(instance)
-            }
-          }
-        )
+        this.openNewInstanceDialog('on-demand')
       }
       this.selectPlan.method = null
     },
@@ -913,10 +978,10 @@ export default defineComponent({
       this.planDialog.show = true
     },
 
-    createInstance: async function () {
+    createInstance: async function (provider) {
       try {
         this.inProgress = true
-        const {data} = await saas.createInstance()
+        const {data} = await saas.createInstance(provider)
         const instance = saas.mapInstance(data)
         this.data.push(instance)
         return instance
@@ -954,15 +1019,7 @@ export default defineComponent({
       if (this.planDialog.instanceId) {
         this.submitPlan()
       } else {
-        this.confirm('You are about the create a new LNbits instance.').onOk(
-          async () => {
-            const instance = await this.createInstance()
-            if (instance) {
-              this.planDialog.instanceId = instance.id
-              await this.submitPlan()
-            }
-          }
-        )
+        this.openNewInstanceDialog('plan-request')
       }
     },
     async submitPlan() {
