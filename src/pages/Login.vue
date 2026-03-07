@@ -84,6 +84,14 @@
                 class="full-width q-mt-sm"
                 :disable="inProgress"
               />
+              <div
+                v-if="!this.isSignupRequest"
+                class="q-mt-md text-center"
+              >
+                <router-link to="/forgot-password" class="text-primary">
+                  I've lost my password
+                </router-link>
+              </div>
               <q-btn
                 v-if="this.isSignupRequest"
                 @click="this.isSignupRequest = false"
