@@ -35,6 +35,10 @@ const routes = [
     component: () => import('pages/ForgotPassword.vue')
   },
   {
+    path: '/reset-password',
+    component: () => import('pages/ResetPassword.vue')
+  },
+  {
     path: '/payment-confirmation',
     component: () => import('pages/PaymentConfirmation.vue')
   },

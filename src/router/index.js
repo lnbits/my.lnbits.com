@@ -39,6 +39,7 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.path !== '/login' &&
       to.path !== '/forgot-password' &&
+      to.path !== '/reset-password' &&
       to.path !== '/pricing' &&
       to.path !== '/terms-of-service' &&
       to.path !== '/payment-confirmation' &&

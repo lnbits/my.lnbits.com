@@ -46,6 +46,32 @@ var saas = {
 
     return data
   },
+  requestPasswordRecovery: async function (email) {
+    const {data} = await axios({
+      method: 'POST',
+      url: this.url + '/password-recovery',
+      withCredentials: true,
+      data: {
+        email
+      }
+    })
+
+    return data
+  },
+  resetPassword: async function (passwordResetCode, password, passwordRepeat) {
+    const {data} = await axios({
+      method: 'POST',
+      url: this.url + '/reset-password',
+      withCredentials: true,
+      data: {
+        password_reset_code: passwordResetCode,
+        password,
+        password_repeat: passwordRepeat
+      }
+    })
+
+    return data
+  },
   confirmEmail: async function (token) {
     const {data} = await axios({
       method: 'GET',
