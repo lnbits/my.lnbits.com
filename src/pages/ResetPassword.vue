@@ -100,15 +100,43 @@ export default defineComponent({
   },
 
   watch: {
-    '$route.query.reset_token': {
+    $route: {
       immediate: true,
-      handler(value) {
-        this.resetToken = typeof value === 'string' ? value : ''
+      handler() {
+        this.populateResetTokenFromQuery()
       }
     }
   },
 
   methods: {
+    populateResetTokenFromQuery() {
+      const query = this.$route.query || {}
+      const tokenFromQuery = query.token_reset || query.reset_token
+      const resetToken =
+        typeof tokenFromQuery === 'string'
+          ? tokenFromQuery
+          : Array.isArray(tokenFromQuery)
+          ? tokenFromQuery[0]
+          : ''
+
+      if (!resetToken) {
+        return
+      }
+
+      this.resetToken = resetToken
+
+      const nextQuery = {...query}
+      delete nextQuery.token_reset
+      delete nextQuery.reset_token
+
+      this.$router
+        .replace({
+          path: this.$route.path,
+          query: nextQuery,
+          hash: this.$route.hash
+        })
+        .catch(() => {})
+    },
     checkPassword(val) {
       return (
         (val && val.length >= 8) || 'Password must have at least 8 characters'
