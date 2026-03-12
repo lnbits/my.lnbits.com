@@ -18,12 +18,6 @@ const routes = [
     ]
   },
 
-  // Always leave this as last one,
-  // but you can also remove it
-  {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/Error404.vue')
-  },
   {
     path: '/pricing',
     component: () => import('pages/Pricing.vue')
@@ -37,12 +31,26 @@ const routes = [
     component: () => import('pages/Login.vue')
   },
   {
+    path: '/forgot-password',
+    component: () => import('pages/ForgotPassword.vue')
+  },
+  {
+    path: '/reset-password',
+    component: () => import('pages/ResetPassword.vue')
+  },
+  {
     path: '/payment-confirmation',
     component: () => import('pages/PaymentConfirmation.vue')
   },
   {
     path: '/confirm',
     component: () => import('pages/Confirmation.vue')
+  },
+  // Always leave this as last one,
+  // but you can also remove it
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/Error404.vue')
   }
 ]
 

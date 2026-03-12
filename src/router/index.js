@@ -38,6 +38,8 @@ export default route(function (/* { store, ssrContext } */) {
   router.beforeEach((to, from, next) => {
     if (
       to.path !== '/login' &&
+      to.path !== '/forgot-password' &&
+      to.path !== '/reset-password' &&
       to.path !== '/pricing' &&
       to.path !== '/terms-of-service' &&
       to.path !== '/payment-confirmation' &&
@@ -46,7 +48,7 @@ export default route(function (/* { store, ssrContext } */) {
     ) {
       return next('/login')
     }
-    if (to.path == '/login' && saas.email) {
+    if ((to.path == '/login' || to.path == '/forgot-password') && saas.email) {
       return next('/')
     }
     next(true)
