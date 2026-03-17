@@ -96,7 +96,7 @@
               </div>
               <q-btn
                 v-if="this.isSignupRequest"
-                @click="this.isSignupRequest = false"
+                @click="goBack"
                 label="Back"
                 type="button"
                 class="full-width q-mt-md"
@@ -143,7 +143,15 @@ export default defineComponent({
   },
 
   methods: {
+    syncApiEnvFromQuery() {
+      const apiEnv = normalizeApiEnv(this.$route.query.env)
+
+      this.apiEnv = apiEnv
+      localStorage.setItem('apiEnv', apiEnv)
+    },
     async login() {
+      this.syncApiEnvFromQuery()
+
       try {
         this.inProgress = true
         const message = this.validateForm()
@@ -173,6 +181,10 @@ export default defineComponent({
       } finally {
         this.inProgress = false
       }
+    },
+    goBack() {
+      this.syncApiEnvFromQuery()
+      this.isSignupRequest = false
     },
     checkEmail(val) {
       return (
@@ -220,6 +232,8 @@ export default defineComponent({
       }
     },
     async signup() {
+      this.syncApiEnvFromQuery()
+
       if (!this.isSignupRequest) {
         this.isSignupRequest = true
         return
