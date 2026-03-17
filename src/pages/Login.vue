@@ -21,7 +21,9 @@
             </div>
             <div class="text-center q-pt-lg">
               <div class="col ellipsis">
-                Manage your <strong>LNbits</strong> instances in the cloud.
+                Manage your <strong>LNbits</strong> instances
+                <template v-if="apiEnv === 'prod'"> in the cloud.</template>
+                <template v-else> in the {{ apiEnv }} cloud.</template>
               </div>
             </div>
           </q-card-section>
@@ -109,22 +111,34 @@
 </template>
 
 <script>
-import {defineComponent} from 'vue'
-import {ref} from 'vue'
+import {defineComponent, ref} from 'vue'
 import {useQuasar} from 'quasar'
 
-import {saas} from 'boot/saas'
+import {normalizeApiEnv, saas} from 'boot/saas'
 
 export default defineComponent({
   setup() {
     const $q = useQuasar()
     return {
       q: $q,
+      apiEnv: ref('prod'),
       email: ref(''),
       password: ref(''),
       passwordRepeat: ref(''),
       isSignupRequest: ref(false),
       inProgress: ref(false)
+    }
+  },
+
+  watch: {
+    '$route.query.env': {
+      immediate: true,
+      handler(env) {
+        const apiEnv = normalizeApiEnv(env)
+
+        this.apiEnv = apiEnv
+        localStorage.setItem('apiEnv', apiEnv)
+      }
     }
   },
 

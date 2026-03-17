@@ -1,11 +1,35 @@
 import axios from 'axios'
 import {secondsToDhm} from 'src/boot/utils'
 
+const normalizeApiEnv = env => {
+  const envValue = Array.isArray(env) ? env[0] : env
+
+  if (envValue === 'local' || envValue === 'dev' || envValue === 'prod') {
+    return envValue
+  }
+
+  return 'prod'
+}
+
+const getApiBaseUrl = apiEnv => {
+  if (apiEnv === 'dev') {
+    return 'https://dev.api.lnbits.com'
+  }
+
+  if (apiEnv === 'local') {
+    return '/api'
+  }
+
+  return 'https://api.lnbits.com'
+}
+
 var saas = {
   slideimg: 'assets/images/hero/bitcoin-accounts.png',
-  url: 'https://api.lnbits.com',
-  // for local development togegther with Caddy
-  // url: '/api',
+  url: function (path = '') {
+    const apiEnv = normalizeApiEnv(localStorage.getItem('apiEnv'))
+
+    return `${getApiBaseUrl(apiEnv)}${path}`
+  },
   serverTime: null,
   chatUrl:
     'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
@@ -15,7 +39,7 @@ var saas = {
   signup: async function (email, password, password2) {
     const {data} = await axios({
       method: 'POST',
-      url: this.url + '/signup',
+      url: this.url('/signup'),
       withCredentials: true,
       data: {
         email: email,
@@ -35,7 +59,7 @@ var saas = {
     formData.append('password', password)
     const {data} = await axios({
       method: 'POST',
-      url: this.url + '/login',
+      url: this.url('/login'),
       data: formData,
       withCredentials: true,
       headers: {
@@ -49,7 +73,7 @@ var saas = {
   requestPasswordRecovery: async function (email) {
     const {data} = await axios({
       method: 'POST',
-      url: this.url + '/password-recovery',
+      url: this.url('/password-recovery'),
       withCredentials: true,
       data: {
         email
@@ -61,7 +85,7 @@ var saas = {
   resetPassword: async function (passwordResetCode, password, passwordRepeat) {
     const {data} = await axios({
       method: 'POST',
-      url: this.url + '/reset-password',
+      url: this.url('/reset-password'),
       withCredentials: true,
       data: {
         password_reset_code: passwordResetCode,
@@ -75,7 +99,7 @@ var saas = {
   confirmEmail: async function (token) {
     const {data} = await axios({
       method: 'GET',
-      url: this.url + `/confirm-email?email_confirmation_token=${token}`,
+      url: this.url(`/confirm-email?email_confirmation_token=${token}`),
       withCredentials: true
     })
     localStorage.setItem('email', data.email)
@@ -86,7 +110,7 @@ var saas = {
   createInstance: async function (instanceType) {
     return axios({
       method: 'POST',
-      url: this.url + '/instance',
+      url: this.url('/instance'),
       withCredentials: true,
       data: {
         instance_type: instanceType
@@ -97,7 +121,7 @@ var saas = {
   updateInstance: function (id, action) {
     return axios({
       method: 'PUT',
-      url: this.url + '/instance',
+      url: this.url('/instance'),
       withCredentials: true,
       data: {
         action: action,
@@ -109,7 +133,7 @@ var saas = {
   createOneTimePlan: function (instanceId, planName, quantity, isFiat) {
     return axios({
       method: 'PUT',
-      url: this.url + '/instance/buy',
+      url: this.url('/instance/buy'),
       withCredentials: true,
       data: {
         instance_id: instanceId,
@@ -122,7 +146,7 @@ var saas = {
   subscribeToPlan: function (instanceId, planName) {
     return axios({
       method: 'PUT',
-      url: this.url + '/instance/subscribe',
+      url: this.url('/instance/subscribe'),
       withCredentials: true,
       data: {
         instance_id: instanceId,
@@ -133,7 +157,7 @@ var saas = {
   unsubscribe: function (instanceId, subscriptionRequestId) {
     return axios({
       method: 'PUT',
-      url: this.url + '/instance/unsubscribe',
+      url: this.url('/instance/unsubscribe'),
       withCredentials: true,
       data: {
         instance_id: instanceId,
@@ -144,7 +168,7 @@ var saas = {
   getInstances: async function () {
     const response = await axios({
       method: 'GET',
-      url: this.url + '/instance',
+      url: this.url('/instance'),
       withCredentials: true
     })
     return response
@@ -152,7 +176,7 @@ var saas = {
   getUserInstancesLogs: async function () {
     const response = await axios({
       method: 'GET',
-      url: this.url + '/instance/logs',
+      url: this.url('/instance/logs'),
       withCredentials: true
     })
 
@@ -161,7 +185,7 @@ var saas = {
   getInstancesLogs: async function (id) {
     const response = await axios({
       method: 'GET',
-      url: this.url + `/instance/${id}/logs`,
+      url: this.url(`/instance/${id}/logs`),
       withCredentials: true
     })
 
@@ -170,7 +194,7 @@ var saas = {
   getUserPayments: async function () {
     const response = await axios({
       method: 'GET',
-      url: this.url + '/instance/payments',
+      url: this.url('/instance/payments'),
       withCredentials: true
     })
 
@@ -179,7 +203,7 @@ var saas = {
   getInstancePayments: async function (id) {
     const response = await axios({
       method: 'GET',
-      url: this.url + `/instance/${id}/payments`,
+      url: this.url(`/instance/${id}/payments`),
       withCredentials: true
     })
 
@@ -188,7 +212,7 @@ var saas = {
   getUserSubscriptions: async function () {
     const response = await axios({
       method: 'GET',
-      url: this.url + '/instance/subscriptions',
+      url: this.url('/instance/subscriptions'),
       withCredentials: true
     })
 
@@ -197,7 +221,7 @@ var saas = {
   getInstanceSubscriptions: async function (id) {
     const response = await axios({
       method: 'GET',
-      url: this.url + `/instance/${id}/subscriptions`,
+      url: this.url(`/instance/${id}/subscriptions`),
       withCredentials: true
     })
 
@@ -206,7 +230,7 @@ var saas = {
   status: async function () {
     const response = await axios({
       method: 'GET',
-      url: this.url,
+      url: this.url(),
       withCredentials: true
     })
 
@@ -217,7 +241,7 @@ var saas = {
   logout: async function () {
     const response = await axios({
       method: 'POST',
-      url: this.url + '/logout',
+      url: this.url('/logout'),
       withCredentials: true
     })
     this.email = null
@@ -308,4 +332,4 @@ var saas = {
   )
 })()
 
-export {saas}
+export {normalizeApiEnv, saas}
