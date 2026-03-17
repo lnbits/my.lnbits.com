@@ -13,7 +13,7 @@ const normalizeApiEnv = env => {
 
 const getApiBaseUrl = apiEnv => {
   if (apiEnv === 'dev') {
-    return 'https://dev.api.lnbits.com'
+    return 'https://api.dev.lnbits.com'
   }
 
   if (apiEnv === 'local') {
