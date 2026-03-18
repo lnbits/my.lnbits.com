@@ -677,7 +677,7 @@
           color="primary"
           outline
           class="full-width"
-          @click="confirmNewInstanceProvider('lnbits')"
+          @click="confirmNewInstanceProvider('')"
         />
         <br />
 
