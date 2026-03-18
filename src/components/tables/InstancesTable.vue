@@ -669,7 +669,7 @@
         <div class="text-h6">New LNbits Instance</div>
       </q-card-section>
       <q-card-section>
-        You are about the create a new LNbits instance.
+        You are about to create a new LNbits instance.
       </q-card-section>
       <q-card-actions v-if="showFeatureFlag" vertical class="q-pa-md q-ma-md q-gutter-md">
         <q-btn
