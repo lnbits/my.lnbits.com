@@ -685,7 +685,7 @@
           label="Simple: use Spark L2 to connect to bitcoin lightning"
           color="positive"
           class="full-width"
-          @click="confirmNewInstanceProvider('lnbits-spark-l2')"
+          @click="confirmNewInstanceProvider('lnbits/lnbits-sparkl2:latest')"
         />
       </q-card-actions>
       <q-card-actions v-else vertical class="q-pa-md">
@@ -694,7 +694,7 @@
           color="primary"
           outline
           class="full-width"
-          @click="confirmNewInstanceProvider('lnbits')"
+          @click="confirmNewInstanceProvider('lnbits/lnbits:latest')"
         />
       </q-card-actions>
     </q-card>
@@ -926,7 +926,6 @@ export default defineComponent({
       this.newInstanceDialog.show = true
     },
     async confirmNewInstanceProvider(provider) {
-      console.log('### new instance provider', provider)
       const action = this.newInstanceDialog.action
       this.newInstanceDialog.show = false
       this.newInstanceDialog.action = null
