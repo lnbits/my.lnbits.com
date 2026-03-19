@@ -677,7 +677,7 @@
           color="primary"
           outline
           class="full-width"
-          @click="confirmNewInstanceProvider()"
+          @click="confirmNewInstanceProvider('lnbits/lnbits:latest')"
         />
         <br />
 
@@ -694,7 +694,7 @@
           color="primary"
           outline
           class="full-width"
-          @click="confirmNewInstanceProvider('lnbits/lnbits:latest')"
+          @click="confirmNewInstanceProvider()"
         />
       </q-card-actions>
     </q-card>
