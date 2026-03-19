@@ -680,7 +680,13 @@
           label="Instance image"
           dense
           outlined
-          class="q-mt-md"
+          class="q-mt-md instance-image-select"
+          :class="{
+            'instance-image-select--first':
+              newInstanceDialog.selectedTag ===
+              newInstanceDialog.options[0]?.value
+          }"
+          popup-content-class="instance-image-select__menu"
           data-testid="instance-image-select"
           :loading="newInstanceDialog.loading"
           :disable="newInstanceDialog.loading"
@@ -1562,5 +1568,15 @@ export default defineComponent({
   padding: 12px;
   color: white;
   background-color: rgba(0, 0, 0, 0.35);
+}
+
+.instance-image-select--first .q-field__native,
+.instance-image-select--first .q-field__input,
+.instance-image-select--first .q-field__native span {
+  color: #22c55e !important;
+}
+
+.instance-image-select__menu .q-item:nth-child(1) .q-item__label {
+  color: #22c55e;
 }
 </style>
