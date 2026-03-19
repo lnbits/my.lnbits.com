@@ -669,31 +669,56 @@
         <div class="text-h6">New LNbits Instance</div>
       </q-card-section>
       <q-card-section>
-        You are about to create a new LNbits instance.
+        Choose the image for your new instance.
+        <q-select
+          v-model="newInstanceDialog.selectedTag"
+          :options="newInstanceDialog.options"
+          option-label="label"
+          option-value="value"
+          emit-value
+          map-options
+          label="Instance image"
+          dense
+          outlined
+          class="q-mt-md"
+          data-testid="instance-image-select"
+          :loading="newInstanceDialog.loading"
+          :disable="newInstanceDialog.loading"
+        />
       </q-card-section>
-      <q-card-actions v-if="showFeatureFlag" vertical class="q-pa-md q-ma-md q-gutter-md">
+      <q-card-section v-if="newInstanceDialog.loading" class="text-center">
+        <q-spinner-hourglass size="1.8rem" color="primary" />
+        <div
+          class="text-caption text-grey-7 q-mt-sm"
+          data-testid="instance-types-loading"
+        >
+          Loading instance images...
+        </div>
+      </q-card-section>
+      <q-card-section v-else-if="newInstanceDialog.options.length === 0">
+        <div
+          class="text-subtitle1 text-grey-7"
+          data-testid="instance-types-empty"
+        >
+          {{ newInstanceDialog.error || 'No instance images are available.' }}
+        </div>
         <q-btn
-          label="Advanced: I have my own bitcoin lightning funding source"
+          class="q-mt-sm"
+          outline
+          color="warning"
+          label="Retry"
+          data-testid="instance-types-retry"
+          @click="retryLoadInstanceTypeOptions"
+        />
+      </q-card-section>
+      <q-card-actions class="q-pa-md">
+        <q-btn
+          label="Create"
           color="primary"
           outline
           class="full-width"
-          @click="confirmNewInstanceProvider('lnbits/lnbits:latest')"
-        />
-        <br />
-
-        <q-btn
-          label="Simple: use Spark L2 to connect to bitcoin lightning"
-          color="positive"
-          class="full-width"
-          @click="confirmNewInstanceProvider('lnbits/lnbits-sparkl2:latest')"
-        />
-      </q-card-actions>
-      <q-card-actions v-else vertical class="q-pa-md">
-        <q-btn
-          label="OK, let's do it!"
-          color="primary"
-          outline
-          class="full-width"
+          data-testid="confirm-instance-create"
+          :disable="isCreateInstanceSubmitDisabled()"
           @click="confirmNewInstanceProvider()"
         />
       </q-card-actions>
@@ -889,7 +914,11 @@ export default defineComponent({
       },
       newInstanceDialog: {
         show: false,
-        action: null
+        action: null,
+        options: [],
+        selectedTag: null,
+        loading: false,
+        error: null
       }
     }
   },
@@ -921,27 +950,183 @@ export default defineComponent({
     }
   },
   methods: {
-    openNewInstanceDialog(action) {
+    async openNewInstanceDialog(action) {
       this.newInstanceDialog.action = action
       this.newInstanceDialog.show = true
+      this.newInstanceDialog.selectedTag = null
+      this.newInstanceDialog.error = null
+      if (action === 'on-demand' || action === 'plan-request') {
+        await this.loadInstanceTypeOptions()
+      }
     },
     async confirmNewInstanceProvider(provider) {
       const action = this.newInstanceDialog.action
+
+      const selectedTag = this.normalizeSelectedInstanceTypeTag(
+        provider || this.newInstanceDialog.selectedTag
+      )
+
+      if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
+        this.newInstanceDialog.error =
+          this.newInstanceDialog.error || 'Please select an instance image.'
+        this.q.notify({
+          message: this.newInstanceDialog.error,
+          color: 'negative'
+        })
+        return
+      }
+
+      if (!selectedTag || !this.isInstanceTypeTagValid(selectedTag)) {
+        this.newInstanceDialog.error = 'Please select an instance image.'
+        this.q.notify({
+          message: this.newInstanceDialog.error,
+          color: 'negative'
+        })
+        return
+      }
+
       this.newInstanceDialog.show = false
       this.newInstanceDialog.action = null
 
       if (action === 'on-demand') {
-        const instance = await this.createInstance(provider)
+        const instance = await this.createInstance(selectedTag)
         if (instance) {
           await this.extendInstance(instance)
         }
       } else if (action === 'plan-request') {
-        const instance = await this.createInstance(provider)
+        const instance = await this.createInstance(selectedTag)
         if (instance) {
           this.planDialog.instanceId = instance.id
           await this.submitPlan()
         }
       }
+    },
+    normalizeSelectedInstanceTypeTag(value) {
+      if (typeof value === 'string') {
+        return value.trim()
+      }
+
+      if (value && typeof value === 'object') {
+        const candidate =
+          typeof value.value === 'string'
+            ? value.value
+            : typeof value.tag === 'string'
+              ? value.tag
+              : ''
+
+        return candidate.trim()
+      }
+
+      return ''
+    },
+    isInstanceTypeTagValid(tag) {
+      return this.normalizeSelectedInstanceTypeTag(tag).length > 0
+    },
+    isInstanceTypeOptionAvailable(tag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+
+      if (!this.isInstanceTypeTagValid(normalizedTag)) {
+        return false
+      }
+
+      return this.newInstanceDialog.options.some(
+        option => option.value === normalizedTag
+      )
+    },
+    isCreateInstanceSubmitDisabled(tag = this.newInstanceDialog.selectedTag) {
+      if (this.newInstanceDialog.loading) {
+        return true
+      }
+
+      if (this.newInstanceDialog.error) {
+        return true
+      }
+
+      if (!Array.isArray(this.newInstanceDialog.options)) {
+        return true
+      }
+
+      if (this.newInstanceDialog.options.length === 0) {
+        return true
+      }
+
+      return !this.isInstanceTypeOptionAvailable(tag)
+    },
+    async loadInstanceTypeOptions() {
+      this.newInstanceDialog.loading = true
+      this.newInstanceDialog.error = null
+
+      try {
+        const {data} = await saas.getInstanceTypes()
+        const types = Array.isArray(data) ? data : []
+
+        const options = types
+          .map(item => {
+            const tag = this.normalizeInstanceTypeTag(item?.tag)
+            const label = this.normalizeInstanceTypeLabel(item?.label)
+
+            if (!tag || !label) {
+              return null
+            }
+
+            return {
+              value: tag,
+              label
+            }
+          })
+          .filter(Boolean)
+
+        this.newInstanceDialog.options = options
+        this.newInstanceDialog.selectedTag = options[0]?.value || null
+
+        if (!options.length) {
+          this.newInstanceDialog.error = 'No instance images are available.'
+          this.newInstanceDialog.selectedTag = null
+        } else if (
+          this.isInstanceTypeTagValid(this.newInstanceDialog.selectedTag) &&
+          !options.some(
+            option =>
+              option.value ===
+              this.normalizeSelectedInstanceTypeTag(
+                this.newInstanceDialog.selectedTag
+              )
+          )
+        ) {
+          this.newInstanceDialog.selectedTag = null
+        }
+      } catch (error) {
+        console.warn(error)
+        this.newInstanceDialog.error = saas.mapErrorToString(error) ||
+          'Failed to load instance images.'
+        this.newInstanceDialog.options = []
+        this.newInstanceDialog.selectedTag = null
+        this.q.notify({
+          message: 'Failed to load instance images',
+          caption: this.newInstanceDialog.error,
+          color: 'negative'
+        })
+      } finally {
+        this.newInstanceDialog.loading = false
+      }
+    },
+    async retryLoadInstanceTypeOptions() {
+      await this.loadInstanceTypeOptions()
+    },
+    normalizeInstanceTypeTag(value) {
+      if (typeof value !== 'string') {
+        return
+      }
+
+      const tag = value.trim()
+      return tag.length > 0 ? tag : undefined
+    },
+    normalizeInstanceTypeLabel(value) {
+      if (typeof value !== 'string') {
+        return
+      }
+
+      const label = value.trim()
+      return label.length > 0 ? label : undefined
     },
     showNewInstanceProvisioning: async function () {
       this.selectPlan.show = false

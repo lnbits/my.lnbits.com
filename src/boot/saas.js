@@ -118,6 +118,16 @@ var saas = {
     })
   },
 
+  getInstanceTypes: async function () {
+    const response = await axios({
+      method: 'GET',
+      url: this.url('/instance/types'),
+      withCredentials: true
+    })
+
+    return response
+  },
+
   updateInstance: function (id, action) {
     return axios({
       method: 'PUT',
