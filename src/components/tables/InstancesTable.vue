@@ -1063,7 +1063,18 @@ export default defineComponent({
       this.newInstanceDialog.error = null
 
       try {
-        const {data} = await saas.getInstanceTypes()
+        let data = []
+        if (this.showFeatureFlag) {
+          const resp = await saas.getInstanceTypes()
+          data = resp.data
+        } else {
+          data = [
+            {
+              tag: 'lnbits',
+              label: 'LNbits Latest'
+            }
+          ]
+        }
         const types = Array.isArray(data) ? data : []
 
         const options = types
@@ -1102,8 +1113,8 @@ export default defineComponent({
         }
       } catch (error) {
         console.warn(error)
-        this.newInstanceDialog.error = saas.mapErrorToString(error) ||
-          'Failed to load instance images.'
+        this.newInstanceDialog.error =
+          saas.mapErrorToString(error) || 'Failed to load instance images.'
         this.newInstanceDialog.options = []
         this.newInstanceDialog.selectedTag = null
         this.q.notify({
@@ -1542,7 +1553,7 @@ export default defineComponent({
   async created() {
     try {
       // temporary feature flag for alan
-      this.showFeatureFlag = saas.email === 'alan@lnbits.com'
+      this.showFeatureFlag = saas.isTestingMode()
 
       this.inProgress = true
       await this.refreshState()

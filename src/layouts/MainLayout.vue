@@ -185,7 +185,7 @@ export default defineComponent({
     }
     try {
       // temporary feature flag for alan
-      this.showFeatureFlag = saas.email === 'alan@lnbits.com'
+      this.showFeatureFlag = saas.isTestingMode()
     } catch (error) {
       console.warn(error)
     } finally {
