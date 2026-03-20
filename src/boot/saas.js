@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { env } from 'echarts'
 import {secondsToDhm} from 'src/boot/utils'
 
 const normalizeApiEnv = env => {
@@ -35,6 +36,11 @@ var saas = {
     'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
 
   email: localStorage.getItem('email'),
+
+  isTestingMode: function () {
+    const env = normalizeApiEnv(localStorage.getItem('apiEnv'))
+    return (saas.email === 'alan@lnbits.com') || env === 'dev' || env === 'local'
+  },
 
   signup: async function (email, password, password2) {
     const {data} = await axios({
@@ -116,6 +122,16 @@ var saas = {
         instance_type: instanceType
       }
     })
+  },
+
+  getInstanceTypes: async function () {
+    const response = await axios({
+      method: 'GET',
+      url: this.url('/instance/types'),
+      withCredentials: true
+    })
+
+    return response
   },
 
   updateInstance: function (id, action) {
