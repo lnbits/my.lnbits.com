@@ -1063,18 +1063,8 @@ export default defineComponent({
       this.newInstanceDialog.error = null
 
       try {
-        let data = []
-        if (this.showFeatureFlag) {
-          const resp = await saas.getInstanceTypes()
-          data = resp.data
-        } else {
-          data = [
-            {
-              tag: 'lnbits',
-              label: 'LNbits Latest'
-            }
-          ]
-        }
+        const {data} = await saas.getInstanceTypes()
+
         const types = Array.isArray(data) ? data : []
 
         const options = types
