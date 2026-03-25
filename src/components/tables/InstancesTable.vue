@@ -99,7 +99,7 @@
 
             <q-btn
               @click="resetInstance(props.row.id)"
-              :disable="!props.row.enabled"
+              :disable="!props.row.enabled || !props.row.installToken"
               icon="power_off"
               size="sm"
               flat
