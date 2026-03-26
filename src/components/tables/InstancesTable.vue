@@ -57,6 +57,19 @@
         </template>
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
+            <q-btn icon="info" size="sm" flat dense>
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <span>
+                  For instances with a preconfigured funding source like Spark
+                  L2, changing the
+                </span>
+                <br />
+                <span>
+                  mnemonic requires disabling and re-enabling the instance from
+                  this console.
+                </span>
+              </q-tooltip>
+            </q-btn>
             <q-btn
               type="a"
               :href="props.row.instanceLink"
