@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-sm">
+  <q-page class="instances-page q-pa-sm">
     <instances-table :plan="plan"></instances-table>
   </q-page>
 </template>
@@ -27,4 +27,8 @@ export default defineComponent({
 })
 </script>
 
-<style></style>
+<style scoped>
+.instances-page {
+  padding-bottom: 7rem;
+}
+</style>
