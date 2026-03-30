@@ -1,113 +1,122 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <q-page class="flex bg-image flex-center">
-        <q-card v-bind:style="q.screen.lt.sm ? {width: '80%'} : {width: '30%'}">
-          <q-card-section class="q-mb-md">
-            <q-avatar
-              size="150px"
-              class="absolute-center shadow-10"
-              color="grey-10"
-            >
-              <img src="profile.svg" class="q-pa-md" />
-            </q-avatar>
-          </q-card-section>
-          <q-card-section>
-            <div class="text-center q-mt-lg q-pt-lg">
-              <div v-if="isSignupRequest" class="col text-h6 ellipsis">
-                Register
-              </div>
-              <div v-else class="col text-h6 ellipsis">Login</div>
-            </div>
-            <div class="text-center q-pt-lg">
-              <div class="col ellipsis">
-                Manage your <strong>LNbits</strong> instances
-                <template v-if="apiEnv === 'prod'"> in the cloud.</template>
-                <template v-else> in the {{ apiEnv }} cloud.</template>
-              </div>
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <q-form @submit="onSubmit">
-              <q-input
-                filled
-                type="email"
-                autocomplete="email"
-                v-model="email"
-                :rules="[checkEmail]"
-                label="Email"
-                lazy-rules
-              />
+  <public-auth-shell>
+    <template #hero>
+      <div class="public-auth-hero-top">
+        <img src="/profile.svg" alt="LNbits" class="public-auth-hero-logo" />
+        <p class="public-auth-hero-tagline">Manage your LNbits instances in the cloud.</p>
+      </div>
 
-              <q-input
-                type="password"
-                filled
-                v-model="password"
-                :rules="[checkPassword]"
-                label="Password"
-                lazy-rules
-              />
+      <div class="public-auth-hero-middle">
+        <div>
+          <h1 class="public-auth-hero-title">Accept Bitcoin.<br />Skip the setup.</h1>
+          <p class="public-auth-hero-copy">
+            A fully managed Lightning wallet with built-in tools
+            for payments, point-of-sale, tipping, and more.
+            Live in minutes.
+          </p>
+        </div>
 
-              <q-input
-                v-if="isSignupRequest"
-                type="password"
-                filled
-                v-model="passwordRepeat"
-                :rules="[checkPassword]"
-                label="Confirm password"
-                lazy-rules
-              />
-              <q-linear-progress
-                v-if="inProgress"
-                indeterminate
-                color="secondary"
-                class="q-mt-sm"
-              />
+        <div class="public-auth-features">
+          <div class="public-auth-feature">
+            <q-icon name="rocket_launch" size="16px" class="public-auth-feature-icon" />
+            <span>Live in under 3 minutes</span>
+          </div>
+          <div class="public-auth-feature">
+            <q-icon name="savings" size="16px" class="public-auth-feature-icon" />
+            <span>From $2/week, cancel anytime</span>
+          </div>
+          <div class="public-auth-feature">
+            <q-icon name="widgets" size="16px" class="public-auth-feature-icon" />
+            <span>40+ tools and extensions</span>
+          </div>
+          <div class="public-auth-feature">
+            <q-icon name="bolt" size="16px" class="public-auth-feature-icon" />
+            <span>21 sats on-demand spin-up per hour</span>
+          </div>
+        </div>
+      </div>
 
-              <q-btn
-                v-if="!this.isSignupRequest"
-                label="Login"
-                @click="login"
-                type="submit"
-                color="primary"
-                class="full-width"
-                :disable="inProgress"
-              />
+      <div class="public-auth-hero-bottom">
+        <div class="public-auth-status">
+          <span v-if="apiEnv !== 'prod'" class="public-auth-env-badge">{{ apiEnv }}</span>
+          <router-link to="/pricing" class="public-auth-bottom-link">See full pricing &rarr;</router-link>
+        </div>
+      </div>
+    </template>
 
-              <div v-if="!this.isSignupRequest" class="q-mt-sm text-center">
-                <span>or</span>
-              </div>
+    <div class="public-auth-panel-head">
+      <h2>{{ isSignupRequest ? 'Create your account' : 'Sign in' }}</h2>
+      <p>{{ isSignupRequest ? 'One account for all your LNbits instances.' : 'to manage your instances in the cloud' }}</p>
+    </div>
 
-              <q-btn
-                label="Register"
-                @click="signup"
-                type="submit"
-                color="secondary"
-                class="full-width q-mt-sm"
-                :disable="inProgress"
-              />
-              <div
-                v-if="!this.isSignupRequest"
-                class="q-mt-md text-center"
-              >
-                <router-link to="/forgot-password" class="text-primary">
-                  I've lost my password
-                </router-link>
-              </div>
-              <q-btn
-                v-if="this.isSignupRequest"
-                @click="goBack"
-                label="Back"
-                type="button"
-                class="full-width q-mt-md"
-                color="grey"
-              />
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+    <q-form class="public-auth-form" @submit="onSubmit">
+      <q-input
+        v-model="email"
+        outlined
+        type="email"
+        autocomplete="email"
+        label="Email"
+        lazy-rules
+        :rules="[checkEmail]"
+      />
+
+      <q-input
+        v-model="password"
+        outlined
+        type="password"
+        autocomplete="current-password"
+        label="Password"
+        lazy-rules
+        :rules="[checkPassword]"
+      />
+
+      <q-input
+        v-if="isSignupRequest"
+        v-model="passwordRepeat"
+        outlined
+        type="password"
+        autocomplete="new-password"
+        label="Confirm password"
+        lazy-rules
+        :rules="[checkPassword]"
+      />
+
+      <q-linear-progress
+        v-if="inProgress"
+        indeterminate
+        color="primary"
+        class="q-mt-xs"
+      />
+
+      <q-btn
+        :label="isSignupRequest ? 'Create account' : 'Sign in'"
+        type="submit"
+        color="primary"
+        no-caps
+        unelevated
+        class="full-width public-auth-submit"
+        :disable="inProgress"
+      />
+
+      <div class="public-auth-links">
+        <router-link v-if="!isSignupRequest" to="/forgot-password">
+          Forgot password?
+        </router-link>
+        <router-link to="/terms-of-service">Terms of service</router-link>
+      </div>
+    </q-form>
+
+    <div class="public-auth-switch">
+      <template v-if="!isSignupRequest">
+        New here?
+        <a href="#" @click.prevent="setMode('signup')">Create an account</a>
+      </template>
+      <template v-else>
+        Have an account?
+        <a href="#" @click.prevent="setMode('login')">Sign in</a>
+      </template>
+    </div>
+  </public-auth-shell>
 </template>
 
 <script>
@@ -115,8 +124,12 @@ import {defineComponent, ref} from 'vue'
 import {useQuasar} from 'quasar'
 
 import {normalizeApiEnv, saas} from 'boot/saas'
+import PublicAuthShell from 'src/components/PublicAuthShell.vue'
 
 export default defineComponent({
+  components: {
+    PublicAuthShell
+  },
   setup() {
     const $q = useQuasar()
     return {
@@ -143,6 +156,9 @@ export default defineComponent({
   },
 
   methods: {
+    setMode(mode) {
+      this.isSignupRequest = mode === 'signup'
+    },
     syncApiEnvFromQuery() {
       const apiEnv = normalizeApiEnv(this.$route.query.env)
 
@@ -184,7 +200,7 @@ export default defineComponent({
     },
     goBack() {
       this.syncApiEnvFromQuery()
-      this.isSignupRequest = false
+      this.setMode('login')
     },
     checkEmail(val) {
       return (

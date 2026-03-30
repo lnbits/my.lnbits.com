@@ -1,83 +1,86 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <q-page class="flex bg-image flex-center">
-        <q-card v-bind:style="q.screen.lt.sm ? {width: '80%'} : {width: '30%'}">
-          <q-card-section class="q-mb-md">
-            <q-avatar
-              size="150px"
-              class="absolute-center shadow-10"
-              color="grey-10"
-            >
-              <img src="profile.svg" class="q-pa-md" />
-            </q-avatar>
-          </q-card-section>
-          <q-card-section>
-            <div class="text-center q-mt-lg q-pt-lg">
-              <div class="col text-h6 ellipsis">Reset Password</div>
-            </div>
-            <div class="text-center q-pt-lg">
-              <div class="col ellipsis">
-                Enter your new password and the reset token from your recovery
-                email.
-              </div>
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <q-form @submit="onSubmit">
-              <q-input
-                type="password"
-                filled
-                v-model="password"
-                :rules="[checkPassword]"
-                label="Password"
-                lazy-rules
-              />
+  <public-auth-shell>
+    <template #hero>
+      <div class="public-auth-hero-top">
+        <img src="/profile.svg" alt="LNbits" class="public-auth-hero-logo" />
+        <p class="public-auth-hero-tagline">Reset account access</p>
+      </div>
 
-              <q-input
-                type="password"
-                filled
-                v-model="passwordRepeat"
-                :rules="[checkPassword]"
-                label="Confirm password"
-                lazy-rules
-              />
+      <div class="public-auth-hero-middle">
+        <div>
+          <h1 class="public-auth-hero-title">Set a new password.</h1>
+          <p class="public-auth-hero-copy">
+            Use the token from your recovery email.
+            If you arrived through the email link, the token is prefilled.
+          </p>
+        </div>
+      </div>
 
-              <q-input
-                type="password"
-                filled
-                v-model="resetToken"
-                :rules="[checkResetToken]"
-                label="Reset Token"
-                lazy-rules
-              />
+      <div class="public-auth-hero-bottom">
+        <div class="public-auth-status">
+          <router-link to="/login" class="public-auth-bottom-link">&larr; Back to sign in</router-link>
+        </div>
+      </div>
+    </template>
 
-              <q-linear-progress
-                v-if="inProgress"
-                indeterminate
-                color="secondary"
-                class="q-mt-sm"
-              />
+    <div class="public-auth-panel-head">
+      <h2>Choose a new password</h2>
+      <p>Enter the recovery token and confirm the new password.</p>
+    </div>
 
-              <q-btn
-                label="Reset Password"
-                type="submit"
-                color="primary"
-                class="full-width"
-                :disable="inProgress"
-              />
+    <q-form class="public-auth-form" @submit="onSubmit">
+      <q-input
+        v-model="password"
+        type="password"
+        outlined
+        autocomplete="new-password"
+        label="Password"
+        lazy-rules
+        :rules="[checkPassword]"
+      />
 
-              <div class="q-mt-md text-center">
-                <router-link to="/login" class="text-primary">
-                  Back to login
-                </router-link>
-              </div>
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+      <q-input
+        v-model="passwordRepeat"
+        type="password"
+        outlined
+        autocomplete="new-password"
+        label="Confirm password"
+        lazy-rules
+        :rules="[checkPassword]"
+      />
+
+      <q-input
+        v-model="resetToken"
+        type="password"
+        outlined
+        label="Reset token"
+        lazy-rules
+        :rules="[checkResetToken]"
+      />
+
+      <q-linear-progress
+        v-if="inProgress"
+        indeterminate
+        color="primary"
+        class="q-mt-xs"
+      />
+
+      <q-btn
+        label="Reset password"
+        type="submit"
+        color="primary"
+        no-caps
+        unelevated
+        class="full-width public-auth-submit"
+        :disable="inProgress"
+      />
+
+      <div class="public-auth-links">
+        <router-link to="/login">Back to sign in</router-link>
+        <router-link to="/forgot-password">Need a new recovery email?</router-link>
+      </div>
+    </q-form>
+  </public-auth-shell>
 </template>
 
 <script>
@@ -86,8 +89,12 @@ import {ref} from 'vue'
 import {useQuasar} from 'quasar'
 
 import {saas} from 'boot/saas'
+import PublicAuthShell from 'src/components/PublicAuthShell.vue'
 
 export default defineComponent({
+  components: {
+    PublicAuthShell
+  },
   setup() {
     const $q = useQuasar()
     return {
