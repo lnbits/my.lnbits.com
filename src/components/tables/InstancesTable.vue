@@ -1145,30 +1145,7 @@ export default defineComponent({
         option => option.value === normalizedTag
       )
 
-      if (typeof selectedOption?.hasSidecarTag === 'boolean') {
-        return selectedOption.hasSidecarTag
-      }
-
-      return this.inferSidecarTagFromText(
-        selectedOption?.label,
-        normalizedTag,
-        selectedOption?.searchText
-      )
-    },
-    inferSidecarTagFromText(...values) {
-      const normalizedText = values
-        .filter(value => typeof value === 'string')
-        .join(' ')
-        .trim()
-        .toLowerCase()
-
-      if (!normalizedText) {
-        return false
-      }
-
-      return ['sidecar', 'spark'].some(keyword =>
-        normalizedText.includes(keyword)
-      )
+      return selectedOption?.hasSidecarTag === true
     },
     getPlanCatalog() {
       return {
@@ -1258,28 +1235,10 @@ export default defineComponent({
             return {
               value: tag,
               label,
-              hasSidecarTag:
-                typeof item?.has_sidecar_tag === 'boolean'
-                  ? item.has_sidecar_tag
-                  : typeof item?.sidecar_tag === 'string'
-                    ? item.sidecar_tag.trim().length > 0
-                  : typeof item?.hasSidecarTag === 'boolean'
-                    ? item.hasSidecarTag
-                    : typeof item?.sidecarTag === 'string'
-                      ? item.sidecarTag.trim().length > 0
-                     : typeof item?.sidecar === 'boolean'
-                       ? item.sidecar
-                       : typeof item?.is_sidecar === 'boolean'
-                        ? item.is_sidecar
-                        : this.inferSidecarTagFromText(
-                            item?.sidecar_tag,
-                            item?.sidecarTag,
-                            item?.label,
-                            item?.tag
-                          ),
-              searchText: [item?.sidecar_tag, item?.sidecarTag, item?.label, item?.tag]
-                .filter(value => typeof value === 'string')
-                .join(' ')
+              hasSidecarTag: Object.prototype.hasOwnProperty.call(
+                item || {},
+                'sidecar_tag'
+              )
             }
           })
           .filter(Boolean)
