@@ -1261,11 +1261,15 @@ export default defineComponent({
               hasSidecarTag:
                 typeof item?.has_sidecar_tag === 'boolean'
                   ? item.has_sidecar_tag
+                  : typeof item?.sidecar_tag === 'string'
+                    ? item.sidecar_tag.trim().length > 0
                   : typeof item?.hasSidecarTag === 'boolean'
                     ? item.hasSidecarTag
-                    : typeof item?.sidecar === 'boolean'
-                      ? item.sidecar
-                      : typeof item?.is_sidecar === 'boolean'
+                    : typeof item?.sidecarTag === 'string'
+                      ? item.sidecarTag.trim().length > 0
+                     : typeof item?.sidecar === 'boolean'
+                       ? item.sidecar
+                       : typeof item?.is_sidecar === 'boolean'
                         ? item.is_sidecar
                         : this.inferSidecarTagFromText(
                             item?.sidecar_tag,
