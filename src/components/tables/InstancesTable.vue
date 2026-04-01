@@ -484,6 +484,7 @@
           <div class="text-subtitle1">Choose the image for your new instance.</div>
           <q-select
             v-model="planDialog.selectedTag"
+            @update:model-value="syncSelectedPlanVariant"
             :options="newInstanceDialog.options"
             option-label="label"
             option-value="value"
@@ -541,6 +542,7 @@
         <div class="q-py-lg">
           <q-list padding>
             <ItemPricing
+              :key="`weekly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -553,9 +555,10 @@
               :min="1"
               :max="8"
               :step="1"
-              plan-value="weekly"
+              :plan-value="getPlanOptionValue('weekly')"
             />
             <ItemPricing
+              :key="`monthly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -568,9 +571,10 @@
               :min="1"
               :max="12"
               :step="1"
-              plan-value="monthly"
+              :plan-value="getPlanOptionValue('monthly')"
             />
             <ItemPricing
+              :key="`yearly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -583,7 +587,7 @@
               :min="1"
               :max="5"
               :step="1"
-              plan-value="yearly"
+              :plan-value="getPlanOptionValue('yearly')"
             />
           </q-list>
         </div>
@@ -1182,8 +1186,15 @@ export default defineComponent({
         }
       }
     },
+    normalizePlanName(planName) {
+      if (typeof planName !== 'string') {
+        return ''
+      }
+
+      return planName.replace(/_plus$/, '')
+    },
     getPlanPrice(planValue) {
-      const plan = this.getPlanCatalog()[planValue]
+      const plan = this.getPlanCatalog()[this.normalizePlanName(planValue)]
 
       if (!plan) {
         return 0
@@ -1194,14 +1205,26 @@ export default defineComponent({
     shouldUsePlusPricing() {
       return this.doesInstanceTypeUseSidecar(this.planDialog.selectedTag)
     },
+    getPlanOptionValue(planValue) {
+      const normalizedPlanValue = this.normalizePlanName(planValue)
+
+      return this.shouldUsePlusPricing()
+        ? `${normalizedPlanValue}_plus`
+        : normalizedPlanValue
+    },
+    syncSelectedPlanVariant() {
+      if (!this.planDialog.plan) {
+        return
+      }
+
+      this.planDialog.plan = this.getPlanOptionValue(this.planDialog.plan)
+    },
     getSelectedPaymentPlanName() {
       if (!this.planDialog.plan) {
         return null
       }
 
-      return this.shouldUsePlusPricing()
-        ? `${this.planDialog.plan}_plus`
-        : this.planDialog.plan
+      return this.getPlanOptionValue(this.planDialog.plan)
     },
     isPlanSubmitDisabled() {
       if (!this.planDialog.plan || this.planDialog.inProgress) {
@@ -1277,6 +1300,8 @@ export default defineComponent({
           this.newInstanceDialog.selectedTag = options[0].value
           this.planDialog.selectedTag = options[0].value
         }
+
+        this.syncSelectedPlanVariant()
       } catch (error) {
         console.warn(error)
         this.newInstanceDialog.error =
@@ -1325,6 +1350,7 @@ export default defineComponent({
       } else if (this.selectPlan.method === 'subscription') {
         await this.loadInstanceTypeOptions()
         this.planDialog.plan = 'monthly'
+        this.syncSelectedPlanVariant()
         this.planDialog.hideFeatures.tab = true
         this.planDialog.subscription = true
         this.planDialog.fiatOnly = true
@@ -1343,6 +1369,7 @@ export default defineComponent({
       this.planDialog.subscription = currency == 'USD'
         this.planDialog.plan = 'monthly'
         this.planDialog.selectedTag = null
+        this.syncSelectedPlanVariant()
        if (instanceId) {
          this.planDialog.instanceId = instanceId
        }
