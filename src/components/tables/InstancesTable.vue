@@ -1131,13 +1131,40 @@ export default defineComponent({
       return !this.isInstanceTypeOptionAvailable(tag)
     },
     doesInstanceTypeUseSidecar(tag = this.newInstanceDialog.selectedTag) {
-      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag).toLowerCase()
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
 
       if (!normalizedTag) {
         return false
       }
 
-      return normalizedTag.includes('sidecar')
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      if (typeof selectedOption?.hasSidecarTag === 'boolean') {
+        return selectedOption.hasSidecarTag
+      }
+
+      return this.inferSidecarTagFromText(
+        selectedOption?.label,
+        normalizedTag,
+        selectedOption?.searchText
+      )
+    },
+    inferSidecarTagFromText(...values) {
+      const normalizedText = values
+        .filter(value => typeof value === 'string')
+        .join(' ')
+        .trim()
+        .toLowerCase()
+
+      if (!normalizedText) {
+        return false
+      }
+
+      return ['sidecar', 'spark'].some(keyword =>
+        normalizedText.includes(keyword)
+      )
     },
     getPlanCatalog() {
       return {
@@ -1207,7 +1234,25 @@ export default defineComponent({
 
             return {
               value: tag,
-              label
+              label,
+              hasSidecarTag:
+                typeof item?.has_sidecar_tag === 'boolean'
+                  ? item.has_sidecar_tag
+                  : typeof item?.hasSidecarTag === 'boolean'
+                    ? item.hasSidecarTag
+                    : typeof item?.sidecar === 'boolean'
+                      ? item.sidecar
+                      : typeof item?.is_sidecar === 'boolean'
+                        ? item.is_sidecar
+                        : this.inferSidecarTagFromText(
+                            item?.sidecar_tag,
+                            item?.sidecarTag,
+                            item?.label,
+                            item?.tag
+                          ),
+              searchText: [item?.sidecar_tag, item?.sidecarTag, item?.label, item?.tag]
+                .filter(value => typeof value === 'string')
+                .join(' ')
             }
           })
           .filter(Boolean)
