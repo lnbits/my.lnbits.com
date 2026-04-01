@@ -480,6 +480,64 @@
             subscription.
           </div>
         </div>
+        <div v-if="!planDialog.instanceId" class="q-mt-lg">
+          <div class="text-subtitle1">Choose the image for your new instance.</div>
+          <q-select
+            v-model="planDialog.selectedTag"
+            :options="newInstanceDialog.options"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Instance image"
+            dense
+            outlined
+            class="q-mt-md instance-image-select"
+            :class="{
+              'instance-image-select--first':
+                planDialog.selectedTag ===
+                newInstanceDialog.options[0]?.value
+            }"
+            popup-content-class="instance-image-select__menu"
+            data-testid="instance-image-select"
+            :loading="newInstanceDialog.loading"
+            :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
+          />
+          <div
+            v-if="newInstanceDialog.loading"
+            class="row items-center q-gutter-sm q-mt-sm text-grey-7"
+          >
+            <q-spinner-hourglass size="1.2rem" color="primary" />
+            <span data-testid="instance-types-loading"
+              >Loading instance images...</span
+            >
+          </div>
+          <div
+            v-else-if="newInstanceDialog.options.length === 0"
+            class="q-mt-sm"
+          >
+            <div
+              class="text-subtitle2 text-grey-7"
+              data-testid="instance-types-empty"
+            >
+              {{ newInstanceDialog.error || 'No instance images are available.' }}
+            </div>
+            <q-btn
+              class="q-mt-sm"
+              outline
+              color="warning"
+              label="Retry"
+              data-testid="instance-types-retry"
+              @click="retryLoadInstanceTypeOptions"
+            />
+          </div>
+          <div
+            v-else-if="selectedImageHasSidecarTag"
+            class="text-caption text-primary q-mt-sm"
+          >
+            Sidecar image selected. Plus pricing will be used.
+          </div>
+        </div>
         <div class="q-py-lg">
           <q-list padding>
             <ItemPricing
@@ -491,7 +549,7 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.0"
+              :price="getPlanPrice('weekly')"
               :min="1"
               :max="8"
               :step="1"
@@ -506,7 +564,7 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.0"
+              :price="getPlanPrice('monthly')"
               :min="1"
               :max="12"
               :step="1"
@@ -521,7 +579,7 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.0"
+              :price="getPlanPrice('yearly')"
               :min="1"
               :max="5"
               :step="1"
@@ -545,7 +603,7 @@
         ></q-spinner-bars>
         <q-btn
           v-else-if="planDialog.subscription"
-          :disable="!planDialog.plan"
+          :disable="isPlanSubmitDisabled()"
           label="Subscribe"
           color="positive"
           @click="submitPlanRequest"
@@ -553,7 +611,7 @@
         <div v-else>
           <q-btn
             v-if="!planDialog.bitcoinOnly"
-            :disable="!planDialog.plan"
+            :disable="isPlanSubmitDisabled()"
             label="Buy with USD"
             color="positive"
             outline
@@ -561,7 +619,7 @@
           ></q-btn>
           <q-btn
             v-if="!planDialog.fiatOnly"
-            :disable="!planDialog.plan"
+            :disable="isPlanSubmitDisabled()"
             label="Buy with BTC"
             color="positive"
             class="q-ml-sm"
@@ -668,7 +726,7 @@
     </q-card>
   </q-dialog>
   <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
-    <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
+      <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <q-btn
           icon="close"
@@ -923,6 +981,7 @@ export default defineComponent({
         plan: null,
         count: 1,
         instanceId: null,
+        selectedTag: null,
         hideFeatures: {
           tab: false
         }
@@ -1008,10 +1067,10 @@ export default defineComponent({
       this.newInstanceDialog.action = null
 
       if (action === 'on-demand') {
-        const instance = await this.createInstance(selectedTag)
-        if (instance) {
-          await this.extendInstance(instance)
-        }
+         const instance = await this.createInstance(selectedTag)
+         if (instance) {
+           await this.extendInstance(instance)
+         }
       } else if (action === 'plan-request') {
         const instance = await this.createInstance(selectedTag)
         if (instance) {
@@ -1071,6 +1130,63 @@ export default defineComponent({
 
       return !this.isInstanceTypeOptionAvailable(tag)
     },
+    doesInstanceTypeUseSidecar(tag = this.newInstanceDialog.selectedTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag).toLowerCase()
+
+      if (!normalizedTag) {
+        return false
+      }
+
+      return normalizedTag.includes('sidecar')
+    },
+    getPlanCatalog() {
+      return {
+        weekly: {
+          price: 2.0,
+          plusPrice: 2.6
+        },
+        monthly: {
+          price: 7.0,
+          plusPrice: 9.1
+        },
+        yearly: {
+          price: 70.0,
+          plusPrice: 91.0
+        }
+      }
+    },
+    getPlanPrice(planValue) {
+      const plan = this.getPlanCatalog()[planValue]
+
+      if (!plan) {
+        return 0
+      }
+
+      return this.shouldUsePlusPricing() ? plan.plusPrice : plan.price
+    },
+    shouldUsePlusPricing() {
+      return this.doesInstanceTypeUseSidecar(this.planDialog.selectedTag)
+    },
+    getSelectedPaymentPlanName() {
+      if (!this.planDialog.plan) {
+        return null
+      }
+
+      return this.shouldUsePlusPricing()
+        ? `${this.planDialog.plan}_plus`
+        : this.planDialog.plan
+    },
+    isPlanSubmitDisabled() {
+      if (!this.planDialog.plan || this.planDialog.inProgress) {
+        return true
+      }
+
+      if (this.planDialog.instanceId) {
+        return false
+      }
+
+      return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
+    },
     async loadInstanceTypeOptions() {
       this.newInstanceDialog.loading = true
       this.newInstanceDialog.error = null
@@ -1096,23 +1212,25 @@ export default defineComponent({
           })
           .filter(Boolean)
 
+        const currentSelectedTag = this.normalizeSelectedInstanceTypeTag(
+          this.planDialog.selectedTag || this.newInstanceDialog.selectedTag
+        )
+
         this.newInstanceDialog.options = options
-        this.newInstanceDialog.selectedTag = options[0]?.value || null
 
         if (!options.length) {
           this.newInstanceDialog.error = 'No instance images are available.'
           this.newInstanceDialog.selectedTag = null
+          this.planDialog.selectedTag = null
         } else if (
-          this.isInstanceTypeTagValid(this.newInstanceDialog.selectedTag) &&
-          !options.some(
-            option =>
-              option.value ===
-              this.normalizeSelectedInstanceTypeTag(
-                this.newInstanceDialog.selectedTag
-              )
-          )
+          currentSelectedTag &&
+          options.some(option => option.value === currentSelectedTag)
         ) {
-          this.newInstanceDialog.selectedTag = null
+          this.newInstanceDialog.selectedTag = currentSelectedTag
+          this.planDialog.selectedTag = currentSelectedTag
+        } else {
+          this.newInstanceDialog.selectedTag = options[0].value
+          this.planDialog.selectedTag = options[0].value
         }
       } catch (error) {
         console.warn(error)
@@ -1120,6 +1238,7 @@ export default defineComponent({
           saas.mapErrorToString(error) || 'Failed to load instance images.'
         this.newInstanceDialog.options = []
         this.newInstanceDialog.selectedTag = null
+        this.planDialog.selectedTag = null
         this.q.notify({
           message: 'Failed to load instance images',
           caption: this.newInstanceDialog.error,
@@ -1151,17 +1270,21 @@ export default defineComponent({
     showNewInstanceProvisioning: async function () {
       this.selectPlan.show = false
       if (this.selectPlan.method === 'one-time') {
+        await this.loadInstanceTypeOptions()
         this.planDialog.hideFeatures.tab = true
         this.planDialog.subscription = false
         this.planDialog.fiatOnly = false
         this.planDialog.bitcoinOnly = false
+        this.planDialog.instanceId = null
         this.planDialog.show = true
       } else if (this.selectPlan.method === 'subscription') {
+        await this.loadInstanceTypeOptions()
         this.planDialog.plan = 'monthly'
         this.planDialog.hideFeatures.tab = true
         this.planDialog.subscription = true
         this.planDialog.fiatOnly = true
         this.planDialog.bitcoinOnly = false
+        this.planDialog.instanceId = null
         this.planDialog.show = true
       } else if (this.selectPlan.method === 'on-demand') {
         this.openNewInstanceDialog('on-demand')
@@ -1173,10 +1296,11 @@ export default defineComponent({
       this.planDialog.fiatOnly = currency == 'USD'
       this.planDialog.bitcoinOnly = currency == 'BTC'
       this.planDialog.subscription = currency == 'USD'
-      this.planDialog.plan = 'monthly'
-      if (instanceId) {
-        this.planDialog.instanceId = instanceId
-      }
+        this.planDialog.plan = 'monthly'
+        this.planDialog.selectedTag = null
+       if (instanceId) {
+         this.planDialog.instanceId = instanceId
+       }
       this.planDialog.hideFeatures.tab = currency !== 'USD'
 
       this.planDialog.show = true
@@ -1209,21 +1333,46 @@ export default defineComponent({
         plan: null,
         count: 1,
         instanceId: null,
+        selectedTag: null,
         hideFeatures: {
           tab: false
         }
       }
+      this.newInstanceDialog.selectedTag = null
+      this.newInstanceDialog.error = null
     },
 
     async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
-      this.planDialog.fiatOnly = useFiat === true
+      if (typeof useFiat === 'boolean') {
+        this.planDialog.fiatOnly = useFiat
+      }
       console.log('### planDialog', this.planDialog)
 
       if (this.planDialog.instanceId) {
-        this.submitPlan()
+        await this.submitPlan()
       } else {
-        this.openNewInstanceDialog('plan-request')
+        const selectedTag = this.normalizeSelectedInstanceTypeTag(
+          this.planDialog.selectedTag
+        )
+
+        if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
+          this.newInstanceDialog.error =
+            this.newInstanceDialog.error || 'Please select an instance image.'
+          this.q.notify({
+            message: this.newInstanceDialog.error,
+            color: 'negative'
+          })
+          return
+        }
+
+        const instance = await this.createInstance(selectedTag)
+        if (!instance) {
+          return
+        }
+
+        this.planDialog.instanceId = instance.id
+        await this.submitPlan()
       }
     },
     async submitPlan() {
@@ -1237,7 +1386,7 @@ export default defineComponent({
         this.planDialog.inProgress = true
         const {data} = await saas.subscribeToPlan(
           this.planDialog.instanceId,
-          this.planDialog.plan
+          this.getSelectedPaymentPlanName()
         )
         console.log('### subscribe data', data)
         this.planDialog.show = false
@@ -1263,7 +1412,7 @@ export default defineComponent({
         this.planDialog.inProgress = true
         const {data} = await saas.createOneTimePlan(
           this.planDialog.instanceId,
-          this.planDialog.plan,
+          this.getSelectedPaymentPlanName(),
           this.planDialog.count,
           this.planDialog.fiatOnly
         )
@@ -1551,6 +1700,11 @@ export default defineComponent({
       } catch (error) {
         console.warn(error)
       }
+    }
+  },
+  computed: {
+    selectedImageHasSidecarTag() {
+      return this.shouldUsePlusPricing()
     }
   },
   async created() {
