@@ -1235,10 +1235,7 @@ export default defineComponent({
             return {
               value: tag,
               label,
-              hasSidecarTag: Object.prototype.hasOwnProperty.call(
-                item || {},
-                'sidecar_tag'
-              )
+              hasSidecarTag: item?.has_sidecar === true
             }
           })
           .filter(Boolean)
