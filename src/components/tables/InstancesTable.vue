@@ -759,87 +759,115 @@
   <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">Select a method</div>
+        <div class="text-h6">
+          {{
+            newInstanceDialog.step === 'advanced'
+              ? 'Advanced instance options'
+              : 'Create instance'
+          }}
+        </div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
-        <div>
-          <div>
-            Choose a subscription plan and we'll automatically renew it for you.
-            Cancel anytime with no commitments or hidden fees.
+        <div v-if="newInstanceDialog.step === 'advanced'">
+          <div class="text-subtitle1 q-mb-sm">Choose the setup you want.</div>
+          <div class="text-body2 text-grey-7 q-mb-lg">
+            Grouped by whether LNbits starts with a built-in funding source.
+          </div>
+
+          <div
+            v-if="newInstanceDialog.loading"
+            class="row items-center q-gutter-sm q-mt-sm text-grey-7"
+          >
+            <q-spinner-hourglass size="1.2rem" color="primary" />
+            <span>Loading available setups...</span>
+          </div>
+          <div
+            v-else-if="newInstanceDialog.error"
+            class="column items-start q-gutter-sm"
+          >
+            <div class="text-subtitle2 text-negative">
+              {{ newInstanceDialog.error }}
+            </div>
+            <q-btn outline color="warning" label="Retry" @click="retryLoadInstanceTypeOptions" />
+          </div>
+          <div v-else class="advanced-setup-groups">
+            <div
+              v-for="group in getGroupedAdvancedSetupOptions()"
+              :key="group.key"
+              class="q-mb-lg"
+            >
+              <div class="text-subtitle1 q-mb-sm">{{ group.title }}</div>
+              <div class="text-caption text-grey-7 q-mb-md">{{ group.caption }}</div>
+              <div class="column q-gutter-md">
+                <button
+                  v-for="option in group.options"
+                  :key="option.value"
+                  type="button"
+                  class="advanced-setup-option text-left"
+                  @click="chooseAdvancedSetup(option)"
+                >
+                  <div class="row items-start no-wrap">
+                    <div class="col">
+                      <div class="advanced-setup-option__title">{{ option.displayTitle }}</div>
+                      <div class="advanced-setup-option__subtitle">
+                        {{ option.displaySubtitle }}
+                      </div>
+                    </div>
+                    <q-badge
+                      v-if="option.badgeLabel"
+                      :color="option.badgeColor"
+                      class="advanced-setup-option__badge"
+                    >
+                      {{ option.badgeLabel }}
+                    </q-badge>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="q-py-lg">
-          <q-list padding>
-            <q-item tag="label" clickable v-ripple @click="selectNewInstanceMethod('one-time')">
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="newInstanceDialog.method"
-                  val="one-time"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize">One Time Payment</q-item-label>
-                <q-item-label caption
-                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <div>
-                  <q-icon name="attach_money" color="green" size="xs" />
-                  <q-icon name="currency_bitcoin" color="orange" size="xs" />
-                </div>
-              </q-item-section>
-            </q-item>
-            <q-item
-              tag="label"
-              clickable
-              v-ripple
-              @click="selectNewInstanceMethod('subscription')"
-            >
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="newInstanceDialog.method"
-                  val="subscription"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize"
-                  >Subscription Plans</q-item-label
-                >
-                <q-item-label caption
-                  >Choose a subscription plan, pay in Fiat</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-icon name="attach_money" color="green" size="xs" />
-              </q-item-section>
-            </q-item>
-            <q-item
-              tag="label"
-              clickable
-              v-ripple
-              @click="selectNewInstanceMethod('on-demand')"
-            >
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="newInstanceDialog.method"
-                  val="on-demand"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize">On-Demand</q-item-label>
-                <q-item-label caption
-                  >Pay as you go, 21 sats per hour</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-icon name="currency_bitcoin" color="orange" size="xs" />
-              </q-item-section>
-            </q-item>
-          </q-list>
+        <div v-else>
+          <div class="text-body1">
+            Choose a setup for your new LNbits instance.
+          </div>
+          <div class="instance-setup-grid q-mt-lg">
+            <div class="instance-setup-card instance-setup-card--recommended">
+              <div class="instance-setup-card__eyebrow">Recommended for most users</div>
+              <div class="instance-setup-card__title">LNbits with a funding source</div>
+              <div class="instance-setup-card__description">
+                Start receiving payments immediately
+              </div>
+              <ul class="instance-setup-card__list">
+                <li>LNbits preconfigured with a built-in funding source</li>
+                <li>No funding source set-up needed</li>
+              </ul>
+              <q-btn
+                unelevated
+                color="primary"
+                class="full-width instance-setup-card__button"
+                label="Start"
+                @click="chooseRecommendedSetup"
+              />
+            </div>
+            <div class="instance-setup-card">
+              <div class="instance-setup-card__eyebrow">Other setups</div>
+              <div class="instance-setup-card__title">Advanced options</div>
+              <div class="instance-setup-card__description">
+                For advanced users who want more control.
+              </div>
+              <ul class="instance-setup-card__list">
+                <li>Choose a specific funding source</li>
+                <li>Run LNbits standalone and bring your own funding source</li>
+              </ul>
+              <q-btn
+                outline
+                color="primary"
+                class="full-width instance-setup-card__button"
+                label="Advanced options"
+                @click="openAdvancedSetupOptions"
+              />
+            </div>
+          </div>
         </div>
       </q-card-section>
       <q-card-actions align="right" class="q-pa-md">
@@ -852,10 +880,11 @@
           v-close-popup
         ></q-btn>
         <q-btn
-          :disable="!newInstanceDialog.method"
-          label="Proceed"
-          color="positive"
-          @click="proceedNewInstanceMethod"
+          v-if="newInstanceDialog.step === 'advanced'"
+          flat
+          label="Back"
+          color="primary"
+          @click="newInstanceDialog.step = 'entry'"
         ></q-btn>
       </q-card-actions>
     </q-card>
@@ -1055,6 +1084,7 @@ export default defineComponent({
       },
       newInstanceDialog: {
         show: false,
+        step: 'entry',
         method: null,
         options: [],
         selectedTag: null,
@@ -1092,13 +1122,129 @@ export default defineComponent({
     }
   },
   methods: {
-    openNewInstanceDialog() {
+    async openNewInstanceDialog() {
       this.newInstanceDialog.show = true
+      this.newInstanceDialog.step = 'entry'
       this.newInstanceDialog.error = null
       this.newInstanceDialog.method = null
+      await this.loadInstanceTypeOptions()
     },
     selectNewInstanceMethod(method) {
       this.newInstanceDialog.method = method
+    },
+    getFriendlyInstanceTypeOption(option) {
+      const rawLabel = (option?.label || '').trim()
+      const rawValue = (option?.value || '').trim()
+      const label = `${rawLabel} ${rawValue}`.toLowerCase()
+      const includes = text => label.includes(text)
+      const isExperimental =
+        includes('experimental') || includes('latest-rc') || includes('preview')
+      const isWithFundingSource =
+        option?.hasSidecarTag === true ||
+        includes('spark') ||
+        includes('phoenix') ||
+        includes('phoenixd') ||
+        includes('boltz')
+
+      let displayTitle = rawLabel || rawValue
+      if (includes('spark')) {
+        displayTitle = 'LNbits + Spark'
+      } else if (includes('phoenix') || includes('phoenixd')) {
+        displayTitle = 'LNbits + Phoenixd'
+      } else if (includes('boltz')) {
+        displayTitle = 'LNbits + Boltz'
+      } else if (includes('lnbits')) {
+        displayTitle = 'LNbits'
+      }
+
+      let displaySubtitle = isWithFundingSource
+        ? 'Funding source included'
+        : 'Standalone LNbits'
+
+      if (isExperimental) {
+        displaySubtitle = 'Experimental preview release'
+      } else if (includes('stable')) {
+        displaySubtitle = isWithFundingSource
+          ? 'Stable release with funding source included'
+          : 'Stable release'
+      }
+
+      const badgeLabel = option?.hasSidecarTag === true ? null : 'Lower price'
+
+      return {
+        ...option,
+        displayTitle,
+        displaySubtitle,
+        badgeLabel,
+        badgeColor: option?.hasSidecarTag === true ? 'secondary' : 'positive',
+        groupKey: isWithFundingSource ? 'with-funding' : 'without-funding',
+        isExperimental,
+        isWithFundingSource
+      }
+    },
+    getGroupedAdvancedSetupOptions() {
+      const friendlyOptions = this.newInstanceDialog.options.map(option =>
+        this.getFriendlyInstanceTypeOption(option)
+      )
+
+      return [
+        {
+          key: 'with-funding',
+          title: 'With funding source',
+          caption: 'LNbits starts with a bundled funding source.',
+          options: friendlyOptions.filter(option => option.groupKey === 'with-funding')
+        },
+        {
+          key: 'without-funding',
+          title: 'Without funding source',
+          caption: 'Standalone LNbits options with simpler pricing.',
+          options: friendlyOptions.filter(option => option.groupKey === 'without-funding')
+        }
+      ].filter(group => group.options.length > 0)
+    },
+    getRecommendedSetupOption() {
+      const friendlyOptions = this.newInstanceDialog.options.map(option =>
+        this.getFriendlyInstanceTypeOption(option)
+      )
+
+      return (
+        friendlyOptions.find(
+          option => option.isWithFundingSource && option.isExperimental === false
+        ) ||
+        friendlyOptions.find(option => option.isWithFundingSource) ||
+        friendlyOptions[0] ||
+        null
+      )
+    },
+    async chooseRecommendedSetup() {
+      const recommendedOption = this.getRecommendedSetupOption()
+
+      if (!recommendedOption) {
+        this.q.notify({
+          message:
+            this.newInstanceDialog.error || 'No setups are currently available.',
+          color: 'negative'
+        })
+        return
+      }
+
+      this.newInstanceDialog.show = false
+      await this.openOnDemandNewInstanceDialog(recommendedOption.value)
+    },
+    async openAdvancedSetupOptions() {
+      if (!this.newInstanceDialog.options.length && !this.newInstanceDialog.loading) {
+        await this.loadInstanceTypeOptions()
+      }
+
+      this.newInstanceDialog.step = 'advanced'
+    },
+    async chooseAdvancedSetup(option) {
+      this.newInstanceDialog.show = false
+      await this.openNewInstancePlanDialog({
+        subscription: true,
+        fiatOnly: true,
+        selectedTag: option?.value || null
+      })
     },
     async proceedNewInstanceMethod() {
       const method = this.newInstanceDialog.method
@@ -1120,10 +1266,10 @@ export default defineComponent({
 
       this.newInstanceDialog.method = null
     },
-    async openOnDemandNewInstanceDialog() {
+    async openOnDemandNewInstanceDialog(selectedTag = null) {
       this.onDemandDialog.plan = 'hourly'
       this.onDemandDialog.inProgress = false
-      this.onDemandDialog.selectedTag = null
+      this.onDemandDialog.selectedTag = selectedTag
       this.onDemandDialog.show = true
       await this.loadInstanceTypeOptions()
       this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
@@ -1292,13 +1438,14 @@ export default defineComponent({
       this.planDialog.fiatOnly = isSubscription === true
       this.planDialog.bitcoinOnly = false
     },
-    async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
+    async openNewInstancePlanDialog({subscription = true, fiatOnly, selectedTag = null} = {}) {
       await this.loadInstanceTypeOptions()
       this.planDialog.instanceId = null
       this.planDialog.hideFeatures.tab = false
       this.planDialog.subscription = subscription
       this.planDialog.fiatOnly = typeof fiatOnly === 'boolean' ? fiatOnly : subscription
       this.planDialog.bitcoinOnly = false
+      this.planDialog.selectedTag = selectedTag
       this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
         this.planDialog.selectedTag
       )
@@ -1880,6 +2027,104 @@ export default defineComponent({
   background-color: rgba(0, 0, 0, 0.35);
 }
 
+.instance-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.instance-setup-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px;
+  border: 1px solid rgba(178, 56, 255, 0.38);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(178, 56, 255, 0.08), rgba(10, 6, 18, 0.06)),
+    rgba(30, 14, 46, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.instance-setup-card--recommended {
+  border-color: rgba(198, 101, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(178, 56, 255, 0.14);
+}
+
+.instance-setup-card__eyebrow {
+  margin-bottom: 14px;
+  color: #d98dff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.instance-setup-card__title {
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.instance-setup-card__description {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.instance-setup-card__list {
+  margin: 16px 0 24px;
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+}
+
+.instance-setup-card__button {
+  margin-top: auto;
+}
+
+.advanced-setup-option {
+  width: 100%;
+  padding: 18px 20px;
+  border: 1px solid rgba(178, 56, 255, 0.28);
+  border-radius: 16px;
+  background: rgba(17, 10, 27, 0.42);
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.advanced-setup-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(198, 101, 255, 0.55);
+  box-shadow: 0 12px 24px rgba(10, 6, 18, 0.2);
+  background: rgba(32, 18, 49, 0.5);
+}
+
+.advanced-setup-option__title {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.advanced-setup-option__subtitle {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.94rem;
+}
+
+.advanced-setup-option__badge {
+  margin-left: 16px;
+  align-self: center;
+}
+
 .instance-image-select--first .q-field__native,
 .instance-image-select--first .q-field__input,
 .instance-image-select--first .q-field__native span {
@@ -1888,5 +2133,11 @@ export default defineComponent({
 
 .instance-image-select__menu .q-item:nth-child(1) .q-item__label {
   color: #22c55e;
+}
+
+@media (max-width: 720px) {
+  .instance-setup-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
