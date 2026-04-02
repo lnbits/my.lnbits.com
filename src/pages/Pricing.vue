@@ -47,14 +47,14 @@
         <div class="p-hero__inner">
           <span class="p-badge">PRICING</span>
           <h1 class="p-hero__h1">
-            Simple pricing for<br class="gt-sm" />
-            <span class="p-accent">powerful bitcoin tools</span>
+            Accept Bitcoin.<br class="gt-sm" />
+            <span class="p-accent">Skip the setup.</span>
           </h1>
           <p class="p-hero__sub">
-            Deploy a fully managed Lightning instance with 40+ extensions.<br
+            A fully managed LNbits instance with 40+ tools.<br
               class="gt-xs"
             />
-            Transparent pricing. No hidden fees. Cancel anytime.
+            Pick a plan, launch in minutes, cancel anytime.
           </p>
 
           <!-- Stats — hidden on phone -->
@@ -65,13 +65,13 @@
             </div>
             <div class="p-metric__sep" />
             <div class="p-metric">
-              <div class="p-metric__val">&lt;&thinsp;3 min</div>
+              <div class="p-metric__val">&lt;&thinsp;5 min</div>
               <div class="p-metric__lbl">Setup time</div>
             </div>
             <div class="p-metric__sep" />
             <div class="p-metric">
-              <div class="p-metric__val">99.9%</div>
-              <div class="p-metric__lbl">Uptime SLA</div>
+              <div class="p-metric__val">Anytime</div>
+              <div class="p-metric__lbl">Cancel anytime</div>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@
               <div>
                 <div class="p-ondemand__title">On-demand instances</div>
                 <div class="p-ondemand__desc">
-                  Spin up a Lightning instance instantly and pay only for what you use. No subscription required.
+                  Spin up a LNbits instance instantly and pay only for what you use. No subscription required.
                 </div>
               </div>
             </div>
@@ -124,7 +124,7 @@
       <!-- ━━━━━━ EVERYTHING INCLUDED ━━━━━━ -->
       <section class="p-incl">
         <div class="p-incl__wrap">
-          <h2 class="p-sh">Everything included</h2>
+          <h2 class="p-sh">Benefits of the LNbits ecosystem</h2>
           <p class="p-sh-sub">
             Every plan gives you the full LNbits experience
           </p>
@@ -262,16 +262,6 @@ const features = [
     desc: 'Complete RESTful API with documentation for every feature and endpoint'
   },
   {
-    icon: 'backup',
-    label: 'Automated Backups',
-    desc: 'Daily automated backups ensure your data is always safe and recoverable'
-  },
-  {
-    icon: 'security',
-    label: 'Enterprise Security',
-    desc: 'End-to-end encryption, API key management, and role-based access control'
-  },
-  {
     icon: 'speed',
     label: 'High Performance',
     desc: 'Optimized infrastructure for low-latency payments and high throughput'
@@ -304,7 +294,7 @@ const faqs = [
   {
     q: 'Can I upgrade or downgrade my plan?',
     a: [
-      "Absolutely. You can switch between Weekly, Monthly, and Yearly plans at any time. When upgrading, we'll prorate a new invoice."
+      'Plans cannot be upgraded or downgraded. You can extend your current plan at any time, or spin up a new instance on a different plan whenever you need one.'
     ]
   },
   {
@@ -689,7 +679,7 @@ const faqs = [
 
 .p-incl__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-top: 3rem;
 }

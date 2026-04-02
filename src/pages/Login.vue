@@ -19,11 +19,11 @@
         <div class="public-auth-features">
           <div class="public-auth-feature">
             <q-icon name="rocket_launch" size="16px" class="public-auth-feature-icon" />
-            <span>Live in under 3 minutes</span>
+            <span>Live in under 5 minutes</span>
           </div>
           <div class="public-auth-feature">
             <q-icon name="savings" size="16px" class="public-auth-feature-icon" />
-            <span>From $2/week, cancel anytime</span>
+            <span>Starting from $2/week, cancel anytime</span>
           </div>
           <div class="public-auth-feature">
             <q-icon name="widgets" size="16px" class="public-auth-feature-icon" />

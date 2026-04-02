@@ -27,9 +27,9 @@
           <footer class="public-auth-footer">
             <router-link to="/pricing" class="public-auth-footer-pricing">See full pricing &rarr;</router-link>
             <p>
-              <a href="https://lnbits.org" target="_blank" rel="noopener">LNbits</a>
+              <a href="https://lnbits.com" target="_blank" rel="noopener">LNbits</a>
               &middot;
-              <a href="https://docs.lnbits.org" target="_blank" rel="noopener">Docs</a>
+              <a href="https://docs.lnbits.com" target="_blank" rel="noopener">Docs</a>
               &middot;
               <a href="https://github.com/lnbits/lnbits" target="_blank" rel="noopener">GitHub</a>
             </p>
