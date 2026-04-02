@@ -634,6 +634,122 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <q-dialog
+    v-model="onDemandDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+    @hide="resetOnDemandDialog"
+  >
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+        <div class="text-h6">Create On-demand Instance</div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          Choose your instance image, then continue with hourly on-demand
+          pricing.
+        </div>
+        <div class="q-mt-lg">
+          <div class="text-subtitle1">Choose the image for your new instance.</div>
+          <q-select
+            v-model="newInstanceDialog.selectedTag"
+            :options="newInstanceDialog.options"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Instance image"
+            dense
+            outlined
+            class="q-mt-md instance-image-select"
+            :class="{
+              'instance-image-select--first':
+                newInstanceDialog.selectedTag ===
+                newInstanceDialog.options[0]?.value
+            }"
+            popup-content-class="instance-image-select__menu"
+            data-testid="on-demand-instance-image-select"
+            :loading="newInstanceDialog.loading"
+            :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
+          />
+          <div
+            v-if="newInstanceDialog.loading"
+            class="row items-center q-gutter-sm q-mt-sm text-grey-7"
+          >
+            <q-spinner-hourglass size="1.2rem" color="primary" />
+            <span data-testid="on-demand-instance-types-loading"
+              >Loading instance images...</span
+            >
+          </div>
+          <div
+            v-else-if="newInstanceDialog.options.length === 0"
+            class="q-mt-sm"
+          >
+            <div
+              class="text-subtitle2 text-grey-7"
+              data-testid="on-demand-instance-types-empty"
+            >
+              {{ newInstanceDialog.error || 'No instance images are available.' }}
+            </div>
+            <q-btn
+              class="q-mt-sm"
+              outline
+              color="warning"
+              label="Retry"
+              data-testid="on-demand-instance-types-retry"
+              @click="retryLoadInstanceTypeOptions"
+            />
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding>
+            <q-item tag="label">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="onDemandDialog.plan"
+                  val="hourly"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">Hourly</q-item-label>
+                <q-item-label caption
+                  >Pay as you go. Your instance can be topped up by the
+                  hour.</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side top>
+                <q-item-label
+                  >{{ onDemandDialog.hourlyRateSats }} sats / hour</q-item-label
+                >
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn
+          class="q-mr-auto"
+          label="Close"
+          color="grey-6"
+          outline
+          v-close-popup
+        ></q-btn>
+        <q-spinner-bars
+          v-if="onDemandDialog.inProgress"
+          color="primary"
+          size="2.55em"
+        ></q-spinner-bars>
+        <q-btn
+          v-else
+          :disable="isCreateInstanceSubmitDisabled()"
+          label="Continue"
+          color="positive"
+          @click="startOnDemandNewInstance"
+        ></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
   <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
     <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
@@ -860,6 +976,12 @@ export default defineComponent({
           tab: false
         }
       },
+      onDemandDialog: {
+        show: false,
+        inProgress: false,
+        plan: 'hourly',
+        hourlyRateSats: 21
+      },
       newInstanceDialog: {
         show: false,
         options: [],
@@ -905,7 +1027,7 @@ export default defineComponent({
       this.newInstanceDialog.show = false
 
       if (method === 'on-demand') {
-        await this.startOnDemandNewInstance()
+        await this.openOnDemandNewInstanceDialog()
         return
       }
 
@@ -914,8 +1036,13 @@ export default defineComponent({
         fiatOnly: method !== 'one-time'
       })
     },
-    async startOnDemandNewInstance() {
+    async openOnDemandNewInstanceDialog() {
+      this.onDemandDialog.plan = 'hourly'
+      this.onDemandDialog.inProgress = false
+      this.onDemandDialog.show = true
       await this.loadInstanceTypeOptions()
+    },
+    async startOnDemandNewInstance() {
 
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
         this.newInstanceDialog.selectedTag
@@ -931,9 +1058,16 @@ export default defineComponent({
         return
       }
 
-      const instance = await this.createInstance(selectedTag)
-      if (instance) {
-        await this.extendInstance(instance)
+      this.onDemandDialog.inProgress = true
+
+      try {
+        const instance = await this.createInstance(selectedTag)
+        if (instance) {
+          this.onDemandDialog.show = false
+          await this.extendInstance(instance)
+        }
+      } finally {
+        this.onDemandDialog.inProgress = false
       }
     },
     normalizeSelectedInstanceTypeTag(value) {
@@ -1218,6 +1352,12 @@ export default defineComponent({
           tab: false
         }
       }
+      this.newInstanceDialog.selectedTag = null
+      this.newInstanceDialog.error = null
+    },
+    resetOnDemandDialog() {
+      this.onDemandDialog.inProgress = false
+      this.onDemandDialog.plan = 'hourly'
       this.newInstanceDialog.selectedTag = null
       this.newInstanceDialog.error = null
     },
