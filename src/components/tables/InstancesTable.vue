@@ -856,8 +856,8 @@
                 For advanced users who want more control.
               </div>
               <ul class="instance-setup-card__list">
-                <li>Choose a specific funding source</li>
-                <li>Run LNbits standalone and bring your own funding source</li>
+                <li>Choose a specific funding source: Spark, Phoenixd or Boltz.</li>
+                <li>Run LNbits standalone and bring your own funding source.</li>
               </ul>
               <q-btn
                 outline
@@ -1197,7 +1197,7 @@ export default defineComponent({
         {
           key: 'without-funding',
           title: 'Without funding source',
-          caption: 'Standalone LNbits options with simpler pricing.',
+          caption: 'Standalone LNbits. Bring your own funding source.',
           options: friendlyOptions.filter(option => option.groupKey === 'without-funding')
         }
       ].filter(group => group.options.length > 0)
@@ -1229,7 +1229,11 @@ export default defineComponent({
       }
 
       this.newInstanceDialog.show = false
-      await this.openOnDemandNewInstanceDialog(recommendedOption.value)
+      await this.openNewInstancePlanDialog({
+        subscription: true,
+        fiatOnly: true,
+        selectedTag: recommendedOption.value
+      })
     },
     async openAdvancedSetupOptions() {
       if (!this.newInstanceDialog.options.length && !this.newInstanceDialog.loading) {
