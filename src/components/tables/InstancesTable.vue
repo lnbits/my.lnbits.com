@@ -48,7 +48,7 @@
       >
         <template v-slot:top-right>
           <q-btn
-            @click="openNewInstancePlanDialog"
+            @click="openNewInstanceDialog"
             label="New Instance"
             icon="add_to_queue"
             color="primary"
@@ -635,7 +635,7 @@
     </q-card>
   </q-dialog>
   <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
-      <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
+    <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <q-btn
           icon="close"
@@ -649,63 +649,28 @@
         <div class="text-h6">New LNbits Instance</div>
       </q-card-section>
       <q-card-section>
-        Choose the image for your new instance.
-        <q-select
-          v-model="newInstanceDialog.selectedTag"
-          :options="newInstanceDialog.options"
-          option-label="label"
-          option-value="value"
-          emit-value
-          map-options
-          label="Instance image"
-          dense
-          outlined
-          class="q-mt-md instance-image-select"
-          :class="{
-            'instance-image-select--first':
-              newInstanceDialog.selectedTag ===
-              newInstanceDialog.options[0]?.value
-          }"
-          popup-content-class="instance-image-select__menu"
-          data-testid="instance-image-select"
-          :loading="newInstanceDialog.loading"
-          :disable="newInstanceDialog.loading"
-        />
+        Choose how you want to pay for your new instance.
       </q-card-section>
-      <q-card-section v-if="newInstanceDialog.loading" class="text-center">
-        <q-spinner-hourglass size="1.8rem" color="primary" />
-        <div
-          class="text-caption text-grey-7 q-mt-sm"
-          data-testid="instance-types-loading"
-        >
-          Loading instance images...
-        </div>
-      </q-card-section>
-      <q-card-section v-else-if="newInstanceDialog.options.length === 0">
-        <div
-          class="text-subtitle1 text-grey-7"
-          data-testid="instance-types-empty"
-        >
-          {{ newInstanceDialog.error || 'No instance images are available.' }}
-        </div>
+      <q-card-actions class="q-pa-md column q-gutter-sm">
         <q-btn
-          class="q-mt-sm"
-          outline
-          color="warning"
-          label="Retry"
-          data-testid="instance-types-retry"
-          @click="retryLoadInstanceTypeOptions"
-        />
-      </q-card-section>
-      <q-card-actions class="q-pa-md">
-        <q-btn
-          label="Create"
+          label="One-time Payment"
           color="primary"
           outline
           class="full-width"
-          data-testid="confirm-instance-create"
-          :disable="isCreateInstanceSubmitDisabled()"
-          @click="confirmNewInstanceProvider()"
+          @click="selectNewInstanceMethod('one-time')"
+        />
+        <q-btn
+          label="Subscription Plan"
+          color="positive"
+          class="full-width"
+          @click="selectNewInstanceMethod('subscription')"
+        />
+        <q-btn
+          label="On-demand"
+          color="secondary"
+          outline
+          class="full-width"
+          @click="selectNewInstanceMethod('on-demand')"
         />
       </q-card-actions>
     </q-card>
@@ -897,7 +862,6 @@ export default defineComponent({
       },
       newInstanceDialog: {
         show: false,
-        action: null,
         options: [],
         selectedTag: null,
         loading: false,
@@ -933,20 +897,28 @@ export default defineComponent({
     }
   },
   methods: {
-    async openNewInstanceDialog(action) {
-      this.newInstanceDialog.action = action
+    openNewInstanceDialog() {
       this.newInstanceDialog.show = true
-      this.newInstanceDialog.selectedTag = null
       this.newInstanceDialog.error = null
-      if (action === 'on-demand' || action === 'plan-request') {
-        await this.loadInstanceTypeOptions()
-      }
     },
-    async confirmNewInstanceProvider(provider) {
-      const action = this.newInstanceDialog.action
+    async selectNewInstanceMethod(method) {
+      this.newInstanceDialog.show = false
+
+      if (method === 'on-demand') {
+        await this.startOnDemandNewInstance()
+        return
+      }
+
+      await this.openNewInstancePlanDialog({
+        subscription: method !== 'one-time',
+        fiatOnly: method !== 'one-time'
+      })
+    },
+    async startOnDemandNewInstance() {
+      await this.loadInstanceTypeOptions()
 
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
-        provider || this.newInstanceDialog.selectedTag
+        this.newInstanceDialog.selectedTag
       )
 
       if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
@@ -959,29 +931,9 @@ export default defineComponent({
         return
       }
 
-      if (!selectedTag || !this.isInstanceTypeTagValid(selectedTag)) {
-        this.newInstanceDialog.error = 'Please select an instance image.'
-        this.q.notify({
-          message: this.newInstanceDialog.error,
-          color: 'negative'
-        })
-        return
-      }
-
-      this.newInstanceDialog.show = false
-      this.newInstanceDialog.action = null
-
-      if (action === 'on-demand') {
-         const instance = await this.createInstance(selectedTag)
-         if (instance) {
-           await this.extendInstance(instance)
-         }
-      } else if (action === 'plan-request') {
-        const instance = await this.createInstance(selectedTag)
-        if (instance) {
-          this.planDialog.instanceId = instance.id
-          await this.submitPlan()
-        }
+      const instance = await this.createInstance(selectedTag)
+      if (instance) {
+        await this.extendInstance(instance)
       }
     },
     normalizeSelectedInstanceTypeTag(value) {
@@ -1106,12 +1058,12 @@ export default defineComponent({
       this.planDialog.fiatOnly = isSubscription === true
       this.planDialog.bitcoinOnly = false
     },
-    async openNewInstancePlanDialog() {
+    async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
       await this.loadInstanceTypeOptions()
       this.planDialog.instanceId = null
       this.planDialog.hideFeatures.tab = false
-      this.planDialog.subscription = true
-      this.planDialog.fiatOnly = true
+      this.planDialog.subscription = subscription
+      this.planDialog.fiatOnly = typeof fiatOnly === 'boolean' ? fiatOnly : subscription
       this.planDialog.bitcoinOnly = false
       this.planDialog.plan = 'monthly'
       this.syncSelectedPlanVariant()
