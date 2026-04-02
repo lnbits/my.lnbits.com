@@ -439,7 +439,7 @@
               ? `${
                   planDialog.fiatOnly ? 'Add Subscription to' : 'Extend'
                 } Instance (${planDialog.instanceId})`
-              : 'Create New Instance'
+              : 'New LNbits Instance'
           }}
         </div>
       </q-card-section>
@@ -762,8 +762,8 @@
         <div class="text-h6">
           {{
             newInstanceDialog.step === 'advanced'
-              ? 'Advanced instance options'
-              : 'Create instance'
+              ? 'Advanced options'
+              : 'Create LNbits'
           }}
         </div>
       </q-card-section>
