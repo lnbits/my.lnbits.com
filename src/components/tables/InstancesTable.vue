@@ -748,7 +748,7 @@
         ></q-spinner-bars>
         <q-btn
           v-else
-          :disable="isCreateInstanceSubmitDisabled()"
+          :disable="isCreateInstanceSubmitDisabled(onDemandDialog.selectedTag)"
           label="Continue"
           color="positive"
           @click="startOnDemandNewInstance"
@@ -773,28 +773,61 @@
       <q-card-section>
         Choose how you want to pay for your new instance.
       </q-card-section>
-      <q-card-actions class="q-pa-md column q-gutter-sm">
-        <q-btn
-          label="One-time Payment"
-          color="primary"
-          outline
-          class="full-width"
-          @click="selectNewInstanceMethod('one-time')"
-        />
-        <q-btn
-          label="Subscription Plan"
-          color="positive"
-          class="full-width"
-          @click="selectNewInstanceMethod('subscription')"
-        />
-        <q-btn
-          label="On-demand"
-          color="secondary"
-          outline
-          class="full-width"
-          @click="selectNewInstanceMethod('on-demand')"
-        />
-      </q-card-actions>
+      <q-card-section class="q-pt-none q-pb-md">
+        <q-list bordered separator>
+          <q-item
+            tag="label"
+            clickable
+            v-ripple
+            @click="selectNewInstanceMethod('one-time')"
+          >
+            <q-item-section avatar top>
+              <q-radio
+                v-model="newInstanceDialog.method"
+                val="one-time"
+                color="primary"
+              />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>One-time Payment</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item
+            tag="label"
+            clickable
+            v-ripple
+            @click="selectNewInstanceMethod('subscription')"
+          >
+            <q-item-section avatar top>
+              <q-radio
+                v-model="newInstanceDialog.method"
+                val="subscription"
+                color="positive"
+              />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Subscription Plan</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item
+            tag="label"
+            clickable
+            v-ripple
+            @click="selectNewInstanceMethod('on-demand')"
+          >
+            <q-item-section avatar top>
+              <q-radio
+                v-model="newInstanceDialog.method"
+                val="on-demand"
+                color="secondary"
+              />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>On-demand</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
     </q-card>
   </q-dialog>
 </template>
@@ -992,6 +1025,7 @@ export default defineComponent({
       },
       newInstanceDialog: {
         show: false,
+        method: null,
         options: [],
         selectedTag: null,
         loading: false,
@@ -1031,6 +1065,7 @@ export default defineComponent({
     openNewInstanceDialog() {
       this.newInstanceDialog.show = true
       this.newInstanceDialog.error = null
+      this.newInstanceDialog.method = null
     },
     async selectNewInstanceMethod(method) {
       this.newInstanceDialog.show = false
