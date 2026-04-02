@@ -652,7 +652,7 @@
         <div class="q-mt-lg">
           <div class="text-subtitle1">Choose the image for your new instance.</div>
           <q-select
-            v-model="newInstanceDialog.selectedTag"
+            v-model="onDemandDialog.selectedTag"
             :options="newInstanceDialog.options"
             option-label="label"
             option-value="value"
@@ -664,7 +664,7 @@
             class="q-mt-md instance-image-select"
             :class="{
               'instance-image-select--first':
-                newInstanceDialog.selectedTag ===
+                onDemandDialog.selectedTag ===
                 newInstanceDialog.options[0]?.value
             }"
             popup-content-class="instance-image-select__menu"
@@ -720,8 +720,14 @@
               </q-item-section>
               <q-item-section side top>
                 <q-item-label
-                  >{{ onDemandDialog.hourlyRateSats }} sats / hour</q-item-label
-                >
+                  >
+                  {{
+                    doesInstanceTypeUseSidecar(onDemandDialog.selectedTag)
+                      ? onDemandDialog.hourlyRatePlusSats
+                      : onDemandDialog.hourlyRateSats
+                  }}
+                  sats / hour
+                </q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -980,7 +986,9 @@ export default defineComponent({
         show: false,
         inProgress: false,
         plan: 'hourly',
-        hourlyRateSats: 21
+        hourlyRateSats: 21,
+        hourlyRatePlusSats: 27,
+        selectedTag: null
       },
       newInstanceDialog: {
         show: false,
@@ -988,7 +996,8 @@ export default defineComponent({
         selectedTag: null,
         loading: false,
         error: null
-      }
+      },
+      instanceTypesRequestId: 0
     }
   },
   setup() {
@@ -1039,13 +1048,17 @@ export default defineComponent({
     async openOnDemandNewInstanceDialog() {
       this.onDemandDialog.plan = 'hourly'
       this.onDemandDialog.inProgress = false
+      this.onDemandDialog.selectedTag = null
       this.onDemandDialog.show = true
       await this.loadInstanceTypeOptions()
+      this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.onDemandDialog.selectedTag
+      )
     },
     async startOnDemandNewInstance() {
 
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
-        this.newInstanceDialog.selectedTag
+        this.onDemandDialog.selectedTag
       )
 
       if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
@@ -1120,6 +1133,18 @@ export default defineComponent({
       }
 
       return !this.isInstanceTypeOptionAvailable(tag)
+    },
+    getAvailableInstanceTypeTag(preferredTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(preferredTag)
+
+      if (
+        normalizedTag &&
+        this.newInstanceDialog.options.some(option => option.value === normalizedTag)
+      ) {
+        return normalizedTag
+      }
+
+      return this.newInstanceDialog.options[0]?.value || null
     },
     doesInstanceTypeUseSidecar(tag = this.newInstanceDialog.selectedTag) {
       const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
@@ -1199,6 +1224,9 @@ export default defineComponent({
       this.planDialog.subscription = subscription
       this.planDialog.fiatOnly = typeof fiatOnly === 'boolean' ? fiatOnly : subscription
       this.planDialog.bitcoinOnly = false
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
       this.planDialog.plan = 'monthly'
       this.syncSelectedPlanVariant()
       this.planDialog.show = true
@@ -1222,6 +1250,7 @@ export default defineComponent({
       return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
     },
     async loadInstanceTypeOptions() {
+      const requestId = ++this.instanceTypesRequestId
       this.newInstanceDialog.loading = true
       this.newInstanceDialog.error = null
 
@@ -1247,42 +1276,59 @@ export default defineComponent({
           })
           .filter(Boolean)
 
-        const currentSelectedTag = this.normalizeSelectedInstanceTypeTag(
-          this.planDialog.selectedTag || this.newInstanceDialog.selectedTag
-        )
+        if (requestId !== this.instanceTypesRequestId) {
+          return
+        }
 
         this.newInstanceDialog.options = options
 
         if (!options.length) {
           this.newInstanceDialog.error = 'No instance images are available.'
           this.newInstanceDialog.selectedTag = null
-          this.planDialog.selectedTag = null
-        } else if (
-          currentSelectedTag &&
-          options.some(option => option.value === currentSelectedTag)
-        ) {
-          this.newInstanceDialog.selectedTag = currentSelectedTag
-          this.planDialog.selectedTag = currentSelectedTag
+          if (this.planDialog.show && !this.planDialog.instanceId) {
+            this.planDialog.selectedTag = null
+          }
+          if (this.onDemandDialog.show) {
+            this.onDemandDialog.selectedTag = null
+          }
         } else {
-          this.newInstanceDialog.selectedTag = options[0].value
-          this.planDialog.selectedTag = options[0].value
+          if (this.planDialog.show && !this.planDialog.instanceId) {
+            this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+              this.planDialog.selectedTag
+            )
+          }
+          if (this.onDemandDialog.show) {
+            this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
+              this.onDemandDialog.selectedTag
+            )
+          }
         }
 
         this.syncSelectedPlanVariant()
       } catch (error) {
+        if (requestId !== this.instanceTypesRequestId) {
+          return
+        }
         console.warn(error)
         this.newInstanceDialog.error =
           saas.mapErrorToString(error) || 'Failed to load instance images.'
         this.newInstanceDialog.options = []
         this.newInstanceDialog.selectedTag = null
-        this.planDialog.selectedTag = null
+        if (this.planDialog.show && !this.planDialog.instanceId) {
+          this.planDialog.selectedTag = null
+        }
+        if (this.onDemandDialog.show) {
+          this.onDemandDialog.selectedTag = null
+        }
         this.q.notify({
           message: 'Failed to load instance images',
           caption: this.newInstanceDialog.error,
           color: 'negative'
         })
       } finally {
-        this.newInstanceDialog.loading = false
+        if (requestId === this.instanceTypesRequestId) {
+          this.newInstanceDialog.loading = false
+        }
       }
     },
     async retryLoadInstanceTypeOptions() {
@@ -1354,12 +1400,14 @@ export default defineComponent({
       }
       this.newInstanceDialog.selectedTag = null
       this.newInstanceDialog.error = null
+      this.instanceTypesRequestId += 1
     },
     resetOnDemandDialog() {
       this.onDemandDialog.inProgress = false
       this.onDemandDialog.plan = 'hourly'
-      this.newInstanceDialog.selectedTag = null
+      this.onDemandDialog.selectedTag = null
       this.newInstanceDialog.error = null
+      this.instanceTypesRequestId += 1
     },
 
     async submitPlanRequest(useFiat) {
