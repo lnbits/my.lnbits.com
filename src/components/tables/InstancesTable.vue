@@ -48,7 +48,7 @@
       >
         <template v-slot:top-right>
           <q-btn
-            @click="selectPlan.show = true"
+            @click="openNewInstancePlanDialog"
             label="New Instance"
             icon="add_to_queue"
             color="primary"
@@ -447,6 +447,7 @@
         <div v-if="!planDialog.hideFeatures.tab">
           <q-btn-toggle
             v-model="planDialog.subscription"
+            @update:model-value="onPlanDialogModeChange"
             spread
             style="border-radius: 0"
             unelevated
@@ -630,102 +631,6 @@
             @click="submitPlanRequest"
           ></q-btn>
         </div>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-  <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
-    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">Select a method</div>
-      </q-card-section>
-      <q-card-section class="q-mb-lg">
-        <div>
-          <div>
-            Choose a subscription plan and we'll automatically renew it for you.
-            Cancel anytime with no commitments or hidden fees.
-          </div>
-        </div>
-        <div class="q-py-lg">
-          <q-list padding>
-            <q-item tag="label">
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="selectPlan.method"
-                  val="one-time"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize"
-                  >One Time Payment</q-item-label
-                >
-                <q-item-label caption
-                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <div>
-                  <q-icon name="attach_money" color="green" size="xs" />
-                  <q-icon name="currency_bitcoin" color="orange" size="xs" />
-                </div>
-              </q-item-section>
-            </q-item>
-            <q-item tag="label">
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="selectPlan.method"
-                  val="subscription"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize"
-                  >Subscription Plans</q-item-label
-                >
-                <q-item-label caption
-                  >Choose a subscription plan, pay in Fiat</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-icon name="attach_money" color="green" size="xs" />
-              </q-item-section>
-            </q-item>
-            <q-item tag="label">
-              <q-item-section avatar top>
-                <q-radio
-                  v-model="selectPlan.method"
-                  val="on-demand"
-                  color="secondary"
-                />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label class="text-capitalize">On-Demand</q-item-label>
-                <q-item-label caption
-                  >Pay as you go, 21 sats per hour</q-item-label
-                >
-              </q-item-section>
-              <q-item-section side>
-                <q-icon name="currency_bitcoin" color="orange" size="xs" />
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
-      </q-card-section>
-      <q-card-actions align="right" class="q-pa-md">
-        <q-btn
-          class="q-mr-auto"
-          outline
-          flat
-          label="Close"
-          color="grey-6"
-          v-close-popup
-        ></q-btn>
-        <q-btn
-          :disable="!selectPlan.method"
-          label="Proceed"
-          color="positive"
-          @click="showNewInstanceProvisioning"
-        ></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -990,10 +895,6 @@ export default defineComponent({
           tab: false
         }
       },
-      selectPlan: {
-        show: false,
-        method: null
-      },
       newInstanceDialog: {
         show: false,
         action: null,
@@ -1196,6 +1097,26 @@ export default defineComponent({
 
       this.planDialog.plan = this.getPlanOptionValue(this.planDialog.plan)
     },
+    onPlanDialogModeChange(isSubscription) {
+      if (this.planDialog.instanceId) {
+        return
+      }
+
+      this.planDialog.subscription = isSubscription
+      this.planDialog.fiatOnly = isSubscription === true
+      this.planDialog.bitcoinOnly = false
+    },
+    async openNewInstancePlanDialog() {
+      await this.loadInstanceTypeOptions()
+      this.planDialog.instanceId = null
+      this.planDialog.hideFeatures.tab = false
+      this.planDialog.subscription = true
+      this.planDialog.fiatOnly = true
+      this.planDialog.bitcoinOnly = false
+      this.planDialog.plan = 'monthly'
+      this.syncSelectedPlanVariant()
+      this.planDialog.show = true
+    },
     getSelectedPaymentPlanName() {
       if (!this.planDialog.plan) {
         return null
@@ -1296,31 +1217,6 @@ export default defineComponent({
 
       const label = value.trim()
       return label.length > 0 ? label : undefined
-    },
-    showNewInstanceProvisioning: async function () {
-      this.selectPlan.show = false
-      if (this.selectPlan.method === 'one-time') {
-        await this.loadInstanceTypeOptions()
-        this.planDialog.hideFeatures.tab = true
-        this.planDialog.subscription = false
-        this.planDialog.fiatOnly = false
-        this.planDialog.bitcoinOnly = false
-        this.planDialog.instanceId = null
-        this.planDialog.show = true
-      } else if (this.selectPlan.method === 'subscription') {
-        await this.loadInstanceTypeOptions()
-        this.planDialog.plan = 'monthly'
-        this.syncSelectedPlanVariant()
-        this.planDialog.hideFeatures.tab = true
-        this.planDialog.subscription = true
-        this.planDialog.fiatOnly = true
-        this.planDialog.bitcoinOnly = false
-        this.planDialog.instanceId = null
-        this.planDialog.show = true
-      } else if (this.selectPlan.method === 'on-demand') {
-        this.openNewInstanceDialog('on-demand')
-      }
-      this.selectPlan.method = null
     },
     subscriptionInstance(instanceId, currency) {
       currency = (currency || 'USD').trim().toUpperCase()
