@@ -1251,27 +1251,26 @@ export default defineComponent({
           return
         }
 
-        this.planDialog.instanceId = instance.id
-        await this.submitPlan()
+        await this.submitPlan(instance.id)
       }
     },
-    async submitPlan() {
+    async submitPlan(instanceId = this.planDialog.instanceId) {
       if (this.planDialog.subscription) {
-        return await this.submitSubscriptionPlan()
+        return await this.submitSubscriptionPlan(instanceId)
       }
-      await this.submitOneTimePlan()
+      await this.submitOneTimePlan(instanceId)
     },
-    async submitSubscriptionPlan() {
+    async submitSubscriptionPlan(instanceId = this.planDialog.instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.subscribeToPlan(
-          this.planDialog.instanceId,
+          instanceId,
           this.getSelectedPaymentPlanName()
         )
         console.log('### subscribe data', data)
         this.planDialog.show = false
         this.extendInstance(
-          this.data.find(i => i.id === this.planDialog.instanceId),
+          this.data.find(i => i.id === instanceId),
           data.checkout_session_url
         )
         return true
@@ -1287,11 +1286,11 @@ export default defineComponent({
         this.planDialog.inProgress = false
       }
     },
-    async submitOneTimePlan() {
+    async submitOneTimePlan(instanceId = this.planDialog.instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.createOneTimePlan(
-          this.planDialog.instanceId,
+          instanceId,
           this.getSelectedPaymentPlanName(),
           this.planDialog.count,
           this.planDialog.fiatOnly
@@ -1299,7 +1298,7 @@ export default defineComponent({
         console.log('### one time plan data', data)
         this.planDialog.show = false
         this.extendInstance(
-          this.data.find(i => i.id === this.planDialog.instanceId),
+          this.data.find(i => i.id === instanceId),
           data.payment_request
         )
         return true
