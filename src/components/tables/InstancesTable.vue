@@ -756,78 +756,108 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
-    <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
+  <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)" persistent>
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+        <div class="text-h6">Select a method</div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div>
+            Choose a subscription plan and we'll automatically renew it for you.
+            Cancel anytime with no commitments or hidden fees.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding>
+            <q-item tag="label" clickable v-ripple @click="selectNewInstanceMethod('one-time')">
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="newInstanceDialog.method"
+                  val="one-time"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">One Time Payment</q-item-label>
+                <q-item-label caption
+                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <div>
+                  <q-icon name="attach_money" color="green" size="xs" />
+                  <q-icon name="currency_bitcoin" color="orange" size="xs" />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('subscription')"
+            >
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="newInstanceDialog.method"
+                  val="subscription"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize"
+                  >Subscription Plans</q-item-label
+                >
+                <q-item-label caption
+                  >Choose a subscription plan, pay in Fiat</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="attach_money" color="green" size="xs" />
+              </q-item-section>
+            </q-item>
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('on-demand')"
+            >
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="newInstanceDialog.method"
+                  val="on-demand"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">On-Demand</q-item-label>
+                <q-item-label caption
+                  >Pay as you go, 21 sats per hour</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="currency_bitcoin" color="orange" size="xs" />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn
-          icon="close"
+          class="q-mr-auto"
+          outline
           flat
-          round
-          dense
-          color="white"
-          class="absolute-top-right q-ma-sm"
+          label="Close"
+          color="grey-6"
           v-close-popup
-        />
-        <div class="text-h6">New LNbits Instance</div>
-      </q-card-section>
-      <q-card-section>
-        Choose how you want to pay for your new instance.
-      </q-card-section>
-      <q-card-section class="q-pt-none q-pb-md">
-        <q-list bordered separator>
-          <q-item
-            tag="label"
-            clickable
-            v-ripple
-            @click="selectNewInstanceMethod('one-time')"
-          >
-            <q-item-section avatar top>
-              <q-radio
-                v-model="newInstanceDialog.method"
-                val="one-time"
-                color="primary"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>One-time Payment</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item
-            tag="label"
-            clickable
-            v-ripple
-            @click="selectNewInstanceMethod('subscription')"
-          >
-            <q-item-section avatar top>
-              <q-radio
-                v-model="newInstanceDialog.method"
-                val="subscription"
-                color="positive"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Subscription Plan</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item
-            tag="label"
-            clickable
-            v-ripple
-            @click="selectNewInstanceMethod('on-demand')"
-          >
-            <q-item-section avatar top>
-              <q-radio
-                v-model="newInstanceDialog.method"
-                val="on-demand"
-                color="secondary"
-              />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>On-demand</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
+        ></q-btn>
+        <q-btn
+          :disable="!newInstanceDialog.method"
+          label="Proceed"
+          color="positive"
+          @click="proceedNewInstanceMethod"
+        ></q-btn>
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -1067,18 +1097,28 @@ export default defineComponent({
       this.newInstanceDialog.error = null
       this.newInstanceDialog.method = null
     },
-    async selectNewInstanceMethod(method) {
+    selectNewInstanceMethod(method) {
+      this.newInstanceDialog.method = method
+    },
+    async proceedNewInstanceMethod() {
+      const method = this.newInstanceDialog.method
+
+      if (!method) {
+        return
+      }
+
       this.newInstanceDialog.show = false
 
       if (method === 'on-demand') {
         await this.openOnDemandNewInstanceDialog()
-        return
+      } else {
+        await this.openNewInstancePlanDialog({
+          subscription: method !== 'one-time',
+          fiatOnly: method !== 'one-time'
+        })
       }
 
-      await this.openNewInstancePlanDialog({
-        subscription: method !== 'one-time',
-        fiatOnly: method !== 'one-time'
-      })
+      this.newInstanceDialog.method = null
     },
     async openOnDemandNewInstanceDialog() {
       this.onDemandDialog.plan = 'hourly'
