@@ -1,65 +1,66 @@
 <template>
-  <q-layout>
-    <q-page-container>
-      <q-page class="flex bg-image flex-center">
-        <q-card v-bind:style="q.screen.lt.sm ? {width: '80%'} : {width: '30%'}">
-          <q-card-section class="q-mb-md">
-            <q-avatar
-              size="150px"
-              class="absolute-center shadow-10"
-              color="grey-10"
-            >
-              <img src="profile.svg" class="q-pa-md" />
-            </q-avatar>
-          </q-card-section>
-          <q-card-section>
-            <div class="text-center q-mt-lg q-pt-lg">
-              <div class="col text-h6 ellipsis">Forgot Password</div>
-            </div>
-            <div class="text-center q-pt-lg">
-              <div class="col ellipsis">
-                Enter your email and we will send you a recovery link.
-              </div>
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <q-form @submit="onSubmit">
-              <q-input
-                filled
-                type="email"
-                autocomplete="email"
-                v-model="email"
-                :rules="[checkEmail]"
-                label="Email"
-                lazy-rules
-              />
+  <public-auth-shell>
+    <template #hero>
+      <div class="public-auth-hero-top">
+        <img src="/profile.svg" alt="LNbits" class="public-auth-hero-logo" />
+        <p class="public-auth-hero-tagline">Account recovery</p>
+      </div>
 
-              <q-linear-progress
-                v-if="inProgress"
-                indeterminate
-                color="secondary"
-                class="q-mt-sm"
-              />
+      <div class="public-auth-hero-middle">
+        <div>
+          <h1 class="public-auth-hero-title">Forgot your password?</h1>
+          <p class="public-auth-hero-copy">
+            Enter your email and we'll send a recovery link.
+            Check your spam folder if it doesn't arrive within a few minutes.
+          </p>
+        </div>
+      </div>
 
-              <q-btn
-                label="Send Recovery Email"
-                type="submit"
-                color="primary"
-                class="full-width"
-                :disable="inProgress"
-              />
+      <div class="public-auth-hero-bottom">
+        <div class="public-auth-status">
+          <router-link to="/login" class="public-auth-bottom-link">&larr; Back to sign in</router-link>
+        </div>
+      </div>
+    </template>
 
-              <div class="q-mt-md text-center">
-                <router-link to="/login" class="text-primary">
-                  Back to login
-                </router-link>
-              </div>
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+    <div class="public-auth-panel-head">
+      <h2>Send a reset link</h2>
+      <p>We'll email you a link to choose a new password.</p>
+    </div>
+
+    <q-form class="public-auth-form" @submit="onSubmit">
+      <q-input
+        v-model="email"
+        outlined
+        type="email"
+        autocomplete="email"
+        label="Email"
+        lazy-rules
+        :rules="[checkEmail]"
+      />
+
+      <q-linear-progress
+        v-if="inProgress"
+        indeterminate
+        color="primary"
+        class="q-mt-xs"
+      />
+
+      <q-btn
+        label="Send recovery email"
+        type="submit"
+        color="primary"
+        no-caps
+        unelevated
+        class="full-width public-auth-submit"
+        :disable="inProgress"
+      />
+
+      <div class="public-auth-links">
+        <router-link to="/login">Back to sign in</router-link>
+      </div>
+    </q-form>
+  </public-auth-shell>
 </template>
 
 <script>
@@ -68,8 +69,12 @@ import {ref} from 'vue'
 import {useQuasar} from 'quasar'
 
 import {saas} from 'boot/saas'
+import PublicAuthShell from 'src/components/PublicAuthShell.vue'
 
 export default defineComponent({
+  components: {
+    PublicAuthShell
+  },
   setup() {
     const $q = useQuasar()
     return {
