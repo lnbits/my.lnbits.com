@@ -49,17 +49,12 @@
           <h1 class="p-hero__h1">
             Launch LNbits in minutes
           </h1>
-          <p class="p-hero__sub">
-            A fully managed LNbits instance with 40+ tools.<br
-              class="gt-xs"
-            />
-            Pick a plan, launch in minutes, cancel anytime.
-          </p>
+          <p class="p-hero__sub">Pick a plan, launch in minutes, cancel anytime.</p>
 
           <!-- Stats — hidden on phone -->
           <div class="p-hero__metrics gt-xs">
             <div class="p-metric">
-              <div class="p-metric__val">40+</div>
+              <div class="p-metric__val">60+</div>
               <div class="p-metric__lbl">Extensions</div>
             </div>
             <div class="p-metric__sep" />
@@ -252,7 +247,7 @@ const features = [
   },
   {
     icon: 'widgets',
-    label: '40+ Extensions',
+    label: '60+ Extensions',
     desc: 'Point of Sale, Tipping, Paywall, Invoicing, and many more built-in tools'
   },
   {
