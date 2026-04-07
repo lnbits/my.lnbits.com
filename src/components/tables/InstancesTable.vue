@@ -504,7 +504,49 @@
             data-testid="instance-image-select"
             :loading="newInstanceDialog.loading"
             :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
-          />
+          >
+            <template v-slot:option="scope">
+              <q-item
+                v-bind="scope.itemProps"
+                :data-testid="
+                  getImageOptionTestId('instance-image-select-option', scope.opt.value)
+                "
+              >
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label
+                    caption
+                    class="text-primary"
+                    :data-testid="
+                      getImageOptionTestId(
+                        'instance-image-select-option-delta',
+                        scope.opt.value
+                      )
+                    "
+                  >
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'plan',
+                        tag: scope.opt.value,
+                        planValue: planDialog.plan
+                      }).optionDeltaText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-item-label caption>
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'plan',
+                        tag: scope.opt.value,
+                        planValue: planDialog.plan
+                      }).selectedPriceText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
           <div
             v-if="newInstanceDialog.loading"
             class="row items-center q-gutter-sm q-mt-sm text-grey-7"
@@ -533,11 +575,28 @@
               @click="retryLoadInstanceTypeOptions"
             />
           </div>
-          <div
-            v-else-if="selectedImageHasSidecarTag"
-            class="text-caption text-primary q-mt-sm"
-          >
-            Sidecar image selected. Plus pricing will be used.
+          <div v-else class="q-mt-sm" data-testid="plan-image-pricing-summary">
+            <div class="text-caption text-primary" data-testid="plan-image-pricing-message">
+              Selected image:
+              <strong data-testid="plan-image-pricing-summary-image">{{
+                planSelectedImageLabel
+              }}</strong>
+              <span data-testid="plan-image-pricing-summary-status"
+                >({{ planImagePricingPresentation.statusLabel }})</span
+              >
+            </div>
+            <div
+              class="text-caption text-grey-7"
+              data-testid="plan-image-pricing-summary-reason"
+            >
+              {{ planImageSidecarReason }}
+            </div>
+            <div
+              class="text-caption text-weight-medium"
+              data-testid="plan-image-pricing-summary-price"
+            >
+              {{ planImagePricingSummaryPriceText }}
+            </div>
           </div>
         </div>
         <div class="q-py-lg">
@@ -671,7 +730,50 @@
             data-testid="on-demand-instance-image-select"
             :loading="newInstanceDialog.loading"
             :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
-          />
+          >
+            <template v-slot:option="scope">
+              <q-item
+                v-bind="scope.itemProps"
+                :data-testid="
+                  getImageOptionTestId(
+                    'on-demand-instance-image-select-option',
+                    scope.opt.value
+                  )
+                "
+              >
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label
+                    caption
+                    class="text-primary"
+                    :data-testid="
+                      getImageOptionTestId(
+                        'on-demand-instance-image-select-option-delta',
+                        scope.opt.value
+                      )
+                    "
+                  >
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'on-demand',
+                        tag: scope.opt.value
+                      }).optionDeltaText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-item-label caption>
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'on-demand',
+                        tag: scope.opt.value
+                      }).selectedPriceText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
           <div
             v-if="newInstanceDialog.loading"
             class="row items-center q-gutter-sm q-mt-sm text-grey-7"
@@ -700,6 +802,36 @@
               @click="retryLoadInstanceTypeOptions"
             />
           </div>
+          <div
+            v-else
+            class="q-mt-sm"
+            data-testid="on-demand-image-pricing-summary"
+          >
+            <div
+              class="text-caption text-primary"
+              data-testid="on-demand-image-pricing-message"
+            >
+              Selected image:
+              <strong data-testid="on-demand-image-pricing-summary-image">{{
+                onDemandSelectedImageLabel
+              }}</strong>
+              <span data-testid="on-demand-image-pricing-summary-status"
+                >({{ onDemandImagePricingPresentation.statusLabel }})</span
+              >
+            </div>
+            <div
+              class="text-caption text-grey-7"
+              data-testid="on-demand-image-pricing-summary-reason"
+            >
+              {{ onDemandImageSidecarReason }}
+            </div>
+            <div
+              class="text-caption text-weight-medium"
+              data-testid="on-demand-image-pricing-summary-price"
+            >
+              Resulting rate: {{ onDemandImagePricingPresentation.selectedPriceText }}
+            </div>
+          </div>
         </div>
         <div class="q-py-lg">
           <q-list padding>
@@ -719,14 +851,11 @@
                 >
               </q-item-section>
               <q-item-section side top>
-                <q-item-label
-                  >
-                  {{
-                    doesInstanceTypeUseSidecar(onDemandDialog.selectedTag)
-                      ? onDemandDialog.hourlyRatePlusSats
-                      : onDemandDialog.hourlyRateSats
-                  }}
-                  sats / hour
+                <q-item-label>
+                  {{ onDemandImagePricingPresentation.selectedPriceText }}
+                </q-item-label>
+                <q-item-label caption class="text-primary">
+                  {{ onDemandImagePricingPresentation.deltaText }}
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -764,8 +893,8 @@
       <q-card-section class="q-mb-lg">
         <div>
           <div>
-            Choose a subscription plan and we'll automatically renew it for you.
-            Cancel anytime with no commitments or hidden fees.
+            Choose how you want to pay for your new instance. You can continue
+            with one-time, subscription, or on-demand pricing in the next step.
           </div>
         </div>
         <div class="q-py-lg">
@@ -781,7 +910,7 @@
               <q-item-section>
                 <q-item-label class="text-capitalize">One Time Payment</q-item-label>
                 <q-item-label caption
-                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
+                  >Pay once for a fixed plan term in Bitcoin or Fiat.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -809,7 +938,7 @@
                   >Subscription Plans</q-item-label
                 >
                 <q-item-label caption
-                  >Choose a subscription plan, pay in Fiat</q-item-label
+                  >Subscribe with automatic renewal. Fiat payments only.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -832,7 +961,7 @@
               <q-item-section>
                 <q-item-label class="text-capitalize">On-Demand</q-item-label>
                 <q-item-label caption
-                  >Pay as you go, 21 sats per hour</q-item-label
+                  >Pay as you go. Hourly rate depends on selected image.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -1257,24 +1386,121 @@ export default defineComponent({
 
       return planName.replace(/_plus$/, '')
     },
-    getPlanPrice(planValue) {
+    getPlanPrice(planValue, tag = this.planDialog.selectedTag) {
       const plan = this.getPlanCatalog()[this.normalizePlanName(planValue)]
 
       if (!plan) {
         return 0
       }
 
-      return this.shouldUsePlusPricing() ? plan.plusPrice : plan.price
+      return this.shouldUsePlusPricing(tag) ? plan.plusPrice : plan.price
     },
-    shouldUsePlusPricing() {
-      return this.doesInstanceTypeUseSidecar(this.planDialog.selectedTag)
+    shouldUsePlusPricing(tag = this.planDialog.selectedTag) {
+      return this.doesInstanceTypeUseSidecar(tag)
     },
-    getPlanOptionValue(planValue) {
+    getPlanOptionValue(planValue, tag = this.planDialog.selectedTag) {
       const normalizedPlanValue = this.normalizePlanName(planValue)
 
-      return this.shouldUsePlusPricing()
+      return this.shouldUsePlusPricing(tag)
         ? `${normalizedPlanValue}_plus`
         : normalizedPlanValue
+    },
+    formatUsdAmount(amount) {
+      return `$${Number(amount || 0).toFixed(2)}`
+    },
+    normalizeTestIdSegment(value) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(value)
+
+      if (!normalizedTag) {
+        return 'unknown'
+      }
+
+      return normalizedTag
+        .replace(/[^a-z0-9]+/gi, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase()
+    },
+    getImageOptionTestId(prefix, value) {
+      return `${prefix}-${this.normalizeTestIdSegment(value)}`
+    },
+    getImageLabel(tag, fallback = 'Not selected') {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      return selectedOption?.label || fallback
+    },
+    getImageSidecarReason(tag) {
+      return this.doesInstanceTypeUseSidecar(tag)
+        ? 'This image requires sidecar runtime.'
+        : 'This image does not require sidecar runtime.'
+    },
+    getImageOptionPricingPresentation({context, tag, planValue} = {}) {
+      return this.getCanonicalImagePricingPresentation({
+        context,
+        tag,
+        planValue
+      })
+    },
+    getCanonicalImagePricingPresentation({
+      context,
+      tag,
+      planValue = this.planDialog.plan
+    } = {}) {
+      const usesSidecar = this.doesInstanceTypeUseSidecar(tag)
+      const statusLabel = usesSidecar ? 'Plus image pricing' : 'Base image pricing'
+
+      if (context === 'on-demand') {
+        const baseRate = this.onDemandDialog.hourlyRateSats
+        const plusRate = this.onDemandDialog.hourlyRatePlusSats
+        const selectedRate = usesSidecar ? plusRate : baseRate
+        const hourlyDelta = plusRate - baseRate
+
+        return {
+          statusLabel,
+          selectedPriceText: `${selectedRate} sats / hour`,
+          optionDeltaText: usesSidecar
+            ? `+${hourlyDelta} sats / hour`
+            : 'Included',
+          deltaText: usesSidecar
+            ? `+${hourlyDelta} sats / hour vs base image`
+            : '0 sats / hour vs base image',
+          sidecarExplanation: usesSidecar
+            ? `${plusRate} sats / hour includes sidecar runtime for this image.`
+            : `${baseRate} sats / hour because this image does not require sidecar runtime.`
+        }
+      }
+
+      const normalizedPlanValue = this.normalizePlanName(planValue || 'monthly')
+      const plan = this.getPlanCatalog()[normalizedPlanValue]
+
+      if (!plan) {
+        return {
+          statusLabel,
+          selectedPriceText: this.formatUsdAmount(0),
+          optionDeltaText: 'Included',
+          deltaText: `${this.formatUsdAmount(0)} per ${normalizedPlanValue} vs base image`,
+          sidecarExplanation: 'Plan pricing details are currently unavailable.'
+        }
+      }
+
+      const selectedPrice = this.getPlanPrice(normalizedPlanValue, tag)
+      const planDelta = plan.plusPrice - plan.price
+
+      return {
+        statusLabel,
+        selectedPriceText: `${this.formatUsdAmount(selectedPrice)} / ${normalizedPlanValue}`,
+        optionDeltaText: usesSidecar
+          ? `+${this.formatUsdAmount(planDelta)} / ${normalizedPlanValue}`
+          : 'Included',
+        deltaText: usesSidecar
+          ? `+${this.formatUsdAmount(planDelta)} per ${normalizedPlanValue} vs base image`
+          : `${this.formatUsdAmount(0)} per ${normalizedPlanValue} vs base image`,
+        sidecarExplanation: usesSidecar
+          ? `${this.formatUsdAmount(plan.plusPrice)} per ${normalizedPlanValue} includes sidecar runtime for this image.`
+          : `${this.formatUsdAmount(plan.price)} per ${normalizedPlanValue} because this image does not require sidecar runtime.`
+      }
     },
     syncSelectedPlanVariant() {
       if (!this.planDialog.plan) {
@@ -1847,6 +2073,49 @@ export default defineComponent({
   computed: {
     selectedImageHasSidecarTag() {
       return this.shouldUsePlusPricing()
+    },
+    planSelectedImageLabel() {
+      return this.getImageLabel(this.planDialog.selectedTag)
+    },
+    onDemandSelectedImageLabel() {
+      return this.getImageLabel(this.onDemandDialog.selectedTag)
+    },
+    planImageSidecarReason() {
+      return this.getImageSidecarReason(this.planDialog.selectedTag)
+    },
+    onDemandImageSidecarReason() {
+      return this.getImageSidecarReason(this.onDemandDialog.selectedTag)
+    },
+    planImagePricingSummaryPriceText() {
+      const unitPrice = this.getPlanPrice(
+        this.planDialog.plan,
+        this.planDialog.selectedTag
+      )
+      const unitPriceText = this.planImagePricingPresentation.selectedPriceText
+
+      if (this.planDialog.subscription) {
+        return `Renews at ${unitPriceText}.`
+      }
+
+      const count = Number(this.planDialog.count || 1)
+      const totalPriceText = this.formatUsdAmount(unitPrice * count)
+
+      return count > 1
+        ? `Resulting total: ${totalPriceText} (${unitPriceText} x ${count}).`
+        : `Resulting total: ${unitPriceText}.`
+    },
+    planImagePricingPresentation() {
+      return this.getCanonicalImagePricingPresentation({
+        context: 'plan',
+        tag: this.planDialog.selectedTag,
+        planValue: this.planDialog.plan
+      })
+    },
+    onDemandImagePricingPresentation() {
+      return this.getCanonicalImagePricingPresentation({
+        context: 'on-demand',
+        tag: this.onDemandDialog.selectedTag
+      })
     }
   },
   async created() {
