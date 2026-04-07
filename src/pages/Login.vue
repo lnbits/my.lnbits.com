@@ -8,11 +8,10 @@
 
       <div class="public-auth-hero-middle">
         <div>
-          <h1 class="public-auth-hero-title">Accept Bitcoin.<br />Skip the setup.</h1>
+          <h1 class="public-auth-hero-title">Launch LNbits in minutes</h1>
           <p class="public-auth-hero-copy">
-            A fully managed Lightning wallet with built-in tools
-            for payments, point-of-sale, tipping, and more.
-            Live in minutes.
+            Choose Spark L2 or Phoenixd funding options for instant,
+            easy-peasy, self-custodial bitcoin payments.
           </p>
         </div>
 
@@ -23,15 +22,15 @@
           </div>
           <div class="public-auth-feature">
             <q-icon name="savings" size="16px" class="public-auth-feature-icon" />
-            <span>Starting from $2/week, cancel anytime</span>
+            <span>Pay yearly, monthly, weekly or even hourly!</span>
           </div>
           <div class="public-auth-feature">
             <q-icon name="widgets" size="16px" class="public-auth-feature-icon" />
-            <span>40+ tools and extensions</span>
+            <span>60+ extensions</span>
           </div>
           <div class="public-auth-feature">
             <q-icon name="bolt" size="16px" class="public-auth-feature-icon" />
-            <span>21 sats on-demand spin-up per hour</span>
+            <span>Dozens of funding sources to choose from</span>
           </div>
         </div>
       </div>

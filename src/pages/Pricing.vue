@@ -47,8 +47,7 @@
         <div class="p-hero__inner">
           <span class="p-badge">PRICING</span>
           <h1 class="p-hero__h1">
-            Accept Bitcoin.<br class="gt-sm" />
-            <span class="p-accent">Skip the setup.</span>
+            Launch LNbits in minutes
           </h1>
           <p class="p-hero__sub">
             A fully managed LNbits instance with 40+ tools.<br
