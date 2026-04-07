@@ -1,268 +1,349 @@
 <template>
-  <div class="pc" :class="{'pc--pop': popular}">
-    <div v-if="popular" class="pc__badge">Most Popular</div>
+  <div class="pc" :class="{'pc--featured': featured}">
+    <div v-if="badge" class="pc__badge" :class="badgeClass">{{ badge }}</div>
 
-    <div class="pc__head">
-      <div class="pc__plan">{{ title }}</div>
-      <div class="pc__tag">{{ subtitle }}</div>
+    <div class="pc__header">
+      <h3 class="pc__title">{{ title }}</h3>
+      <p v-if="description" class="pc__desc">{{ description }}</p>
     </div>
 
     <div class="pc__price-block">
-      <div class="pc__price">
-        <span class="pc__currency">$</span>
-        <span class="pc__amount">{{ formatWhole(price) }}</span>
-        <span v-if="hasCents(price)" class="pc__cents">.{{ formatCents(price) }}</span>
+      <div class="pc__price-line">
+        <template v-if="currentBilling.currency === 'sats'">
+          <span class="pc__amount">{{ currentBilling.amount }}</span>
+          <span class="pc__suffix">sats</span>
+        </template>
+        <template v-else>
+          <span class="pc__currency">{{ currentBilling.symbol }}</span>
+          <span class="pc__amount">{{ currentBilling.amount }}</span>
+        </template>
       </div>
-      <div class="pc__interval">{{ price_text }}</div>
-      <div v-if="price_savings" class="pc__savings">{{ price_savings }}</div>
+      <div class="pc__interval">{{ currentBilling.interval }}</div>
     </div>
 
-    <p class="pc__desc">{{ description }}</p>
+    <div class="pc__control">
+      <q-select
+        v-model="selectedBillingKey"
+        :options="billingSelectOptions"
+        dense
+        outlined
+        emit-value
+        map-options
+        dropdown-icon="expand_more"
+        options-dense
+        class="pc__select"
+      />
+      <q-select
+        v-model="selectedFundingOption"
+        :options="fundingOptions"
+        dense
+        outlined
+        emit-value
+        map-options
+        dropdown-icon="expand_more"
+        options-dense
+        class="pc__select pc__select--stacked"
+      />
+    </div>
 
     <q-btn
-      v-if="active"
-      :to="link"
-      :label="popular ? 'Get Started' : 'Select Plan'"
+      :to="ctaTo"
+      :label="buttonLabel"
       no-caps
       unelevated
       class="full-width pc__cta"
-      :class="{'pc__cta--pop': popular}"
-    />
-    <q-btn
-      v-else
-      label="Coming Soon"
-      no-caps
-      flat
-      class="full-width pc__cta pc__cta--off"
-      disabled
+      :class="{'pc__cta--featured': featured}"
     />
 
-    <ul v-if="features && features.length" class="pc__features">
-      <li v-for="f in features" :key="f">
+    <ul class="pc__features">
+      <li v-for="feature in normalizedFeatures" :key="feature.key">
         <q-icon name="check" size="14px" class="pc__check" />
-        <span>{{ f }}</span>
+        <div class="pc__feature-copy">
+          <span>{{ feature.label }}</span>
+          <span v-if="feature.hint" class="pc__feature-hint">{{ feature.hint }}</span>
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import {computed, ref} from 'vue'
+
+const props = defineProps({
+  tierKey: {type: String, default: ''},
   title: {type: String, default: 'Plan'},
-  subtitle: {type: String, default: ''},
   description: {type: String, default: ''},
-  price: {type: Number, default: 0},
-  price_text: {type: String, default: ''},
-  price_savings: {type: String, default: ''},
-  active: {type: Boolean, default: true},
-  link: {
-    type: Object,
-    default: () => ({path: '/instances', query: {plan: 'monthly'}})
-  },
-  popular: {type: Boolean, default: false},
+  badge: {type: String, default: ''},
+  badgeTone: {type: String, default: 'default'},
+  buttonLabel: {type: String, default: 'Select Plan'},
+  featured: {type: Boolean, default: false},
+  loggedIn: {type: Boolean, default: false},
+  billingOptions: {type: Array, default: () => []},
+  defaultBilling: {type: String, default: ''},
   features: {type: Array, default: () => []}
 })
 
-function formatWhole(p) {
-  return Math.floor(p)
-}
-function hasCents(p) {
-  return p % 1 !== 0
-}
-function formatCents(p) {
-  return String(p.toFixed(2)).split('.')[1]
-}
+const selectedBillingKey = ref(
+  props.defaultBilling || props.billingOptions[0]?.key || ''
+)
+const selectedFundingOption = ref('spark_l2')
+
+const billingSelectOptions = computed(() =>
+  props.billingOptions.map(option => ({
+    label: option.selectLabel || option.label,
+    value: option.key
+  }))
+)
+
+const fundingOptions = [
+  {label: 'Spark L2 funded (easy)', value: 'spark_l2'},
+  {label: 'Phoenixd funded (easy)', value: 'phoenixd'},
+  {label: 'I have my own funding source', value: 'own_funding'}
+]
+
+const currentBilling = computed(
+  () =>
+    props.billingOptions.find(option => option.key === selectedBillingKey.value) ||
+    props.billingOptions[0] || {
+      key: '',
+      amount: '',
+      interval: '',
+      symbol: '$',
+      currency: 'USD'
+    }
+)
+
+const normalizedFeatures = computed(() =>
+  props.features.map((feature, index) =>
+    typeof feature === 'string'
+      ? {key: `${index}-${feature}`, label: feature, hint: ''}
+      : {
+          key: feature.key || `${index}-${feature.label}`,
+          label: feature.label || '',
+          hint: feature.hint || ''
+        }
+  )
+)
+
+const ctaTo = computed(() => {
+  if (!props.loggedIn) {
+    return '/login'
+  }
+
+  return {
+    path: '/instances',
+    query: {
+      tier: props.tierKey || undefined,
+      billing: currentBilling.value.key || undefined
+    }
+  }
+})
+
+const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
 </script>
 
 <style scoped>
 .pc {
   position: relative;
-  padding: 1.75rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  transition: border-color 250ms, box-shadow 250ms, transform 250ms;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: visible;
+  padding: 1.7rem 1.35rem 1.5rem;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(21, 30, 36, 0.12);
+  color: #111827;
+  box-shadow: 0 24px 54px rgba(5, 10, 18, 0.18);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .pc:hover {
-  border-color: rgba(178, 56, 255, 0.3);
-  box-shadow: 0 16px 40px rgba(8, 2, 20, 0.4);
-  transform: translateY(-2px);
+  box-shadow: 0 28px 68px rgba(5, 10, 18, 0.24);
+  border-color: rgba(89, 74, 255, 0.25);
 }
 
-/* ── Popular variant ── */
-.pc--pop {
-  border-color: rgba(255, 79, 216, 0.35);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 1px rgba(255, 79, 216, 0.15),
-    0 20px 50px rgba(90, 30, 140, 0.35);
-}
-
-.pc--pop:hover {
-  border-color: rgba(255, 79, 216, 0.5);
-  box-shadow: 0 0 0 1px rgba(255, 79, 216, 0.25),
-    0 24px 60px rgba(90, 30, 140, 0.45);
+.pc--featured {
+  border-color: rgba(129, 66, 255, 0.5);
+  box-shadow: 0 30px 80px rgba(88, 40, 182, 0.28);
 }
 
 .pc__badge {
   position: absolute;
-  top: -11px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.2rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.68rem;
+  left: -1px;
+  right: -1px;
+  top: -2.3rem;
+  padding: 0.55rem 1rem;
+  border-radius: 12px 12px 0 0;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: linear-gradient(
-    135deg,
-    var(--q-primary, #b238ff),
-    var(--q-accent, #ff4fd8)
-  );
+  letter-spacing: 0.02em;
+  text-align: center;
+  z-index: 1;
+}
+
+.pc__badge--default {
+  background: #2b3036;
   color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(178, 56, 255, 0.3);
 }
 
-/* ── Header ── */
-.pc__head {
-  margin-bottom: 1.25rem;
-}
-
-.pc__plan {
-  font-size: 1.1rem;
-  font-weight: 700;
+.pc__badge--accent {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
   color: #fff;
-  letter-spacing: 0.01em;
 }
 
-.pc__tag {
-  font-size: 0.78rem;
-  color: rgba(244, 238, 255, 0.45);
-  margin-top: 0.15rem;
+.pc__header {
+  min-height: 8.2rem;
 }
 
-/* ── Price ── */
+.pc__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 2vw, 2.3rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #101828;
+}
+
+.pc__desc {
+  margin: 0.95rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  color: #445164;
+}
+
 .pc__price-block {
-  margin-bottom: 1.25rem;
+  margin-top: 1.35rem;
 }
 
-.pc__price {
+.pc__price-line {
   display: flex;
-  align-items: baseline;
-  gap: 0.1rem;
+  align-items: flex-start;
+  gap: 0.18rem;
+  color: #101828;
 }
 
 .pc__currency {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: rgba(244, 238, 255, 0.5);
-  align-self: flex-start;
-  margin-top: 0.35rem;
+  margin-top: 0.38rem;
+  font-size: 1.7rem;
+  line-height: 1;
 }
 
 .pc__amount {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-  color: #fff;
-  letter-spacing: -0.03em;
+  font-size: 3.15rem;
+  line-height: 0.92;
+  font-weight: 500;
+  letter-spacing: -0.05em;
 }
 
-.pc__cents {
-  font-size: 1.4rem;
+.pc__suffix {
+  margin-top: 0.75rem;
+  font-size: 1.35rem;
   font-weight: 600;
-  color: rgba(244, 238, 255, 0.5);
+  letter-spacing: -0.02em;
 }
 
 .pc__interval {
-  font-size: 0.8rem;
-  color: rgba(244, 238, 255, 0.4);
-  margin-top: 0.3rem;
+  margin-top: 0.55rem;
+  font-size: 0.98rem;
+  color: #4b5563;
 }
 
-.pc__savings {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  background: rgba(56, 200, 120, 0.12);
-  color: #38c878;
-  border: 1px solid rgba(56, 200, 120, 0.2);
+.pc__control {
+  margin-top: 1.6rem;
 }
 
-/* ── Description ── */
-.pc__desc {
-  margin: 0 0 1.5rem;
-  font-size: 0.82rem;
-  line-height: 1.55;
-  color: rgba(244, 238, 255, 0.45);
-  flex: 1;
+.pc__select :deep(.q-field__control) {
+  min-height: 46px;
+  border-radius: 0;
+  background: #fff;
 }
 
-/* ── CTA button ── */
+.pc__select :deep(.q-field__native),
+.pc__select :deep(.q-field__input) {
+  color: #101828;
+  font-size: 0.98rem;
+}
+
+.pc__select :deep(.q-field__marginal) {
+  color: #667085;
+}
+
+.pc__select--stacked {
+  margin-top: 0.75rem;
+}
+
 .pc__cta {
-  border-radius: 10px !important;
-  font-weight: 700;
-  font-size: 0.9rem;
-  min-height: 44px;
-  background: rgba(255, 255, 255, 0.08) !important;
+  margin-top: 1.2rem;
+  min-height: 48px;
+  border-radius: 4px !important;
+  background: #3040c8 !important;
   color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: background 200ms, border-color 200ms, box-shadow 200ms;
-}
-.pc__cta:hover {
-  background: rgba(255, 255, 255, 0.13) !important;
-  border-color: rgba(255, 255, 255, 0.22);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-.pc__cta--pop {
-  background: linear-gradient(
-    135deg,
-    var(--q-primary, #b238ff),
-    var(--q-secondary, #6d3cff)
-  ) !important;
-  border: none;
-  box-shadow: 0 4px 18px rgba(178, 56, 255, 0.25);
-}
-.pc__cta--pop:hover {
-  box-shadow: 0 6px 24px rgba(178, 56, 255, 0.4);
+.pc__cta--featured {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
 }
 
-.pc__cta--off {
-  opacity: 0.4;
-}
-
-/* ── Feature checklist ── */
 .pc__features {
   list-style: none;
   padding: 0;
-  margin: 1.5rem 0 0;
+  margin: 1.6rem 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  flex: 1;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 1.25rem;
+  gap: 0.95rem;
+  color: #344054;
 }
 
 .pc__features li {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  color: rgba(244, 238, 255, 0.6);
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.pc__feature-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.pc__feature-hint {
+  margin-top: 0.08rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: #667085;
+  white-space: pre-line;
 }
 
 .pc__check {
-  color: var(--q-primary, #b238ff);
-  flex-shrink: 0;
+  margin-top: 0.18rem;
+  color: #5b34f2;
+}
+
+@media (max-width: 599px) {
+  .pc {
+    padding: 1.4rem 1.15rem 1.25rem;
+  }
+
+  .pc__badge {
+    top: -2.15rem;
+  }
+
+  .pc__header {
+    min-height: auto;
+  }
+
+  .pc__title {
+    font-size: 2rem;
+  }
+
+  .pc__amount {
+    font-size: 2.8rem;
+  }
 }
 </style>
