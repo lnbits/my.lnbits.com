@@ -470,25 +470,40 @@
       </q-card-section>
       <q-card-section class="q-mb-lg">
         <div>
-          <div v-if="isPricingMatrixFlow">
-            Review your plan, billing cadence, and funding selection from the
-            pricing page before continuing to provisioning.
-          </div>
-          <div v-else-if="planDialog.subscription">
+          <div v-if="!isPricingMatrixFlow && planDialog.subscription">
             Choose a subscription plan and we'll automatically renew it for you.
             Cancel anytime with no commitments or hidden fees. Fiat payments
             only.
           </div>
-          <div v-else>
+          <div v-else-if="!isPricingMatrixFlow">
             Pay once for immediate access—no recurring charges. Perfect for
             temporary projects or when you need flexibility without a
             subscription.
           </div>
         </div>
         <div v-if="isPricingMatrixFlow" class="q-mt-lg">
-          <div class="text-subtitle1">Your selected pricing</div>
           <div class="q-mt-sm text-h6 text-weight-bold text-white">
             {{ selectedMatrixPriceText }}
+          </div>
+          <div
+            v-if="selectedMatrixTierDetails"
+            class="row q-col-gutter-md q-row-gutter-sm q-mt-sm"
+          >
+            <div
+              v-for="feature in selectedMatrixTierDetails.features"
+              :key="feature.key"
+              class="col-12 col-sm-6"
+            >
+              <div class="row no-wrap items-start q-gutter-x-sm">
+                <q-icon name="check" color="primary" size="16px" class="q-mt-xs" />
+                <div>
+                  <div class="text-body2 text-white">{{ feature.label }}</div>
+                  <div v-if="feature.hint" class="text-caption text-grey-5">
+                    {{ feature.hint }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="row q-col-gutter-md q-mt-sm">
             <div class="col-12 col-md-6">
@@ -500,7 +515,28 @@
                 dense
                 outlined
                 label="Tier"
-              />
+              >
+                <template v-slot:selected-item="scope">
+                  <div class="row items-baseline no-wrap q-gutter-x-sm">
+                    <span>{{ scope.opt.label }}</span>
+                    <span v-if="scope.opt.badge" class="text-caption text-grey-5">
+                      {{ scope.opt.badge }}
+                    </span>
+                  </div>
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label class="row items-baseline no-wrap q-gutter-x-sm">
+                        <span>{{ scope.opt.label }}</span>
+                        <span v-if="scope.opt.badge" class="text-caption text-grey-5">
+                          {{ scope.opt.badge }}
+                        </span>
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
             <div class="col-12 col-md-6">
               <q-select
@@ -1295,7 +1331,7 @@ export default defineComponent({
       this.newInstanceDialog.error = null
       this.newInstanceDialog.method = null
       this.initializePricingMatrixSelection({
-        tier: 'personal',
+        tier: 'premium',
         billing: 'monthly',
         funding: 'spark_l2'
       })
@@ -1501,6 +1537,19 @@ export default defineComponent({
     },
     formatUsdAmount(amount) {
       return `$${Number(amount || 0).toFixed(2)}`
+    },
+    formatMatrixBillingOptionLabel(label, priceText) {
+      if (!priceText) {
+        return label
+      }
+
+      const compactPrice = priceText
+        .replace(/\s*\/\s*hour$/i, '')
+        .replace(/\s*\/\s*week$/i, '')
+        .replace(/\s*\/\s*month$/i, '')
+        .replace(/\s*\/\s*year$/i, '')
+
+      return `${label} · ${compactPrice}`
     },
     normalizeTestIdSegment(value) {
       const normalizedTag = this.normalizeSelectedInstanceTypeTag(value)
@@ -2202,27 +2251,100 @@ export default defineComponent({
     isHourlyMatrixSelection() {
       return this.planDialog.billing === 'hourly'
     },
+    pricingMatrixTierCatalog() {
+      return {
+        personal: {
+          label: 'Personal',
+          badge: '',
+          features: [
+            {key: 'users', label: '3 user slots', hint: ''},
+            {key: 'extensions', label: '3 extension slots', hint: ''},
+            {key: 'storage', label: '6 GB storage', hint: ''},
+            {
+              key: 'domain',
+              label: 'Assigned subdomain',
+              hint: 'Get an assigned subdomain'
+            }
+          ]
+        },
+        premium: {
+          label: 'Premium',
+          badge: '- Most popular',
+          features: [
+            {key: 'users', label: '10 user slots', hint: ''},
+            {key: 'extensions', label: '10 extension slots', hint: ''},
+            {key: 'storage', label: '13 GB storage', hint: ''},
+            {
+              key: 'domain',
+              label: 'Custom subdomain',
+              hint: 'Choose your own subdomain'
+            }
+          ]
+        },
+        business: {
+          label: 'Business',
+          badge: '- Best value',
+          features: [
+            {key: 'users', label: '50 user slots', hint: ''},
+            {key: 'extensions', label: '50 extension slots', hint: ''},
+            {key: 'storage', label: '30 GB storage', hint: ''},
+            {
+              key: 'domain',
+              label: 'Custom domain/subdomain',
+              hint: 'Choose your own subdomain or point your own domain at LNbits.'
+            }
+          ]
+        },
+        enterprise: {
+          label: 'Enterprise',
+          badge: '',
+          features: [
+            {key: 'users', label: 'Infinite user slots', hint: ''},
+            {key: 'extensions', label: 'Infinite extension slots', hint: ''},
+            {key: 'storage', label: '50 GB storage', hint: ''},
+            {
+              key: 'domain',
+              label: 'Custom domain/subdomain',
+              hint: 'Choose your own subdomain or point your own domain at LNbits.'
+            }
+          ]
+        }
+      }
+    },
     matrixTierOptions() {
-      return [
-        {label: 'Personal', value: 'personal'},
-        {label: 'Premium', value: 'premium'},
-        {label: 'Business', value: 'business'},
-        {label: 'Enterprise', value: 'enterprise'}
-      ]
+      return Object.entries(this.pricingMatrixTierCatalog).map(([value, tier]) => ({
+        label: tier.label,
+        badge: tier.badge,
+        value
+      }))
     },
     matrixBillingOptions() {
+      const tier = this.planDialog.tier
+      const pricing = this.pricingMatrixCatalog[tier] || {}
+
       return [
-        {label: 'Hourly', value: 'hourly'},
-        {label: 'Weekly', value: 'weekly'},
-        {label: 'Monthly', value: 'monthly'},
-        {label: 'Yearly', value: 'yearly'}
+        {
+          label: this.formatMatrixBillingOptionLabel('Hourly', pricing.hourly),
+          value: 'hourly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel('Weekly', pricing.weekly),
+          value: 'weekly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel('Monthly', pricing.monthly),
+          value: 'monthly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel('Yearly', pricing.yearly),
+          value: 'yearly'
+        }
       ]
     },
     matrixFundingOptions() {
       return [
-        {label: 'Spark L2', value: 'spark_l2'},
-        {label: 'Phoenix', value: 'phoenixd'},
-        {label: 'I have my own...', value: 'own_funding'}
+        {label: 'Spark L2 (easy)', value: 'spark_l2'},
+        {label: 'I have my own funding source', value: 'own_funding'}
       ]
     },
     pricingMatrixCatalog() {
@@ -2261,7 +2383,23 @@ export default defineComponent({
         return 'Unavailable'
       }
 
-      return this.pricingMatrixCatalog[tier]?.[billing] || 'Unavailable'
+      const tierLabel = this.pricingMatrixTierCatalog[tier]?.label
+      const priceText = this.pricingMatrixCatalog[tier]?.[billing]
+
+      if (!tierLabel || !priceText) {
+        return 'Unavailable'
+      }
+
+      return `${tierLabel}: ${priceText}`
+    },
+    selectedMatrixTierDetails() {
+      const tier = this.planDialog.tier
+
+      if (!tier) {
+        return null
+      }
+
+      return this.pricingMatrixTierCatalog[tier] || null
     },
     selectedImageHasSidecarTag() {
       return this.shouldUsePlusPricing()

@@ -426,9 +426,9 @@ const faqs = [
     ]
   },
   {
-    q: 'Can I upgrade or downgrade my plan?',
+    q: 'Can I change plans?',
     a: [
-      'Plans cannot be upgraded or downgraded. You can extend your current plan at any time, or spin up a new instance on a different plan whenever you need one.'
+      'Soon! We are working on it. For now you would need to create a new instance'
     ]
   },
   {

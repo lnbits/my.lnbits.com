@@ -98,7 +98,6 @@ const billingSelectOptions = computed(() =>
 
 const fundingOptions = [
   {label: 'Spark L2 funded (easy)', value: 'spark_l2'},
-  {label: 'Phoenixd funded (easy)', value: 'phoenixd'},
   {label: 'I have my own funding source', value: 'own_funding'}
 ]
 
