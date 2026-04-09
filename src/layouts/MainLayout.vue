@@ -107,7 +107,7 @@
       <router-view />
     </q-page-container>
   </q-layout>
-  <chat-card />
+  <chat-card v-if="!q.screen.lt.sm" />
 </template>
 <script>
 import EssentialLink from 'components/EssentialLink.vue'

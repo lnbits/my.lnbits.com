@@ -59,7 +59,10 @@
             v-for="(plan, idx) in pricing_data"
             :key="plan.title"
             class="p-plans__cell"
-            :class="{'p-plans__cell--pop': plan.featured}"
+            :class="{
+              'p-plans__cell--pop': plan.featured,
+              'p-plans__cell--badged': Boolean(plan.badge)
+            }"
             :style="{'--i': idx}"
           >
             <card-pricing v-bind="plan" :logged-in="isLoggedIn" />
@@ -990,7 +993,7 @@ const faqs = [
     padding: 1.5rem 1.5rem 3.5rem;
   }
   .p-plans__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
   }
 
@@ -1045,8 +1048,8 @@ const faqs = [
     margin: 0 auto;
     gap: 1.25rem;
   }
-  .p-plans__cell--pop {
-    order: -1;
+  .p-plans__cell--badged {
+    padding-top: 2.15rem;
   }
 
   .p-ondemand__inner {

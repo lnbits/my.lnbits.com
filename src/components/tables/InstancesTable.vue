@@ -553,7 +553,10 @@
           </div>
         </div>
         <div v-if="!planDialog.instanceId" class="q-mt-lg">
-          <div class="text-subtitle1">
+          <div
+            class="text-subtitle1"
+            v-if="!(isPricingMatrixFlow && q.screen.lt.sm)"
+          >
             {{
               isPricingMatrixFlow
                 ? 'Choose your funding source.'
