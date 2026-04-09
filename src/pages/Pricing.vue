@@ -204,11 +204,11 @@ const pricing_data = [
       }
     ],
     features: [
-      '3 users',
-      '3 extensions',
+      '3 user slots',
+      '3 extension slots',
       '6 GB storage',
       {
-        label: 'Allocated subdomain',
+        label: 'Assigned subdomain',
         hint: 'Get an assigned subdomain'
       }
     ]
@@ -260,8 +260,8 @@ const pricing_data = [
       }
     ],
     features: [
-      '10 users',
-      '10 extensions',
+      '10 user slots',
+      '10 extension slots',
       '13 GB storage',
       {
         label: 'Custom subdomain',
@@ -315,11 +315,11 @@ const pricing_data = [
       }
     ],
     features: [
-      '50 users',
-      '50 extensions',
+      '50 user slots',
+      '50 extension slots',
       '30 GB storage',
       {
-        label: 'Custom domain/custom subdmain',
+        label: 'Custom domain/subdmain',
         hint: 'Choose your own subdomain\nor point your own domain at LNbits.'
       }
     ]
@@ -368,11 +368,11 @@ const pricing_data = [
       }
     ],
     features: [
-      'Infinite users',
-      'Infinite extensions',
+      'Infinite user slots',
+      'Infinite extension slots',
       '50 GB storage',
       {
-        label: 'Custom domain/custom subdmain',
+        label: 'Custom domain/subdmain',
         hint: 'Choose your own subdomain\nor point your own domain at LNbits.'
       }
     ]

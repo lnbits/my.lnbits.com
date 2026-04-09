@@ -470,7 +470,11 @@
       </q-card-section>
       <q-card-section class="q-mb-lg">
         <div>
-          <div v-if="planDialog.subscription">
+          <div v-if="isPricingMatrixFlow">
+            Review your plan, billing cadence, and funding selection from the
+            pricing page before continuing to provisioning.
+          </div>
+          <div v-else-if="planDialog.subscription">
             Choose a subscription plan and we'll automatically renew it for you.
             Cancel anytime with no commitments or hidden fees. Fiat payments
             only.
@@ -481,9 +485,63 @@
             subscription.
           </div>
         </div>
+        <div v-if="isPricingMatrixFlow" class="q-mt-lg">
+          <div class="text-subtitle1">Your selected pricing</div>
+          <div class="q-mt-sm text-h6 text-weight-bold text-white">
+            {{ selectedMatrixPriceText }}
+          </div>
+          <div class="row q-col-gutter-md q-mt-sm">
+            <div class="col-12 col-md-6">
+              <q-select
+                v-model="planDialog.tier"
+                :options="matrixTierOptions"
+                emit-value
+                map-options
+                dense
+                outlined
+                label="Tier"
+              />
+            </div>
+            <div class="col-12 col-md-6">
+              <q-select
+                v-model="planDialog.billing"
+                :options="matrixBillingOptions"
+                emit-value
+                map-options
+                dense
+                outlined
+                label="Billing"
+                @update:model-value="onMatrixBillingChange"
+              />
+            </div>
+          </div>
+          <div v-if="isHourlyMatrixSelection" class="q-mt-xs text-caption text-warning">
+            Hourly selection is shown in the UI, but provisioning/payment wiring
+            for hourly plans still needs to be connected.
+          </div>
+        </div>
         <div v-if="!planDialog.instanceId" class="q-mt-lg">
-          <div class="text-subtitle1">Choose the image for your new instance.</div>
+          <div class="text-subtitle1">
+            {{
+              isPricingMatrixFlow
+                ? 'Choose your funding source.'
+                : 'Choose the image for your new instance.'
+            }}
+          </div>
           <q-select
+            v-if="isPricingMatrixFlow"
+            v-model="planDialog.funding"
+            :options="matrixFundingOptions"
+            emit-value
+            map-options
+            label="Funding source"
+            dense
+            outlined
+            class="q-mt-md"
+            data-testid="instance-funding-select"
+          />
+          <q-select
+            v-else
             v-model="planDialog.selectedTag"
             @update:model-value="syncSelectedPlanVariant"
             :options="newInstanceDialog.options"
@@ -548,7 +606,7 @@
             </template>
           </q-select>
           <div
-            v-if="newInstanceDialog.loading"
+            v-if="!isPricingMatrixFlow && newInstanceDialog.loading"
             class="row items-center q-gutter-sm q-mt-sm text-grey-7"
           >
             <q-spinner-hourglass size="1.2rem" color="primary" />
@@ -557,7 +615,7 @@
             >
           </div>
           <div
-            v-else-if="newInstanceDialog.options.length === 0"
+            v-else-if="!isPricingMatrixFlow && newInstanceDialog.options.length === 0"
             class="q-mt-sm"
           >
             <div
@@ -575,7 +633,11 @@
               @click="retryLoadInstanceTypeOptions"
             />
           </div>
-          <div v-else class="q-mt-sm" data-testid="plan-image-pricing-summary">
+          <div
+            v-else-if="!isPricingMatrixFlow"
+            class="q-mt-sm"
+            data-testid="plan-image-pricing-summary"
+          >
             <div class="text-caption text-primary" data-testid="plan-image-pricing-message">
               Selected image:
               <strong data-testid="plan-image-pricing-summary-image">{{
@@ -599,7 +661,7 @@
             </div>
           </div>
         </div>
-        <div class="q-py-lg">
+        <div v-if="!isPricingMatrixFlow" class="q-py-lg">
           <q-list padding>
             <ItemPricing
               :key="`weekly-${selectedImageHasSidecarTag}`"
@@ -1005,7 +1067,10 @@ import CardStats from 'components/cards/CardStats.vue'
 export default defineComponent({
   name: 'TableDarkMode',
   props: {
-    plan: String
+    plan: String,
+    tier: String,
+    billing: String,
+    funding: String
   },
   components: {
     ItemPricing,
@@ -1167,6 +1232,9 @@ export default defineComponent({
         inProgress: false,
         fiat: true,
         plan: null,
+        tier: null,
+        billing: null,
+        funding: null,
         count: 1,
         instanceId: null,
         selectedTag: null,
@@ -1221,10 +1289,21 @@ export default defineComponent({
     }
   },
   methods: {
-    openNewInstanceDialog() {
-      this.newInstanceDialog.show = true
+    async openNewInstanceDialog() {
+      await this.loadInstanceTypeOptions()
+      this.newInstanceDialog.show = false
       this.newInstanceDialog.error = null
       this.newInstanceDialog.method = null
+      this.initializePricingMatrixSelection({
+        tier: 'personal',
+        billing: 'monthly',
+        funding: 'spark_l2'
+      })
+      this.planDialog.instanceId = null
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
+      this.planDialog.show = true
     },
     selectNewInstanceMethod(method) {
       this.newInstanceDialog.method = method
@@ -1386,6 +1465,21 @@ export default defineComponent({
 
       return planName.replace(/_plus$/, '')
     },
+    mapBillingToLegacyPlanKey(billing) {
+      switch (billing) {
+        case 'weekly':
+          return 'weekly'
+        case 'monthly':
+          return 'monthly'
+        case 'yearly':
+          return 'yearly'
+        default:
+          return null
+      }
+    },
+    normalizeMatrixValue(value) {
+      return typeof value === 'string' && value.trim().length ? value.trim() : null
+    },
     getPlanPrice(planValue, tag = this.planDialog.selectedTag) {
       const plan = this.getPlanCatalog()[this.normalizePlanName(planValue)]
 
@@ -1509,6 +1603,21 @@ export default defineComponent({
 
       this.planDialog.plan = this.getPlanOptionValue(this.planDialog.plan)
     },
+    syncLegacyPlanFromMatrixBilling() {
+      const mappedPlan = this.mapBillingToLegacyPlanKey(this.planDialog.billing)
+
+      if (!mappedPlan) {
+        this.planDialog.plan = null
+        return
+      }
+
+      this.planDialog.plan = mappedPlan
+      this.syncSelectedPlanVariant()
+    },
+    onMatrixBillingChange() {
+      this.planDialog.subscription = this.planDialog.billing !== 'hourly'
+      this.syncLegacyPlanFromMatrixBilling()
+    },
     onPlanDialogModeChange(isSubscription) {
       if (this.planDialog.instanceId) {
         return
@@ -1517,6 +1626,15 @@ export default defineComponent({
       this.planDialog.subscription = isSubscription
       this.planDialog.fiatOnly = isSubscription === true
       this.planDialog.bitcoinOnly = false
+    },
+    initializePricingMatrixSelection({tier, billing, funding} = {}) {
+      this.planDialog.tier = this.normalizeMatrixValue(tier)
+      this.planDialog.billing = this.normalizeMatrixValue(billing) || 'monthly'
+      this.planDialog.funding = this.normalizeMatrixValue(funding) || 'spark_l2'
+      this.planDialog.hideFeatures.tab = true
+      this.planDialog.fiatOnly = true
+      this.planDialog.bitcoinOnly = false
+      this.onMatrixBillingChange()
     },
     async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
       await this.loadInstanceTypeOptions()
@@ -1540,6 +1658,10 @@ export default defineComponent({
       return this.getPlanOptionValue(this.planDialog.plan)
     },
     isPlanSubmitDisabled() {
+      if (this.isPricingMatrixFlow && this.isHourlyMatrixSelection) {
+        return true
+      }
+
       if (!this.planDialog.plan || this.planDialog.inProgress) {
         return true
       }
@@ -1692,6 +1814,9 @@ export default defineComponent({
         fiatOnly: false,
         bitcoinOnly: false,
         plan: null,
+        tier: null,
+        billing: null,
+        funding: null,
         count: 1,
         instanceId: null,
         selectedTag: null,
@@ -2071,6 +2196,73 @@ export default defineComponent({
     }
   },
   computed: {
+    isPricingMatrixFlow() {
+      return Boolean(this.planDialog.tier || this.planDialog.billing || this.planDialog.funding)
+    },
+    isHourlyMatrixSelection() {
+      return this.planDialog.billing === 'hourly'
+    },
+    matrixTierOptions() {
+      return [
+        {label: 'Personal', value: 'personal'},
+        {label: 'Premium', value: 'premium'},
+        {label: 'Business', value: 'business'},
+        {label: 'Enterprise', value: 'enterprise'}
+      ]
+    },
+    matrixBillingOptions() {
+      return [
+        {label: 'Hourly', value: 'hourly'},
+        {label: 'Weekly', value: 'weekly'},
+        {label: 'Monthly', value: 'monthly'},
+        {label: 'Yearly', value: 'yearly'}
+      ]
+    },
+    matrixFundingOptions() {
+      return [
+        {label: 'Spark L2', value: 'spark_l2'},
+        {label: 'Phoenix', value: 'phoenixd'},
+        {label: 'I have my own...', value: 'own_funding'}
+      ]
+    },
+    pricingMatrixCatalog() {
+      return {
+        personal: {
+          hourly: '21 sats / hour',
+          weekly: '$3 / week',
+          monthly: '$10 / month',
+          yearly: '$100 / year'
+        },
+        premium: {
+          hourly: '42 sats / hour',
+          weekly: '$5 / week',
+          monthly: '$15 / month',
+          yearly: '$150 / year'
+        },
+        business: {
+          hourly: '64 sats / hour',
+          weekly: '$10 / week',
+          monthly: '$25 / month',
+          yearly: '$250 / year'
+        },
+        enterprise: {
+          hourly: '128 sats / hour',
+          weekly: '$15 / week',
+          monthly: '$40 / month',
+          yearly: '$400 / year'
+        }
+      }
+    },
+    selectedMatrixPriceText() {
+      const tier = this.planDialog.tier
+      const billing = this.planDialog.billing
+
+      if (!tier || !billing) {
+        return 'Unavailable'
+      }
+
+      return this.pricingMatrixCatalog[tier]?.[billing] || 'Unavailable'
+    },
     selectedImageHasSidecarTag() {
       return this.shouldUsePlusPricing()
     },
@@ -2129,7 +2321,17 @@ export default defineComponent({
       console.warn(error)
     } finally {
       this.inProgress = false
-      if (this.plan) {
+      if (this.tier || this.billing || this.funding) {
+        this.initializePricingMatrixSelection({
+          tier: this.tier,
+          billing: this.billing,
+          funding: this.funding
+        })
+        this.planDialog.show = true
+        this.$router.replace({query: null}).catch(() => {
+          // Ignore errors
+        })
+      } else if (this.plan) {
         this.planDialog.plan = this.plan
         this.planDialog.show = true
         // remove query params from URL
