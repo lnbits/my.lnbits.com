@@ -551,10 +551,6 @@
               />
             </div>
           </div>
-          <div v-if="isHourlyMatrixSelection" class="q-mt-xs text-caption text-warning">
-            Hourly selection is shown in the UI, but provisioning/payment wiring
-            for hourly plans still needs to be connected.
-          </div>
         </div>
         <div v-if="!planDialog.instanceId" class="q-mt-lg">
           <div class="text-subtitle1">
@@ -766,7 +762,7 @@
         <q-btn
           v-else-if="planDialog.subscription"
           :disable="isPlanSubmitDisabled()"
-          label="Subscribe"
+          label="Payment"
           color="positive"
           @click="submitPlanRequest"
         ></q-btn>
