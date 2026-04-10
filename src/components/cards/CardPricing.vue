@@ -19,6 +19,27 @@
         </template>
       </div>
       <div class="pc__interval">{{ currentBilling.interval }}</div>
+      <div
+        v-if="selectedFundingDetails?.label"
+        class="pc__funding-row"
+      >
+        <div class="pc__funding-label">{{ selectedFundingDetails.label }}</div>
+        <q-btn
+          v-if="selectedFundingDetails?.description"
+          round
+          dense
+          flat
+          icon="info"
+          size="xs"
+          color="grey-6"
+        >
+          <q-tooltip class="bg-indigo" :offset="[10, 10]">
+            <div class="pc__funding-tooltip">
+              {{ selectedFundingDetails.description }}
+            </div>
+          </q-tooltip>
+        </q-btn>
+      </div>
     </div>
 
     <div class="pc__control">
@@ -68,7 +89,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 
 const props = defineProps({
   tierKey: {type: String, default: ''},
@@ -80,6 +101,7 @@ const props = defineProps({
   featured: {type: Boolean, default: false},
   loggedIn: {type: Boolean, default: false},
   billingOptions: {type: Array, default: () => []},
+  fundingOptions: {type: Array, default: () => []},
   defaultBilling: {type: String, default: ''},
   features: {type: Array, default: () => []}
 })
@@ -87,7 +109,7 @@ const props = defineProps({
 const selectedBillingKey = ref(
   props.defaultBilling || props.billingOptions[0]?.key || ''
 )
-const selectedFundingOption = ref('spark_l2')
+const selectedFundingOption = ref(props.fundingOptions[0]?.value || '')
 
 const billingSelectOptions = computed(() =>
   props.billingOptions.map(option => ({
@@ -95,11 +117,6 @@ const billingSelectOptions = computed(() =>
     value: option.key
   }))
 )
-
-const fundingOptions = [
-  {label: 'Spark L2 funded (easy)', value: 'spark_l2'},
-  {label: 'I have my own funding source', value: 'own_funding'}
-]
 
 const currentBilling = computed(
   () =>
@@ -125,6 +142,12 @@ const normalizedFeatures = computed(() =>
   )
 )
 
+const selectedFundingDetails = computed(
+  () =>
+    props.fundingOptions.find(option => option.value === selectedFundingOption.value) ||
+    null
+)
+
 const ctaTo = computed(() => {
   if (!props.loggedIn) {
     return '/login'
@@ -134,12 +157,23 @@ const ctaTo = computed(() => {
     path: '/instances',
     query: {
       tier: props.tierKey || undefined,
-      billing: currentBilling.value.key || undefined
+      billing: currentBilling.value.key || undefined,
+      funding: selectedFundingOption.value || undefined
     }
   }
 })
 
 const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
+
+watch(
+  () => props.fundingOptions,
+  options => {
+    if (!options.some(option => option.value === selectedFundingOption.value)) {
+      selectedFundingOption.value = options[0]?.value || ''
+    }
+  },
+  {immediate: true}
+)
 </script>
 
 <style scoped>
@@ -249,6 +283,18 @@ const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
   color: #4b5563;
 }
 
+.pc__funding-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+.pc__funding-label {
+  font-size: 0.92rem;
+  color: #4b5563;
+}
+
 .pc__control {
   margin-top: 1.6rem;
 }
@@ -322,6 +368,12 @@ const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
 .pc__check {
   margin-top: 0.18rem;
   color: #5b34f2;
+}
+
+.pc__funding-tooltip {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.45;
 }
 
 @media (max-width: 599px) {

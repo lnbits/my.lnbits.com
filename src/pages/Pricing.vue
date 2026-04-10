@@ -56,7 +56,7 @@
       <section class="p-plans">
         <div class="p-plans__grid">
           <div
-            v-for="(plan, idx) in pricing_data"
+            v-for="(plan, idx) in pricingData"
             :key="plan.title"
             class="p-plans__cell"
             :class="{
@@ -65,7 +65,11 @@
             }"
             :style="{'--i': idx}"
           >
-            <card-pricing v-bind="plan" :logged-in="isLoggedIn" />
+            <card-pricing
+              v-bind="plan"
+              :logged-in="isLoggedIn"
+              :funding-options="fundingOptions"
+            />
           </div>
         </div>
       </section>
@@ -149,6 +153,10 @@
 
 <script setup>
 import CardPricing from 'src/components/cards/CardPricing.vue'
+import {
+  mapInstanceTypesToFundingOptions,
+  mapPricingResponseToPlans
+} from 'src/utils/pricing'
 import {computed, onMounted, ref} from 'vue'
 import {useQuasar} from 'quasar'
 import {saas} from 'boot/saas'
@@ -156,231 +164,27 @@ import {saas} from 'boot/saas'
 const q = useQuasar()
 const darkMode = ref(false)
 const isLoggedIn = computed(() => !!saas.email)
+const pricingData = ref([])
+const fundingOptions = ref([])
 
 onMounted(() => {
   darkMode.value = localStorage.getItem('darkMode') === 'true'
   q.dark.set(darkMode.value)
 })
 
-const pricing_data = [
-  {
-    tierKey: 'personal',
-    title: 'Personal',
-    description: 'Create your own LNbits instance for personal projects and small experiments.',
-    buttonLabel: 'Get Personal',
-    defaultBilling: 'monthly',
-    billingOptions: [
-      {
-        key: 'hourly',
-        label: 'Hourly',
-        selectLabel: 'Hourly · 21 sats',
-        amount: '21',
-        currency: 'sats',
-        interval: 'per hour'
-      },
-      {
-        key: 'weekly',
-        label: 'Weekly',
-        selectLabel: 'Weekly · $3',
-        amount: '3',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per week'
-      },
-      {
-        key: 'monthly',
-        label: 'Monthly',
-        selectLabel: 'Monthly · $10',
-        amount: '10',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per month'
-      },
-      {
-        key: 'yearly',
-        label: 'Yearly',
-        selectLabel: 'Yearly · $100',
-        amount: '100',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per year'
-      }
-    ],
-    features: [
-      '3 user slots',
-      '3 extension slots',
-      '6 GB storage',
-      {
-        label: 'Assigned subdomain',
-        hint: 'Get an assigned subdomain'
-      }
-    ]
-  },
-  {
-    tierKey: 'premium',
-    title: 'Premium',
-    description: 'A stronger tier for growing teams that need more users, more extensions, and more room.',
-    badge: 'Most popular',
-    badgeTone: 'default',
-    buttonLabel: 'Get Premium',
-    defaultBilling: 'monthly',
-    featured: true,
-    billingOptions: [
-      {
-        key: 'hourly',
-        label: 'Hourly',
-        selectLabel: 'Hourly · 42 sats',
-        amount: '42',
-        currency: 'sats',
-        interval: 'per hour'
-      },
-      {
-        key: 'weekly',
-        label: 'Weekly',
-        selectLabel: 'Weekly · $5',
-        amount: '5',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per week'
-      },
-      {
-        key: 'monthly',
-        label: 'Monthly',
-        selectLabel: 'Monthly · $15',
-        amount: '15',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per month'
-      },
-      {
-        key: 'yearly',
-        label: 'Yearly',
-        selectLabel: 'Yearly · $150',
-        amount: '150',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per year'
-      }
-    ],
-    features: [
-      '10 user slots',
-      '10 extension slots',
-      '13 GB storage',
-      {
-        label: 'Custom subdomain',
-        hint: 'Choose your own subdomain'
-      }
-    ]
-  },
-  {
-    tierKey: 'business',
-    title: 'Business',
-    description: 'Designed for production deployments that need more capacity and room to grow.',
-    badge: 'Best value',
-    badgeTone: 'accent',
-    buttonLabel: 'Get Business',
-    defaultBilling: 'monthly',
-    billingOptions: [
-      {
-        key: 'hourly',
-        label: 'Hourly',
-        selectLabel: 'Hourly · 64 sats',
-        amount: '64',
-        currency: 'sats',
-        interval: 'per hour'
-      },
-      {
-        key: 'weekly',
-        label: 'Weekly',
-        selectLabel: 'Weekly · $10',
-        amount: '10',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per week'
-      },
-      {
-        key: 'monthly',
-        label: 'Monthly',
-        selectLabel: 'Monthly · $25',
-        amount: '25',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per month'
-      },
-      {
-        key: 'yearly',
-        label: 'Yearly',
-        selectLabel: 'Yearly · $250',
-        amount: '250',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per year'
-      }
-    ],
-    features: [
-      '50 user slots',
-      '50 extension slots',
-      '30 GB storage',
-      {
-        label: 'Custom domain/subdmain',
-        hint: 'Choose your own subdomain\nor point your own domain at LNbits.'
-      }
-    ]
-  },
-  {
-    tierKey: 'enterprise',
-    title: 'Enterprise',
-    description: 'For large LNbits rollouts that need broad access, higher limits, and maximum headroom.',
-    buttonLabel: 'Get Enterprise',
-    defaultBilling: 'monthly',
-    billingOptions: [
-      {
-        key: 'hourly',
-        label: 'Hourly',
-        selectLabel: 'Hourly · 128 sats',
-        amount: '128',
-        currency: 'sats',
-        interval: 'per hour'
-      },
-      {
-        key: 'weekly',
-        label: 'Weekly',
-        selectLabel: 'Weekly · $15',
-        amount: '15',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per week'
-      },
-      {
-        key: 'monthly',
-        label: 'Monthly',
-        selectLabel: 'Monthly · $40',
-        amount: '40',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per month'
-      },
-      {
-        key: 'yearly',
-        label: 'Yearly',
-        selectLabel: 'Yearly · $400',
-        amount: '400',
-        currency: 'USD',
-        symbol: '$',
-        interval: 'per year'
-      }
-    ],
-    features: [
-      'Infinite user slots',
-      'Infinite extension slots',
-      '50 GB storage',
-      {
-        label: 'Custom domain/subdmain',
-        hint: 'Choose your own subdomain\nor point your own domain at LNbits.'
-      }
-    ]
+onMounted(async () => {
+  try {
+    const [{data: pricing}, {data: instanceTypes}] = await Promise.all([
+      saas.getPricing(),
+      saas.getInstanceTypes()
+    ])
+
+    pricingData.value = mapPricingResponseToPlans(pricing)
+    fundingOptions.value = mapInstanceTypesToFundingOptions(instanceTypes)
+  } catch (error) {
+    console.warn(error)
   }
-]
+})
 
 const features = [
   {

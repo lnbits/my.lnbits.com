@@ -482,8 +482,23 @@
           </div>
         </div>
         <div v-if="isPricingMatrixFlow" class="q-mt-lg">
-          <div class="q-mt-sm text-h6 text-weight-bold text-white">
-            {{ selectedMatrixPriceText }}
+          <div class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold text-white">
+            <span>{{ selectedMatrixPriceText }}</span>
+            <q-btn
+              v-if="selectedMatrixFundingDetails?.description"
+              round
+              dense
+              flat
+              icon="info"
+              size="xs"
+              color="grey-4"
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <div class="matrix-funding-tooltip">
+                  {{ selectedMatrixFundingDetails.description }}
+                </div>
+              </q-tooltip>
+            </q-btn>
           </div>
           <div
             v-if="selectedMatrixTierDetails"
@@ -574,6 +589,7 @@
             outlined
             class="q-mt-md"
             data-testid="instance-funding-select"
+            @update:model-value="onMatrixFundingChange"
           />
           <q-select
             v-else
@@ -1094,6 +1110,11 @@ import {defineComponent} from 'vue'
 import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
+import {
+  mapInstanceTypesToFundingOptions,
+  mapInstanceTypesToImageOptions,
+  mapPricingResponseToPlans
+} from 'src/utils/pricing'
 import QrcodeVue from 'qrcode.vue'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
@@ -1126,6 +1147,8 @@ export default defineComponent({
         show: false,
         instance: null
       },
+      pricingPlans: [],
+      fundingSourceOptions: [],
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
@@ -1324,6 +1347,15 @@ export default defineComponent({
     }
   },
   methods: {
+    async loadPricingData() {
+      try {
+        const {data} = await saas.getPricing()
+        this.pricingPlans = mapPricingResponseToPlans(data)
+      } catch (error) {
+        console.warn(error)
+        this.pricingPlans = []
+      }
+    },
     async openNewInstanceDialog() {
       await this.loadInstanceTypeOptions()
       this.newInstanceDialog.show = false
@@ -1573,6 +1605,24 @@ export default defineComponent({
 
       return selectedOption?.label || fallback
     },
+    syncSelectedTagFromFunding() {
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.fundingValue === this.planDialog.funding
+      )
+
+      this.planDialog.selectedTag =
+        selectedOption?.value || this.getAvailableInstanceTypeTag(this.planDialog.selectedTag)
+    },
+    syncFundingFromSelectedTag(tag = this.planDialog.selectedTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      if (selectedOption?.fundingValue) {
+        this.planDialog.funding = selectedOption.fundingValue
+      }
+    },
     getImageSidecarReason(tag) {
       return this.doesInstanceTypeUseSidecar(tag)
         ? 'This image requires sidecar runtime.'
@@ -1666,6 +1716,9 @@ export default defineComponent({
       this.planDialog.subscription = this.planDialog.billing !== 'hourly'
       this.syncLegacyPlanFromMatrixBilling()
     },
+    onMatrixFundingChange() {
+      this.syncSelectedTagFromFunding()
+    },
     onPlanDialogModeChange(isSubscription) {
       if (this.planDialog.instanceId) {
         return
@@ -1675,14 +1728,27 @@ export default defineComponent({
       this.planDialog.fiatOnly = isSubscription === true
       this.planDialog.bitcoinOnly = false
     },
+    getDefaultFundingValue(preferredFunding) {
+      const normalizedFunding = this.normalizeMatrixValue(preferredFunding)
+
+      if (
+        normalizedFunding &&
+        this.fundingSourceOptions.some(option => option.value === normalizedFunding)
+      ) {
+        return normalizedFunding
+      }
+
+      return this.fundingSourceOptions[0]?.value || 'spark_l2'
+    },
     initializePricingMatrixSelection({tier, billing, funding} = {}) {
       this.planDialog.tier = this.normalizeMatrixValue(tier)
       this.planDialog.billing = this.normalizeMatrixValue(billing) || 'monthly'
-      this.planDialog.funding = this.normalizeMatrixValue(funding) || 'spark_l2'
+      this.planDialog.funding = this.getDefaultFundingValue(funding)
       this.planDialog.hideFeatures.tab = true
       this.planDialog.fiatOnly = true
       this.planDialog.bitcoinOnly = false
       this.onMatrixBillingChange()
+      this.syncSelectedTagFromFunding()
     },
     async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
       await this.loadInstanceTypeOptions()
@@ -1727,31 +1793,15 @@ export default defineComponent({
 
       try {
         const {data} = await saas.getInstanceTypes()
-
-        const types = Array.isArray(data) ? data : []
-
-        const options = types
-          .map(item => {
-            const tag = this.normalizeInstanceTypeTag(item?.tag)
-            const label = this.normalizeInstanceTypeLabel(item?.label)
-
-            if (!tag || !label) {
-              return null
-            }
-
-            return {
-              value: tag,
-              label,
-              hasSidecarTag: item?.has_sidecar === true
-            }
-          })
-          .filter(Boolean)
+        const options = mapInstanceTypesToImageOptions(data)
+        const fundingOptions = mapInstanceTypesToFundingOptions(data)
 
         if (requestId !== this.instanceTypesRequestId) {
           return
         }
 
         this.newInstanceDialog.options = options
+        this.fundingSourceOptions = fundingOptions
 
         if (!options.length) {
           this.newInstanceDialog.error = 'No instance images are available.'
@@ -1764,9 +1814,16 @@ export default defineComponent({
           }
         } else {
           if (this.planDialog.show && !this.planDialog.instanceId) {
-            this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
-              this.planDialog.selectedTag
-            )
+            if (this.isPricingMatrixFlow) {
+              this.planDialog.funding = this.getDefaultFundingValue(
+                this.planDialog.funding
+              )
+              this.syncSelectedTagFromFunding()
+            } else {
+              this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+                this.planDialog.selectedTag
+              )
+            }
           }
           if (this.onDemandDialog.show) {
             this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
@@ -1784,6 +1841,7 @@ export default defineComponent({
         this.newInstanceDialog.error =
           saas.mapErrorToString(error) || 'Failed to load instance images.'
         this.newInstanceDialog.options = []
+        this.fundingSourceOptions = []
         this.newInstanceDialog.selectedTag = null
         if (this.planDialog.show && !this.planDialog.instanceId) {
           this.planDialog.selectedTag = null
@@ -2251,70 +2309,21 @@ export default defineComponent({
       return this.planDialog.billing === 'hourly'
     },
     pricingMatrixTierCatalog() {
-      return {
-        personal: {
-          label: 'Personal',
-          badge: '',
-          features: [
-            {key: 'users', label: '3 user slots', hint: ''},
-            {key: 'extensions', label: '3 extension slots', hint: ''},
-            {key: 'storage', label: '6 GB storage', hint: ''},
-            {
-              key: 'domain',
-              label: 'Assigned subdomain',
-              hint: 'Get an assigned subdomain'
-            }
-          ]
-        },
-        premium: {
-          label: 'Premium',
-          badge: '- Most popular',
-          features: [
-            {key: 'users', label: '10 user slots', hint: ''},
-            {key: 'extensions', label: '10 extension slots', hint: ''},
-            {key: 'storage', label: '13 GB storage', hint: ''},
-            {
-              key: 'domain',
-              label: 'Custom subdomain',
-              hint: 'Choose your own subdomain'
-            }
-          ]
-        },
-        business: {
-          label: 'Business',
-          badge: '- Best value',
-          features: [
-            {key: 'users', label: '50 user slots', hint: ''},
-            {key: 'extensions', label: '50 extension slots', hint: ''},
-            {key: 'storage', label: '30 GB storage', hint: ''},
-            {
-              key: 'domain',
-              label: 'Custom domain/subdomain',
-              hint: 'Choose your own subdomain or point your own domain at LNbits.'
-            }
-          ]
-        },
-        enterprise: {
-          label: 'Enterprise',
-          badge: '',
-          features: [
-            {key: 'users', label: 'Infinite user slots', hint: ''},
-            {key: 'extensions', label: 'Infinite extension slots', hint: ''},
-            {key: 'storage', label: '50 GB storage', hint: ''},
-            {
-              key: 'domain',
-              label: 'Custom domain/subdomain',
-              hint: 'Choose your own subdomain or point your own domain at LNbits.'
-            }
-          ]
+      return this.pricingPlans.reduce((catalog, plan) => {
+        catalog[plan.tierKey] = {
+          label: plan.title,
+          badge: plan.badge ? `- ${plan.badge}` : '',
+          features: plan.features
         }
-      }
+
+        return catalog
+      }, {})
     },
     matrixTierOptions() {
-      return Object.entries(this.pricingMatrixTierCatalog).map(([value, tier]) => ({
-        label: tier.label,
-        badge: tier.badge,
-        value
+      return this.pricingPlans.map(plan => ({
+        label: plan.title,
+        badge: plan.badge ? `- ${plan.badge}` : '',
+        value: plan.tierKey
       }))
     },
     matrixBillingOptions() {
@@ -2341,38 +2350,24 @@ export default defineComponent({
       ]
     },
     matrixFundingOptions() {
-      return [
-        {label: 'Spark L2 (easy)', value: 'spark_l2'},
-        {label: 'I have my own funding source', value: 'own_funding'}
-      ]
+      return this.fundingSourceOptions
     },
     pricingMatrixCatalog() {
-      return {
-        personal: {
-          hourly: '21 sats / hour',
-          weekly: '$3 / week',
-          monthly: '$10 / month',
-          yearly: '$100 / year'
-        },
-        premium: {
-          hourly: '42 sats / hour',
-          weekly: '$5 / week',
-          monthly: '$15 / month',
-          yearly: '$150 / year'
-        },
-        business: {
-          hourly: '64 sats / hour',
-          weekly: '$10 / week',
-          monthly: '$25 / month',
-          yearly: '$250 / year'
-        },
-        enterprise: {
-          hourly: '128 sats / hour',
-          weekly: '$15 / week',
-          monthly: '$40 / month',
-          yearly: '$400 / year'
-        }
-      }
+      return this.pricingPlans.reduce((catalog, plan) => {
+        catalog[plan.tierKey] = plan.billingOptions.reduce((billingCatalog, option) => {
+          const intervalSuffix = option.interval.replace(/^per\s+/i, '')
+          const amount =
+            option.currency === 'sats'
+              ? `${option.amount} sats`
+              : `${option.symbol || '$'}${option.amount}`
+
+          billingCatalog[option.key] = `${amount} / ${intervalSuffix}`
+
+          return billingCatalog
+        }, {})
+
+        return catalog
+      }, {})
     },
     selectedMatrixPriceText() {
       const tier = this.planDialog.tier
@@ -2389,7 +2384,40 @@ export default defineComponent({
         return 'Unavailable'
       }
 
-      return `${tierLabel}: ${priceText}`
+      const fundingLabel = this.selectedMatrixFundingDetails?.label
+
+      return fundingLabel
+        ? `${tierLabel}: ${priceText} - ${fundingLabel}`
+        : `${tierLabel}: ${priceText}`
+    },
+    selectedMatrixFundingDetails() {
+      const funding = this.planDialog.funding
+
+      if (!funding) {
+        return null
+      }
+
+      const matchedFundingOption = this.fundingSourceOptions.find(
+        option => option.value === funding
+      )
+
+      if (matchedFundingOption) {
+        return matchedFundingOption
+      }
+
+      const matchedImageOption = this.newInstanceDialog.options.find(
+        option => option.fundingValue === funding
+      )
+
+      if (!matchedImageOption) {
+        return null
+      }
+
+      return {
+        value: funding,
+        label: matchedImageOption.label,
+        description: matchedImageOption.description || ''
+      }
     },
     selectedMatrixTierDetails() {
       const tier = this.planDialog.tier
@@ -2453,12 +2481,14 @@ export default defineComponent({
       this.showFeatureFlag = saas.isTestingMode()
 
       this.inProgress = true
+      await this.loadPricingData()
       await this.refreshState()
     } catch (error) {
       console.warn(error)
     } finally {
       this.inProgress = false
       if (this.tier || this.billing || this.funding) {
+        await this.loadInstanceTypeOptions()
         this.initializePricingMatrixSelection({
           tier: this.tier,
           billing: this.billing,
@@ -2496,5 +2526,11 @@ export default defineComponent({
 
 .instance-image-select__menu .q-item:nth-child(1) .q-item__label {
   color: #22c55e;
+}
+
+.matrix-funding-tooltip {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.45;
 }
 </style>
