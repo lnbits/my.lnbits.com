@@ -44,7 +44,7 @@ const formatStorageLabel = storage => {
 
 const formatQuotaLabel = (value, noun) => {
   const count = Number(value)
-  const displayCount = count === 0 ? 'Infinite' : normalizeDisplayAmount(count)
+  const displayCount = count === 0 ? 'Unlimited' : normalizeDisplayAmount(count)
 
   return `${displayCount} ${noun} slots`
 }
