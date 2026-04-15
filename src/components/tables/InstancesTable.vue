@@ -780,6 +780,40 @@
           color="primary"
           size="2.55em"
         ></q-spinner-bars>
+        <div v-else-if="isPricingMatrixFlow">
+          <q-btn
+            v-if="planDialog.billing !== 'hourly'"
+            :disable="isPlanSubmitDisabled()"
+            label="Pay with USD"
+            color="positive"
+            outline
+            @click="submitPlanRequest(true)"
+          ></q-btn>
+          <q-btn
+            :disable="isPlanSubmitDisabled()"
+            color="positive"
+            no-caps
+            :class="{'q-ml-sm': planDialog.billing !== 'hourly'}"
+            @click="submitPlanRequest(false)"
+          >
+            <span>Pay with bitcoin</span>
+            <template v-if="showMatrixBitcoinQuantity">
+              <span
+                class="matrix-payment-qty q-ml-sm"
+                @click.stop="decreaseMatrixQuantity"
+              >
+                -
+              </span>
+              <span class="matrix-payment-count">{{ planDialog.count }}</span>
+              <span
+                class="matrix-payment-qty"
+                @click.stop="increaseMatrixQuantity"
+              >
+                +
+              </span>
+            </template>
+          </q-btn>
+        </div>
         <q-btn
           v-else-if="planDialog.subscription"
           :disable="isPlanSubmitDisabled()"
@@ -1536,6 +1570,8 @@ export default defineComponent({
     },
     mapBillingToLegacyPlanKey(billing) {
       switch (billing) {
+        case 'hourly':
+          return 'hourly'
         case 'weekly':
           return 'weekly'
         case 'monthly':
@@ -1716,6 +1752,7 @@ export default defineComponent({
     },
     onMatrixBillingChange() {
       this.planDialog.subscription = this.planDialog.billing !== 'hourly'
+      this.planDialog.count = 1
       this.syncLegacyPlanFromMatrixBilling()
     },
     onMatrixFundingChange() {
@@ -1741,6 +1778,26 @@ export default defineComponent({
       }
 
       return this.fundingSourceOptions[0]?.value || 'spark_l2'
+    },
+    getMatrixQuantityBounds() {
+      switch (this.planDialog.billing) {
+        case 'weekly':
+          return {min: 1, max: 8}
+        case 'monthly':
+          return {min: 1, max: 12}
+        case 'yearly':
+          return {min: 1, max: 5}
+        default:
+          return {min: 1, max: 1}
+      }
+    },
+    decreaseMatrixQuantity() {
+      const {min} = this.getMatrixQuantityBounds()
+      this.planDialog.count = Math.max(min, Number(this.planDialog.count || min) - 1)
+    },
+    increaseMatrixQuantity() {
+      const {max} = this.getMatrixQuantityBounds()
+      this.planDialog.count = Math.min(max, Number(this.planDialog.count || 1) + 1)
     },
     initializePricingMatrixSelection({tier, billing, funding, image} = {}) {
       this.planDialog.tier = this.normalizeMatrixValue(tier)
@@ -1768,6 +1825,10 @@ export default defineComponent({
       this.planDialog.show = true
     },
     getSelectedPaymentPlanName() {
+      if (this.isPricingMatrixFlow) {
+        return this.planDialog.billing || null
+      }
+
       if (!this.planDialog.plan) {
         return null
       }
@@ -1775,10 +1836,6 @@ export default defineComponent({
       return this.getPlanOptionValue(this.planDialog.plan)
     },
     isPlanSubmitDisabled() {
-      if (this.isPricingMatrixFlow && this.isHourlyMatrixSelection) {
-        return true
-      }
-
       if (!this.planDialog.plan || this.planDialog.inProgress) {
         return true
       }
@@ -1947,7 +2004,14 @@ export default defineComponent({
 
     async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
-      if (typeof useFiat === 'boolean') {
+      if (this.isPricingMatrixFlow) {
+        const wantsFiat = useFiat === true
+
+        this.planDialog.subscription =
+          this.planDialog.billing !== 'hourly' && wantsFiat
+        this.planDialog.fiatOnly = wantsFiat
+        this.planDialog.bitcoinOnly = wantsFiat === false
+      } else if (typeof useFiat === 'boolean') {
         this.planDialog.fiatOnly = useFiat
       }
       console.log('### planDialog', this.planDialog)
@@ -2433,6 +2497,12 @@ export default defineComponent({
         description: matchedImageOption.description || ''
       }
     },
+    showMatrixBitcoinQuantity() {
+      return (
+        this.isPricingMatrixFlow &&
+        ['weekly', 'monthly', 'yearly'].includes(this.planDialog.billing)
+      )
+    },
     selectedMatrixTierDetails() {
       const tier = this.planDialog.tier
 
@@ -2547,5 +2617,23 @@ export default defineComponent({
   max-width: 320px;
   white-space: normal;
   line-height: 1.45;
+}
+
+.matrix-payment-qty {
+  display: inline-block;
+  min-width: 16px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.matrix-payment-count {
+  display: inline-block;
+  min-width: 18px;
+  margin: 0 4px;
+  font-weight: 700;
+  text-align: center;
 }
 </style>
