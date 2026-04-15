@@ -113,13 +113,15 @@ var saas = {
     return data
   },
 
-  createInstance: async function (instanceType) {
+  createInstance: async function (instanceType, paymentPlan = {}) {
     return axios({
       method: 'POST',
       url: this.url('/instance'),
       withCredentials: true,
       data: {
-        instance_type: instanceType
+        instance_type: instanceType,
+        payment_plan_tier: paymentPlan.tier || undefined,
+        payment_plan_interval: paymentPlan.interval || undefined
       }
     })
   },

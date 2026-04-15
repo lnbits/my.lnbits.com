@@ -580,8 +580,10 @@
           </div>
           <q-select
             v-if="isPricingMatrixFlow"
-            v-model="planDialog.funding"
+            v-model="planDialog.selectedTag"
             :options="matrixFundingOptions"
+            option-label="label"
+            option-value="value"
             emit-value
             map-options
             label="Funding source"
@@ -1717,7 +1719,7 @@ export default defineComponent({
       this.syncLegacyPlanFromMatrixBilling()
     },
     onMatrixFundingChange() {
-      this.syncSelectedTagFromFunding()
+      this.syncFundingFromSelectedTag()
     },
     onPlanDialogModeChange(isSubscription) {
       if (this.planDialog.instanceId) {
@@ -1896,10 +1898,10 @@ export default defineComponent({
       this.planDialog.show = true
     },
 
-    createInstance: async function (provider) {
+    createInstance: async function (provider, paymentPlan = {}) {
       try {
         this.inProgress = true
-        const {data} = await saas.createInstance(provider)
+        const {data} = await saas.createInstance(provider, paymentPlan)
         const instance = saas.mapInstance(data)
         this.data.push(instance)
         return instance
@@ -1967,7 +1969,10 @@ export default defineComponent({
           return
         }
 
-        const instance = await this.createInstance(selectedTag)
+        const instance = await this.createInstance(selectedTag, {
+          tier: this.planDialog.tier,
+          interval: this.planDialog.billing
+        })
         if (!instance) {
           return
         }
@@ -2351,7 +2356,7 @@ export default defineComponent({
       ]
     },
     matrixFundingOptions() {
-      return this.fundingSourceOptions
+      return this.newInstanceDialog.options
     },
     pricingMatrixCatalog() {
       return this.pricingPlans.reduce((catalog, plan) => {
@@ -2392,6 +2397,14 @@ export default defineComponent({
         : `${tierLabel}: ${priceText}`
     },
     selectedMatrixFundingDetails() {
+      const selectedImageOption = this.newInstanceDialog.options.find(
+        option => option.value === this.planDialog.selectedTag
+      )
+
+      if (selectedImageOption) {
+        return selectedImageOption
+      }
+
       const funding = this.planDialog.funding
 
       if (!funding) {
