@@ -154,8 +154,8 @@
 <script setup>
 import CardPricing from 'src/components/cards/CardPricing.vue'
 import {
-  mapInstanceTypesToFundingOptions,
-  mapPricingResponseToPlans
+  getPricingPlans,
+  mapInstanceTypesToFundingOptions
 } from 'src/utils/pricing'
 import {computed, onMounted, ref} from 'vue'
 import {useQuasar} from 'quasar'
@@ -174,15 +174,21 @@ onMounted(() => {
 
 onMounted(async () => {
   try {
-    const [{data: pricing}, {data: instanceTypes}] = await Promise.all([
-      saas.getPricing(),
-      saas.getInstanceTypes()
-    ])
+    pricingData.value = await getPricingPlans()
+  } catch (error) {
+    console.warn(error)
+  }
 
-    pricingData.value = mapPricingResponseToPlans(pricing)
+  if (!isLoggedIn.value) {
+    return
+  }
+
+  try {
+    const {data: instanceTypes} = await saas.getInstanceTypes()
     fundingOptions.value = mapInstanceTypesToFundingOptions(instanceTypes)
   } catch (error) {
     console.warn(error)
+    fundingOptions.value = []
   }
 })
 
