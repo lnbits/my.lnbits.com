@@ -158,12 +158,26 @@ const ctaTo = computed(() => {
     query: {
       tier: props.tierKey || undefined,
       billing: currentBilling.value.key || undefined,
-      funding: selectedFundingOption.value || undefined
+      funding:
+        selectedFundingDetails.value?.fundingValue ||
+        selectedFundingOption.value ||
+        undefined,
+      image: selectedFundingOption.value || undefined
     }
   }
 })
 
 const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
+
+watch(
+  () => [props.billingOptions, props.defaultBilling],
+  ([options, defaultBilling]) => {
+    if (!options.some(option => option.key === selectedBillingKey.value)) {
+      selectedBillingKey.value = defaultBilling || options[0]?.key || ''
+    }
+  },
+  {immediate: true}
+)
 
 watch(
   () => props.fundingOptions,

@@ -164,7 +164,7 @@
 import CardPricing from 'src/components/cards/CardPricing.vue'
 import {
   getPricingPlans,
-  mapInstanceTypesToFundingOptions
+  mapInstanceTypesToImageOptions
 } from 'src/utils/pricing'
 import {computed, onMounted, ref} from 'vue'
 import {useQuasar} from 'quasar'
@@ -199,7 +199,7 @@ onMounted(async () => {
 
   try {
     const {data: instanceTypes} = await saas.getInstanceTypes()
-    fundingOptions.value = mapInstanceTypesToFundingOptions(instanceTypes)
+    fundingOptions.value = mapInstanceTypesToImageOptions(instanceTypes)
   } catch (error) {
     console.warn(error)
     fundingOptions.value = []

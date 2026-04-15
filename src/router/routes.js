@@ -7,7 +7,13 @@ const routes = [
       {
         path: '/instances',
         component: () => import('pages/Instances.vue'),
-        props: route => ({plan: route.query.plan})
+        props: route => ({
+          plan: route.query.plan,
+          tier: route.query.tier,
+          billing: route.query.billing,
+          funding: route.query.funding,
+          image: route.query.image
+        })
       },
       {path: '/activity', component: () => import('pages/Activity.vue')},
       {path: '/subscriptions', component: () => import('pages/Subscriptions.vue')},

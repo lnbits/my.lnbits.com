@@ -1126,7 +1126,8 @@ export default defineComponent({
     plan: String,
     tier: String,
     billing: String,
-    funding: String
+    funding: String,
+    image: String
   },
   components: {
     ItemPricing,
@@ -1739,7 +1740,7 @@ export default defineComponent({
 
       return this.fundingSourceOptions[0]?.value || 'spark_l2'
     },
-    initializePricingMatrixSelection({tier, billing, funding} = {}) {
+    initializePricingMatrixSelection({tier, billing, funding, image} = {}) {
       this.planDialog.tier = this.normalizeMatrixValue(tier)
       this.planDialog.billing = this.normalizeMatrixValue(billing) || 'monthly'
       this.planDialog.funding = this.getDefaultFundingValue(funding)
@@ -1747,7 +1748,8 @@ export default defineComponent({
       this.planDialog.fiatOnly = true
       this.planDialog.bitcoinOnly = false
       this.onMatrixBillingChange()
-      this.syncSelectedTagFromFunding()
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(image)
+      this.syncFundingFromSelectedTag(this.planDialog.selectedTag)
     },
     async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
       await this.loadInstanceTypeOptions()
@@ -2486,12 +2488,13 @@ export default defineComponent({
       console.warn(error)
     } finally {
       this.inProgress = false
-      if (this.tier || this.billing || this.funding) {
+      if (this.tier || this.billing || this.funding || this.image) {
         await this.loadInstanceTypeOptions()
         this.initializePricingMatrixSelection({
           tier: this.tier,
           billing: this.billing,
-          funding: this.funding
+          funding: this.funding,
+          image: this.image
         })
         this.planDialog.show = true
         this.$router.replace({query: null}).catch(() => {

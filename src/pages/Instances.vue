@@ -5,6 +5,7 @@
       :tier="tier"
       :billing="billing"
       :funding="funding"
+      :image="image"
     ></instances-table>
   </q-page>
 </template>
@@ -24,7 +25,8 @@ export default defineComponent({
       plan: null,
       tier: null,
       billing: null,
-      funding: null
+      funding: null,
+      image: null
     }
   },
   created() {
@@ -39,6 +41,9 @@ export default defineComponent({
     }
     if (this.$route.query.funding) {
       this.funding = this.$route.query.funding
+    }
+    if (this.$route.query.image) {
+      this.image = this.$route.query.image
     }
   }
 })
