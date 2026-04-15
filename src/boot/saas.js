@@ -133,7 +133,12 @@ var saas = {
 
     return response
   },
-
+  getPricing: async function () {
+    return axios({
+      method: 'GET',
+      url: this.url('/pricing'),
+    })
+  },
   updateInstance: function (id, action) {
     return axios({
       method: 'PUT',

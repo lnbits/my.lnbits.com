@@ -45,29 +45,10 @@
         <div class="p-hero__glow p-hero__glow--b" aria-hidden="true" />
 
         <div class="p-hero__inner">
-          <span class="p-badge">PRICING</span>
           <h1 class="p-hero__h1">
             Launch LNbits in minutes
           </h1>
-          <p class="p-hero__sub">Pick a plan, launch in minutes, cancel anytime.</p>
-
-          <!-- Stats — hidden on phone -->
-          <div class="p-hero__metrics gt-xs">
-            <div class="p-metric">
-              <div class="p-metric__val">60+</div>
-              <div class="p-metric__lbl">Extensions</div>
-            </div>
-            <div class="p-metric__sep" />
-            <div class="p-metric">
-              <div class="p-metric__val">&lt;&thinsp;5 min</div>
-              <div class="p-metric__lbl">Setup time</div>
-            </div>
-            <div class="p-metric__sep" />
-            <div class="p-metric">
-              <div class="p-metric__val">Anytime</div>
-              <div class="p-metric__lbl">Cancel anytime</div>
-            </div>
-          </div>
+          <p class="p-hero__sub">Pick a plan. Cancel anytime. Includes daily backups.</p>
         </div>
       </section>
 
@@ -75,42 +56,20 @@
       <section class="p-plans">
         <div class="p-plans__grid">
           <div
-            v-for="(plan, idx) in pricing_data"
+            v-for="(plan, idx) in pricingData"
             :key="plan.title"
             class="p-plans__cell"
-            :class="{'p-plans__cell--pop': plan.popular}"
+            :class="{
+              'p-plans__cell--pop': plan.featured,
+              'p-plans__cell--badged': Boolean(plan.badge)
+            }"
             :style="{'--i': idx}"
           >
-            <card-pricing v-bind="plan" />
-          </div>
-        </div>
-
-        <!-- On-demand banner -->
-        <div class="p-ondemand">
-          <div class="p-ondemand__inner">
-            <div class="p-ondemand__left">
-              <q-icon name="bolt" size="28px" class="p-ondemand__icon" />
-              <div>
-                <div class="p-ondemand__title">On-demand instances</div>
-                <div class="p-ondemand__desc">
-                  Spin up a LNbits instance instantly and pay only for what you use. No subscription required.
-                </div>
-              </div>
-            </div>
-            <div class="p-ondemand__right">
-              <div class="p-ondemand__price">
-                <span class="p-ondemand__amount">21 sats</span>
-                <span class="p-ondemand__interval">/ hour</span>
-              </div>
-              <q-btn
-                :to="isLoggedIn ? {path: '/instances', query: {plan: 'ondemand'}} : '/login'"
-                :label="isLoggedIn ? 'Launch instance' : 'Get Started'"
-                no-caps
-                unelevated
-                size="sm"
-                class="p-ondemand__btn"
-              />
-            </div>
+            <card-pricing
+              v-bind="plan"
+              :logged-in="isLoggedIn"
+              :funding-options="fundingOptions"
+            />
           </div>
         </div>
       </section>
@@ -194,6 +153,10 @@
 
 <script setup>
 import CardPricing from 'src/components/cards/CardPricing.vue'
+import {
+  getPricingPlans,
+  mapInstanceTypesToFundingOptions
+} from 'src/utils/pricing'
 import {computed, onMounted, ref} from 'vue'
 import {useQuasar} from 'quasar'
 import {saas} from 'boot/saas'
@@ -201,43 +164,33 @@ import {saas} from 'boot/saas'
 const q = useQuasar()
 const darkMode = ref(false)
 const isLoggedIn = computed(() => !!saas.email)
+const pricingData = ref([])
+const fundingOptions = ref([])
 
 onMounted(() => {
   darkMode.value = localStorage.getItem('darkMode') === 'true'
   q.dark.set(darkMode.value)
 })
 
-const pricing_data = [
-  {
-    title: 'Weekly',
-    subtitle: 'Great Start',
-    description: 'Perfect for testing and short-term projects',
-    price: 2.0,
-    price_text: 'per week',
-    active: true,
-    link: {path: '/instances', query: {plan: 'weekly'}}
-  },
-  {
-    title: 'Monthly',
-    subtitle: 'Most Popular',
-    description: 'Ideal for developers and growing businesses',
-    price: 7.0,
-    price_text: 'per month',
-    active: true,
-    link: {path: '/instances', query: {plan: 'monthly'}},
-    popular: true
-  },
-  {
-    title: 'Yearly',
-    subtitle: 'Best Value',
-    description: '12 months for the price of 10',
-    price: 70.0,
-    price_text: 'per year',
-    price_savings: 'Save $14/year',
-    active: true,
-    link: {path: '/instances', query: {plan: 'yearly'}}
+onMounted(async () => {
+  try {
+    pricingData.value = await getPricingPlans()
+  } catch (error) {
+    console.warn(error)
   }
-]
+
+  if (!isLoggedIn.value) {
+    return
+  }
+
+  try {
+    const {data: instanceTypes} = await saas.getInstanceTypes()
+    fundingOptions.value = mapInstanceTypesToFundingOptions(instanceTypes)
+  } catch (error) {
+    console.warn(error)
+    fundingOptions.value = []
+  }
+})
 
 const features = [
   {
@@ -286,16 +239,16 @@ const faqs = [
     ]
   },
   {
-    q: 'Can I upgrade or downgrade my plan?',
+    q: 'Can I change plans?',
     a: [
-      'Plans cannot be upgraded or downgraded. You can extend your current plan at any time, or spin up a new instance on a different plan whenever you need one.'
+      'Soon! We are working on it. For now you would need to create a new instance'
     ]
   },
   {
     q: 'Is there a free trial?',
     a: [
-      "We don't offer a free trial, but our Weekly plan at $2 lets you test everything with minimal commitment. All plans include the same features, you're only choosing a billing cycle.",
-      'There is also the 21 sats/hour on-demand plan which lets you spin up an instance whenever you need it. Cancel anytime when you\u2019re done with testing or your event.'
+      "We don't offer a free trial, but hourly and weekly billing give you a low-commitment way to test things before settling into a longer billing cycle.",
+      'Every tier is designed to launch quickly, and you can choose the billing cadence that best fits how long you expect to run your instance.'
     ]
   },
   {
@@ -379,7 +332,7 @@ const faqs = [
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 8rem 2rem 4rem;
+  padding: 3.2rem 2rem 1rem;
   overflow: hidden;
 }
 
@@ -448,19 +401,6 @@ const faqs = [
   }
 }
 
-.p-badge {
-  display: inline-block;
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  background: rgba(178, 56, 255, 0.12);
-  color: var(--q-primary, #b238ff);
-  border: 1px solid rgba(178, 56, 255, 0.25);
-  margin-bottom: 1.25rem;
-}
-
 .p-hero__h1 {
   margin: 0;
   font-size: clamp(2rem, 4.5vw, 3.2rem);
@@ -479,57 +419,25 @@ const faqs = [
 
 .p-hero__sub {
   margin: 1.25rem auto 0;
-  max-width: 540px;
+  max-width: 760px;
   font-size: 1.05rem;
   line-height: 1.65;
   color: rgba(244, 238, 255, 0.55);
-}
-
-/* Metrics row */
-.p-hero__metrics {
-  display: inline-flex;
-  align-items: center;
-  gap: 2rem;
-  margin-top: 2.5rem;
-  padding: 1rem 2rem;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.p-metric {
-  text-align: center;
-}
-.p-metric__val {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-.p-metric__lbl {
-  font-size: 0.72rem;
-  color: rgba(244, 238, 255, 0.4);
-  margin-top: 0.15rem;
-  letter-spacing: 0.03em;
-}
-.p-metric__sep {
-  width: 1px;
-  height: 2.5rem;
-  background: rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
 }
 
 /* ──────────────────────────────────
    PLANS GRID
    ────────────────────────────────── */
 .p-plans {
-  padding: 3rem 2rem 4rem;
+  padding: 1.75rem 2rem 4rem;
 }
 
 .p-plans__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  max-width: 1060px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  max-width: 1280px;
   margin: 0 auto;
   align-items: stretch;
 }
@@ -883,7 +791,7 @@ const faqs = [
   }
 
   .p-hero {
-    padding: 6.5rem 1.5rem 3rem;
+    padding: 3.35rem 1.5rem 0.75rem;
   }
   .p-hero__h1 {
     font-size: 2.2rem;
@@ -891,19 +799,12 @@ const faqs = [
   .p-hero__sub {
     font-size: 0.95rem;
   }
-  .p-hero__metrics {
-    gap: 1.5rem;
-    padding: 0.85rem 1.5rem;
-  }
-  .p-metric__val {
-    font-size: 1.15rem;
-  }
-
   .p-plans {
-    padding: 2.5rem 1.5rem 3.5rem;
+    padding: 1.5rem 1.5rem 3.5rem;
   }
   .p-plans__grid {
-    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
   }
 
   .p-ondemand__inner {
@@ -934,7 +835,7 @@ const faqs = [
   }
 
   .p-hero {
-    padding: 5rem 1.25rem 2rem;
+    padding: 2.95rem 1.25rem 0.75rem;
   }
   .p-hero__h1 {
     font-size: 1.65rem;
@@ -942,13 +843,14 @@ const faqs = [
   .p-hero__sub {
     font-size: 0.9rem;
     margin-top: 1rem;
+    padding-bottom: 0.85rem;
   }
   .p-hero__glow {
     display: none;
   }
 
   .p-plans {
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1.25rem 1.25rem 3rem;
   }
   .p-plans__grid {
     grid-template-columns: 1fr;
@@ -956,8 +858,8 @@ const faqs = [
     margin: 0 auto;
     gap: 1.25rem;
   }
-  .p-plans__cell--pop {
-    order: -1;
+  .p-plans__cell--badged {
+    padding-top: 2.15rem;
   }
 
   .p-ondemand__inner {
