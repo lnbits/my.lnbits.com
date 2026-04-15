@@ -297,8 +297,7 @@
       </h5>
       <div v-if="qrCodeDialog.dataIsUrl">
         <p>
-          Scan the QR code to open the link for the checkount page. Or open the
-          link in a new tab.
+          Open the link for the checkout page in a new tab.
           <q-btn
             type="a"
             :href="qrCodeDialog.data"
@@ -314,7 +313,7 @@
         balance for this instance.
       </p>
 
-      <p style="color: white" class="text-center">
+      <p v-if="!qrCodeDialog.dataIsUrl" style="color: white" class="text-center">
         <q-responsive :ratio="1" class="q-mx-xl">
           <qrcode-vue
             :value="qrCodeDialog.data"
