@@ -1,24 +1,34 @@
-const PRICING_DESCRIPTIONS = {
-  personal:
-    'Create your own LNbits instance for personal projects and small experiments.',
-  premium:
-    'A stronger tier for growing teams that need more users, more extensions, and more room.',
-  business:
-    'Designed for production deployments that need more capacity and room to grow.',
-  enterprise:
-    'For large LNbits rollouts that need broad access, higher limits, and maximum headroom.'
-}
+import {saas} from 'src/boot/saas'
 
-const BADGE_BY_TIER = {
-  premium: {badge: 'Most popular', badgeTone: 'default', featured: true},
-  business: {badge: 'Best value', badgeTone: 'accent', featured: false}
-}
-
-const BILLING_ORDER = ['hourly', 'weekly', 'monthly', 'yearly']
+const BILLING_ORDER = ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
+const PLAN_META_KEYS = [
+  'badge',
+  'badge_tone',
+  'button_label',
+  'custom_domain',
+  'custom_subdomain',
+  'default_billing',
+  'description',
+  'extensions',
+  'featured',
+  'features',
+  'label',
+  'storage',
+  'title',
+  'users'
+]
 
 const normalizePricingRoot = payload => {
   if (payload?.saas) {
     return payload.saas
+  }
+
+  if (payload?.data?.saas) {
+    return payload.data.saas
+  }
+
+  if (payload?.data?.payment_plans) {
+    return payload.data
   }
 
   return payload || {}
@@ -32,6 +42,29 @@ const normalizeDisplayAmount = amount => {
   }
 
   return Number.isInteger(value) ? String(value) : value.toFixed(2)
+}
+
+const formatLabel = value => {
+  if (typeof value !== 'string') {
+    return ''
+  }
+
+  return value
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, letter => letter.toUpperCase())
+}
+
+const getCurrencySymbol = currency => {
+  switch (currency) {
+    case 'EUR':
+      return '€'
+    case 'GBP':
+      return '£'
+    case 'USD':
+    default:
+      return '$'
+  }
 }
 
 const formatStorageLabel = storage => {
@@ -73,22 +106,71 @@ const getDomainFeature = tier => {
   }
 }
 
-const buildFeatureList = tier => [
-  {key: 'users', label: formatQuotaLabel(tier?.users, 'user'), hint: ''},
-  {
-    key: 'extensions',
-    label: formatQuotaLabel(tier?.extensions, 'extension'),
-    hint: ''
-  },
-  {key: 'storage', label: formatStorageLabel(tier?.storage), hint: ''},
-  getDomainFeature(tier)
-]
+const normalizeFeature = (feature, index) => {
+  if (typeof feature === 'string') {
+    return {key: `${index}-${feature}`, label: feature, hint: ''}
+  }
+
+  if (!feature || typeof feature !== 'object') {
+    return null
+  }
+
+  const label = feature.label || feature.name || feature.title || ''
+
+  if (!label) {
+    return null
+  }
+
+  return {
+    key: feature.key || `${index}-${label}`,
+    label,
+    hint: feature.hint || feature.description || ''
+  }
+}
+
+const buildFeatureList = tier => {
+  if (Array.isArray(tier?.features)) {
+    return tier.features.map(normalizeFeature).filter(Boolean)
+  }
+
+  const features = []
+
+  if (tier?.users != null) {
+    features.push({
+      key: 'users',
+      label: formatQuotaLabel(tier.users, 'user'),
+      hint: ''
+    })
+  }
+
+  if (tier?.extensions != null) {
+    features.push({
+      key: 'extensions',
+      label: formatQuotaLabel(tier.extensions, 'extension'),
+      hint: ''
+    })
+  }
+
+  if (tier?.storage != null) {
+    features.push({
+      key: 'storage',
+      label: formatStorageLabel(tier.storage),
+      hint: ''
+    })
+  }
+
+  if (tier?.custom_domain != null || tier?.custom_subdomain != null) {
+    features.push(getDomainFeature(tier))
+  }
+
+  return features
+}
 
 const buildBillingOption = (billingKey, value, fiatCurrency) => {
-  const label = billingKey.charAt(0).toUpperCase() + billingKey.slice(1)
+  const label = formatLabel(billingKey)
 
   if (billingKey === 'hourly') {
-    const amount = normalizeDisplayAmount(value)
+    const amount = normalizeDisplayAmount(value?.price ?? value?.amount ?? value)
 
     return {
       key: 'hourly',
@@ -100,52 +182,117 @@ const buildBillingOption = (billingKey, value, fiatCurrency) => {
     }
   }
 
-  const amount = normalizeDisplayAmount(value?.price)
+  const currency = value?.currency || fiatCurrency || 'USD'
+  const symbol = value?.symbol || getCurrencySymbol(currency)
+  const amount = normalizeDisplayAmount(value?.price ?? value?.amount ?? value)
 
   return {
     key: billingKey,
     label,
-    selectLabel: `${label} · $${amount}`,
+    selectLabel: `${label} · ${symbol}${amount}`,
     amount,
-    currency: fiatCurrency || 'USD',
-    symbol: '$',
-    interval: `per ${billingKey.slice(0, -2)}`
+    currency,
+    symbol,
+    interval: value?.interval || `per ${billingKey.replace(/ly$/, '')}`
   }
 }
 
-const getTierLabel = (tierKey, tier) => {
+const parseTierLabel = (tierKey, tier) => {
   const rawLabel = typeof tier?.label === 'string' ? tier.label.trim() : ''
 
   if (rawLabel.length) {
-    return rawLabel.split(/\s+-\s+/)[0]
+    const [title, ...badgeParts] = rawLabel.split(/\s+-\s+/)
+
+    return {
+      title,
+      badge: badgeParts.join(' - ')
+    }
   }
 
-  return tierKey.charAt(0).toUpperCase() + tierKey.slice(1)
+  return {
+    title: tier?.title || formatLabel(tierKey),
+    badge: ''
+  }
+}
+
+const getBillingKeys = tier =>
+  Object.keys(tier || {})
+    .filter(key => !PLAN_META_KEYS.includes(key))
+    .filter(key => {
+      const value = tier[key]
+
+      if (value == null) {
+        return false
+      }
+
+      return (
+        BILLING_ORDER.includes(key) ||
+        (typeof value === 'object' && (value.price != null || value.amount != null))
+      )
+    })
+    .sort((a, b) => {
+      const indexA = BILLING_ORDER.indexOf(a)
+      const indexB = BILLING_ORDER.indexOf(b)
+
+      if (indexA === -1 && indexB === -1) {
+        return a.localeCompare(b)
+      }
+
+      if (indexA === -1) {
+        return 1
+      }
+
+      if (indexB === -1) {
+        return -1
+      }
+
+      return indexA - indexB
+    })
+
+const getDefaultBilling = (tier, billingOptions, saas) => {
+  const preferred = tier?.default_billing || saas?.default_billing || 'monthly'
+
+  if (billingOptions.some(option => option.key === preferred)) {
+    return preferred
+  }
+
+  return billingOptions[0]?.key || ''
 }
 
 export const mapPricingResponseToPlans = payload => {
+  console.log("!!!!!")
+  console.log(payload)
   const saas = normalizePricingRoot(payload)
   const paymentPlans = saas?.payment_plans || {}
 
   return Object.entries(paymentPlans).map(([tierKey, tier]) => {
-    const title = getTierLabel(tierKey, tier)
-    const badgeConfig = BADGE_BY_TIER[tierKey] || {}
+    const {title, badge: parsedBadge} = parseTierLabel(tierKey, tier)
+    const badge = tier?.badge || parsedBadge
+    const billingOptions = getBillingKeys(tier).map(key =>
+      buildBillingOption(key, tier[key], saas?.fiat_currency)
+    )
 
     return {
       tierKey,
       title,
-      description: PRICING_DESCRIPTIONS[tierKey] || '',
-      buttonLabel: `Get ${title}`,
-      defaultBilling: 'monthly',
-      badge: badgeConfig.badge || '',
-      badgeTone: badgeConfig.badgeTone || 'default',
-      featured: badgeConfig.featured === true,
-      billingOptions: BILLING_ORDER.filter(key => tier?.[key] != null).map(key =>
-        buildBillingOption(key, tier[key], saas?.fiat_currency)
-      ),
+      description: tier?.description || '',
+      buttonLabel: tier?.button_label || `Get ${title}`,
+      defaultBilling: getDefaultBilling(tier, billingOptions, saas),
+      badge: formatLabel(badge),
+      badgeTone: tier?.badge_tone || 'default',
+      featured:
+        tier?.featured === true ||
+        (typeof badge === 'string' && badge.toLowerCase().includes('popular')),
+      billingOptions,
       features: buildFeatureList(tier)
     }
   })
+}
+
+export const getPricingPlans = async () => {
+  const {data} = await saas.getPricing()
+
+  return mapPricingResponseToPlans(data)
 }
 
 const normalizeInstanceImages = payload => {

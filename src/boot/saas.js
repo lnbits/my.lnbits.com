@@ -134,104 +134,11 @@ var saas = {
     return response
   },
   getPricing: async function () {
-    return {
-      data: {
-        saas: {
-          subdomain: '.lnbits.com',
-          destroy_time: 1296000,
-          fiat_currency: 'USD',
-          cached_instance_count: 2,
-          payment_plans: {
-            personal: {
-              label: 'Personal',
-              storage: '6G',
-              users: 3,
-              extensions: 3,
-              custom_subdomain: false,
-              custom_domain: false,
-              hourly: 21,
-              weekly: {
-                price: 3.0,
-                subscription_id: 'P-2RC45080JS8539803NHMLUSY'
-              },
-              monthly: {
-                price: 10.0,
-                subscription_id: 'P-5YF09700P9978700NNHMLTTI'
-              },
-              yearly: {
-                price: 100.0,
-                subscription_id: 'P-09766905R9270060HNHMLT7Y'
-              }
-            },
-            premium: {
-              label: 'Premium - most popular',
-              storage: '13G',
-              users: 10,
-              extensions: 10,
-              custom_subdomain: false,
-              custom_domain: false,
-              hourly: 42,
-              weekly: {
-                price: 5.0,
-                subscription_id: 'P-8VB21492YM9284205NHMLVBI'
-              },
-              monthly: {
-                price: 15.0,
-                subscription_id: 'P-32313236A2983215ANHMLVMI'
-              },
-              yearly: {
-                price: 150.0,
-                subscription_id: 'P-19H62283GU0164029NHMLV4Q'
-              }
-            },
-            business: {
-              label: 'Business',
-              storage: '30G',
-              users: 40,
-              extensions: 40,
-              custom_subdomain: true,
-              custom_domain: false,
-              hourly: 64,
-              weekly: {
-                price: 10.0,
-                subscription_id: 'P-4LM76786H36437347NHMMMLY'
-              },
-              monthly: {
-                price: 25.0,
-                subscription_id: 'P-75S95373SG9774644NHMMMWQ'
-              },
-              yearly: {
-                price: 250.0,
-                subscription_id: 'P-4F691667S7615604ANHMMNCA'
-              }
-            },
-            enterprise: {
-              label: 'Enterprise',
-              storage: '30G',
-              users: 0,
-              extensions: 0,
-              custom_subdomain: true,
-              custom_domain: true,
-              hourly: 128,
-              weekly: {
-                price: 15.0,
-                subscription_id: 'P-2L53154638421050WNHMMNOI'
-              },
-              monthly: {
-                price: 40.0,
-                subscription_id: 'P-3SV597812E048435UNHMMNYQ'
-              },
-              yearly: {
-                price: 400.0,
-                subscription_id: 'P-899813863B7821844NHMMOFA'
-              }
-            }
-          }
-        }
-      }
-    }
+    return axios({
+      method: 'GET',
+      url: this.url('/pricing'),
+    })
   },
-
   updateInstance: function (id, action) {
     return axios({
       method: 'PUT',

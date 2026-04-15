@@ -1111,9 +1111,9 @@ import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
 import {
+  getPricingPlans,
   mapInstanceTypesToFundingOptions,
-  mapInstanceTypesToImageOptions,
-  mapPricingResponseToPlans
+  mapInstanceTypesToImageOptions
 } from 'src/utils/pricing'
 import QrcodeVue from 'qrcode.vue'
 
@@ -1349,8 +1349,7 @@ export default defineComponent({
   methods: {
     async loadPricingData() {
       try {
-        const {data} = await saas.getPricing()
-        this.pricingPlans = mapPricingResponseToPlans(data)
+        this.pricingPlans = await getPricingPlans()
       } catch (error) {
         console.warn(error)
         this.pricingPlans = []
