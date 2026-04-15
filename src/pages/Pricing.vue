@@ -54,7 +54,16 @@
 
       <!-- ━━━━━━ PLANS ━━━━━━ -->
       <section class="p-plans">
-        <div class="p-plans__grid">
+        <div v-if="pricingLoading" class="p-plans__status">
+          Loading pricing...
+        </div>
+        <div v-else-if="pricingError" class="p-plans__status">
+          {{ pricingError }}
+        </div>
+        <div v-else-if="pricingData.length === 0" class="p-plans__status">
+          No pricing plans are available right now.
+        </div>
+        <div v-else class="p-plans__grid">
           <div
             v-for="(plan, idx) in pricingData"
             :key="plan.title"
@@ -166,6 +175,8 @@ const darkMode = ref(false)
 const isLoggedIn = computed(() => !!saas.email)
 const pricingData = ref([])
 const fundingOptions = ref([])
+const pricingLoading = ref(true)
+const pricingError = ref('')
 
 onMounted(() => {
   darkMode.value = localStorage.getItem('darkMode') === 'true'
@@ -177,6 +188,9 @@ onMounted(async () => {
     pricingData.value = await getPricingPlans()
   } catch (error) {
     console.warn(error)
+    pricingError.value = 'We could not load pricing right now.'
+  } finally {
+    pricingLoading.value = false
   }
 
   if (!isLoggedIn.value) {
@@ -440,6 +454,14 @@ const faqs = [
   max-width: 1280px;
   margin: 0 auto;
   align-items: stretch;
+}
+
+.p-plans__status {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(244, 238, 255, 0.72);
 }
 
 .p-plans__cell {

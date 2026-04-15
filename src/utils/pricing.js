@@ -31,6 +31,26 @@ const normalizePricingRoot = payload => {
     return payload.data
   }
 
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    !payload.payment_plans &&
+    Object.values(payload).every(
+      tier =>
+        tier &&
+        typeof tier === 'object' &&
+        !Array.isArray(tier) &&
+        ('hourly' in tier ||
+          'weekly' in tier ||
+          'monthly' in tier ||
+          'yearly' in tier ||
+          'daily' in tier)
+    )
+  ) {
+    return {payment_plans: payload}
+  }
+
   return payload || {}
 }
 
@@ -215,6 +235,18 @@ const parseTierLabel = (tierKey, tier) => {
   }
 }
 
+const getFallbackBadge = tierKey => {
+  if (tierKey === 'premium') {
+    return 'Most popular'
+  }
+
+  if (tierKey === 'business') {
+    return 'Best value'
+  }
+
+  return ''
+}
+
 const getBillingKeys = tier =>
   Object.keys(tier || {})
     .filter(key => !PLAN_META_KEYS.includes(key))
@@ -260,14 +292,13 @@ const getDefaultBilling = (tier, billingOptions, saas) => {
 }
 
 export const mapPricingResponseToPlans = payload => {
-  console.log("!!!!!")
-  console.log(payload)
   const saas = normalizePricingRoot(payload)
   const paymentPlans = saas?.payment_plans || {}
+  const paymentPlanEntries = Object.entries(paymentPlans)
 
-  return Object.entries(paymentPlans).map(([tierKey, tier]) => {
+  return paymentPlanEntries.map(([tierKey, tier]) => {
     const {title, badge: parsedBadge} = parseTierLabel(tierKey, tier)
-    const badge = tier?.badge || parsedBadge
+    const badge = tier?.badge || parsedBadge || getFallbackBadge(tierKey)
     const billingOptions = getBillingKeys(tier).map(key =>
       buildBillingOption(key, tier[key], saas?.fiat_currency)
     )
@@ -279,7 +310,8 @@ export const mapPricingResponseToPlans = payload => {
       buttonLabel: tier?.button_label || `Get ${title}`,
       defaultBilling: getDefaultBilling(tier, billingOptions, saas),
       badge: formatLabel(badge),
-      badgeTone: tier?.badge_tone || 'default',
+      badgeTone:
+        tier?.badge_tone || (tierKey === 'business' ? 'accent' : 'default'),
       featured:
         tier?.featured === true ||
         (typeof badge === 'string' && badge.toLowerCase().includes('popular')),
@@ -290,9 +322,10 @@ export const mapPricingResponseToPlans = payload => {
 }
 
 export const getPricingPlans = async () => {
-  const {data} = await saas.getPricing()
+  const response = await saas.getPricing()
+  const payload = response?.data ?? response
 
-  return mapPricingResponseToPlans(data)
+  return mapPricingResponseToPlans(payload)
 }
 
 const normalizeInstanceImages = payload => {

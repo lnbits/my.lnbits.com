@@ -137,6 +137,7 @@ var saas = {
     return axios({
       method: 'GET',
       url: this.url('/pricing'),
+      withCredentials: true
     })
   },
   updateInstance: function (id, action) {
