@@ -96,6 +96,17 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              @click="extendInstance(props.row)"
+              icon="qr_code_2"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Extend the life of this instance per hour. Pay with BTC.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
               type="a"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
@@ -172,41 +183,7 @@
         </template>
 
         <template v-slot:body-cell-methods="props">
-          <q-td :props="props">
-            <q-btn
-              @click="extendInstance(props.row)"
-              icon="qr_code_2"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance per hour. Pay with BTC.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              @click="subscriptionInstance(props.row.id, 'BTC')"
-              icon="currency_bitcoin"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Pay for a one-time plan with BTC.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              @click="subscriptionInstance(props.row.id, 'USD')"
-              icon="attach_money"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Get a subscription plan or pay once with USD.
-              </q-tooltip>
-            </q-btn>
-          </q-td>
+          <q-td :props="props" />
         </template>
 
         <template v-slot:body-cell-progress="props">
@@ -432,15 +409,7 @@
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">
-          {{
-            planDialog.instanceId
-              ? `${
-                  planDialog.fiatOnly ? 'Add Subscription to' : 'Extend'
-                } Instance (${planDialog.instanceId})`
-              : 'Create New Instance'
-          }}
-        </div>
+        <div class="text-h6">Create New Instance</div>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <div v-if="!planDialog.hideFeatures.tab">
@@ -566,7 +535,7 @@
             </div>
           </div>
         </div>
-        <div v-if="!planDialog.instanceId" class="q-mt-lg">
+        <div class="q-mt-lg">
           <div
             class="text-subtitle1"
             v-if="!(isPricingMatrixFlow && q.screen.lt.sm)"
@@ -1209,7 +1178,7 @@ export default defineComponent({
         },
         {
           name: 'methods',
-          label: 'Payment Plans',
+          label: '',
           field: 'methods',
           sortable: false,
           align: 'left'
@@ -1337,7 +1306,6 @@ export default defineComponent({
         funding: null,
         paymentCurrency: 'USD',
         count: 1,
-        instanceId: null,
         selectedTag: null,
         hideFeatures: {
           tab: false
@@ -1408,7 +1376,6 @@ export default defineComponent({
         billing: 'monthly',
         funding: 'spark_l2'
       })
-      this.planDialog.instanceId = null
       this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
         this.planDialog.selectedTag
       )
@@ -1770,10 +1737,6 @@ export default defineComponent({
       this.syncFundingFromSelectedTag()
     },
     onPlanDialogModeChange(isSubscription) {
-      if (this.planDialog.instanceId) {
-        return
-      }
-
       this.planDialog.subscription = isSubscription
       this.planDialog.fiatOnly = isSubscription === true
       this.planDialog.bitcoinOnly = false
@@ -1817,7 +1780,6 @@ export default defineComponent({
     },
     async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
       await this.loadInstanceTypeOptions()
-      this.planDialog.instanceId = null
       this.planDialog.hideFeatures.tab = false
       this.planDialog.subscription = subscription
       this.planDialog.fiatOnly = typeof fiatOnly === 'boolean' ? fiatOnly : subscription
@@ -1845,10 +1807,6 @@ export default defineComponent({
         return true
       }
 
-      if (this.planDialog.instanceId) {
-        return false
-      }
-
       return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
     },
     async loadInstanceTypeOptions() {
@@ -1871,14 +1829,14 @@ export default defineComponent({
         if (!options.length) {
           this.newInstanceDialog.error = 'No instance images are available.'
           this.newInstanceDialog.selectedTag = null
-          if (this.planDialog.show && !this.planDialog.instanceId) {
+          if (this.planDialog.show) {
             this.planDialog.selectedTag = null
           }
           if (this.onDemandDialog.show) {
             this.onDemandDialog.selectedTag = null
           }
         } else {
-          if (this.planDialog.show && !this.planDialog.instanceId) {
+          if (this.planDialog.show) {
             if (this.isPricingMatrixFlow) {
               this.planDialog.funding = this.getDefaultFundingValue(
                 this.planDialog.funding
@@ -1908,7 +1866,7 @@ export default defineComponent({
         this.newInstanceDialog.options = []
         this.fundingSourceOptions = []
         this.newInstanceDialog.selectedTag = null
-        if (this.planDialog.show && !this.planDialog.instanceId) {
+        if (this.planDialog.show) {
           this.planDialog.selectedTag = null
         }
         if (this.onDemandDialog.show) {
@@ -1944,22 +1902,6 @@ export default defineComponent({
       const label = value.trim()
       return label.length > 0 ? label : undefined
     },
-    subscriptionInstance(instanceId, currency) {
-      currency = (currency || 'USD').trim().toUpperCase()
-      this.planDialog.fiatOnly = currency == 'USD'
-      this.planDialog.bitcoinOnly = currency == 'BTC'
-      this.planDialog.subscription = currency == 'USD'
-        this.planDialog.plan = 'monthly'
-        this.planDialog.selectedTag = null
-        this.syncSelectedPlanVariant()
-       if (instanceId) {
-         this.planDialog.instanceId = instanceId
-       }
-      this.planDialog.hideFeatures.tab = currency !== 'USD'
-
-      this.planDialog.show = true
-    },
-
     createInstance: async function (provider, paymentPlan = {}) {
       try {
         this.inProgress = true
@@ -1990,7 +1932,6 @@ export default defineComponent({
         funding: null,
         paymentCurrency: 'USD',
         count: 1,
-        instanceId: null,
         selectedTag: null,
         hideFeatures: {
           tab: false
@@ -2021,47 +1962,43 @@ export default defineComponent({
         this.planDialog.fiatOnly = useFiat
       }
 
-      if (this.planDialog.instanceId) {
-        await this.submitPlan()
-      } else {
-        const selectedTag = this.normalizeSelectedInstanceTypeTag(
-          this.planDialog.selectedTag
-        )
+      const selectedTag = this.normalizeSelectedInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
 
-        if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
-          this.newInstanceDialog.error =
-            this.newInstanceDialog.error || 'Please select an instance image.'
-          this.q.notify({
-            message: this.newInstanceDialog.error,
-            color: 'negative'
-          })
-          return
-        }
-
-        const instance = await this.createInstance(selectedTag, {
-          tier: this.planDialog.tier,
-          interval: this.planDialog.billing
+      if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
+        this.newInstanceDialog.error =
+          this.newInstanceDialog.error || 'Please select an instance image.'
+        this.q.notify({
+          message: this.newInstanceDialog.error,
+          color: 'negative'
         })
-        if (!instance) {
-          return
-        }
-
-        if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
-          this.planDialog.show = false
-          this.extendInstance(instance, instance.lnurl)
-          return
-        }
-
-        await this.submitPlan(instance.id)
+        return
       }
+
+      const instance = await this.createInstance(selectedTag, {
+        tier: this.planDialog.tier,
+        interval: this.planDialog.billing
+      })
+      if (!instance) {
+        return
+      }
+
+      if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
+        this.planDialog.show = false
+        this.extendInstance(instance, instance.lnurl)
+        return
+      }
+
+      await this.submitPlan(instance.id)
     },
-    async submitPlan(instanceId = this.planDialog.instanceId) {
+    async submitPlan(instanceId) {
       if (this.planDialog.subscription) {
         return await this.submitSubscriptionPlan(instanceId)
       }
       await this.submitOneTimePlan(instanceId)
     },
-    async submitSubscriptionPlan(instanceId = this.planDialog.instanceId) {
+    async submitSubscriptionPlan(instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.subscribeToPlan(
@@ -2086,7 +2023,7 @@ export default defineComponent({
         this.planDialog.inProgress = false
       }
     },
-    async submitOneTimePlan(instanceId = this.planDialog.instanceId) {
+    async submitOneTimePlan(instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.createOneTimePlan(
