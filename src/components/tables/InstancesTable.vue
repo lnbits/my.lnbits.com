@@ -592,6 +592,23 @@
             data-testid="instance-funding-select"
             @update:model-value="onMatrixFundingChange"
           />
+          <div v-if="isPricingMatrixFlow" class="q-mt-md">
+            <div class="text-caption text-grey-5 q-mb-xs">Payment currency</div>
+            <div class="row items-center q-col-gutter-md q-row-gutter-sm">
+              <div
+                v-for="option in matrixPaymentCurrencyOptions"
+                :key="option.value"
+                class="col-auto"
+              >
+                <q-radio
+                  v-model="planDialog.paymentCurrency"
+                  :val="option.value"
+                  :label="option.label"
+                  color="primary"
+                />
+              </div>
+            </div>
+          </div>
           <q-select
             v-else
             v-model="planDialog.selectedTag"
@@ -780,38 +797,27 @@
           size="2.55em"
         ></q-spinner-bars>
         <div v-else-if="isPricingMatrixFlow">
-          <q-btn
-            v-if="planDialog.billing !== 'hourly'"
-            :disable="isPlanSubmitDisabled()"
-            label="Pay with USD"
-            color="positive"
-            outline
-            @click="submitPlanRequest(true)"
-          ></q-btn>
-          <q-btn
-            :disable="isPlanSubmitDisabled()"
-            color="positive"
-            no-caps
-            :class="{'q-ml-sm': planDialog.billing !== 'hourly'}"
-            @click="submitPlanRequest(false)"
-          >
-            <span>Pay with bitcoin</span>
-            <template v-if="showMatrixBitcoinQuantity">
-              <span
-                class="matrix-payment-qty q-ml-sm"
-                @click.stop="decreaseMatrixQuantity"
-              >
-                -
-              </span>
-              <span class="matrix-payment-count">{{ planDialog.count }}</span>
-              <span
-                class="matrix-payment-qty"
-                @click.stop="increaseMatrixQuantity"
-              >
-                +
-              </span>
-            </template>
-          </q-btn>
+          <div class="row items-center q-gutter-sm">
+            <q-select
+              v-if="showMatrixBitcoinQuantity"
+              v-model="planDialog.count"
+              :options="matrixBitcoinQuantityOptions"
+              emit-value
+              map-options
+              dense
+              outlined
+              options-dense
+              class="matrix-payment-count-select"
+            />
+            <q-btn
+              :disable="isPlanSubmitDisabled()"
+              color="positive"
+              no-caps
+              @click="submitPlanRequest"
+            >
+              <span>{{ matrixPaymentButtonLabel }}</span>
+            </q-btn>
+          </div>
         </div>
         <q-btn
           v-else-if="planDialog.subscription"
@@ -1329,6 +1335,7 @@ export default defineComponent({
         tier: null,
         billing: null,
         funding: null,
+        paymentCurrency: 'USD',
         count: 1,
         instanceId: null,
         selectedTag: null,
@@ -1752,6 +1759,11 @@ export default defineComponent({
     onMatrixBillingChange() {
       this.planDialog.subscription = this.planDialog.billing !== 'hourly'
       this.planDialog.count = 1
+      this.planDialog.paymentCurrency = this.isHourlyMatrixSelection
+        ? 'BTC'
+        : this.planDialog.paymentCurrency === 'BTC'
+          ? 'BTC'
+          : 'USD'
       this.syncLegacyPlanFromMatrixBilling()
     },
     onMatrixFundingChange() {
@@ -1790,21 +1802,15 @@ export default defineComponent({
           return {min: 1, max: 1}
       }
     },
-    decreaseMatrixQuantity() {
-      const {min} = this.getMatrixQuantityBounds()
-      this.planDialog.count = Math.max(min, Number(this.planDialog.count || min) - 1)
-    },
-    increaseMatrixQuantity() {
-      const {max} = this.getMatrixQuantityBounds()
-      this.planDialog.count = Math.min(max, Number(this.planDialog.count || 1) + 1)
-    },
     initializePricingMatrixSelection({tier, billing, funding, image} = {}) {
       this.planDialog.tier = this.normalizeMatrixValue(tier)
       this.planDialog.billing = this.normalizeMatrixValue(billing) || 'monthly'
       this.planDialog.funding = this.getDefaultFundingValue(funding)
       this.planDialog.hideFeatures.tab = true
-      this.planDialog.fiatOnly = true
-      this.planDialog.bitcoinOnly = false
+      this.planDialog.paymentCurrency =
+        this.planDialog.billing === 'hourly' ? 'BTC' : 'USD'
+      this.planDialog.fiatOnly = this.planDialog.paymentCurrency === 'USD'
+      this.planDialog.bitcoinOnly = this.planDialog.paymentCurrency === 'BTC'
       this.onMatrixBillingChange()
       this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(image)
       this.syncFundingFromSelectedTag(this.planDialog.selectedTag)
@@ -1982,6 +1988,7 @@ export default defineComponent({
         tier: null,
         billing: null,
         funding: null,
+        paymentCurrency: 'USD',
         count: 1,
         instanceId: null,
         selectedTag: null,
@@ -2004,7 +2011,7 @@ export default defineComponent({
     async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
       if (this.isPricingMatrixFlow) {
-        const wantsFiat = useFiat === true
+        const wantsFiat = this.planDialog.paymentCurrency === 'USD'
 
         this.planDialog.subscription =
           this.planDialog.billing !== 'hourly' && wantsFiat
@@ -2013,7 +2020,6 @@ export default defineComponent({
       } else if (typeof useFiat === 'boolean') {
         this.planDialog.fiatOnly = useFiat
       }
-      console.log('### planDialog', this.planDialog)
 
       if (this.planDialog.instanceId) {
         await this.submitPlan()
@@ -2040,6 +2046,12 @@ export default defineComponent({
           return
         }
 
+        if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
+          this.planDialog.show = false
+          this.extendInstance(instance, instance.lnurl)
+          return
+        }
+
         await this.submitPlan(instance.id)
       }
     },
@@ -2056,7 +2068,6 @@ export default defineComponent({
           instanceId,
           this.getSelectedPaymentPlanName()
         )
-        console.log('### subscribe data', data)
         this.planDialog.show = false
         this.extendInstance(
           this.data.find(i => i.id === instanceId),
@@ -2084,11 +2095,11 @@ export default defineComponent({
           this.planDialog.count,
           this.planDialog.fiatOnly
         )
-        console.log('### one time plan data', data)
         this.planDialog.show = false
         this.extendInstance(
           this.data.find(i => i.id === instanceId),
-          data.payment_request
+          data.payment_request,
+          !this.planDialog.fiatOnly
         )
         return true
       } catch (error) {
@@ -2303,14 +2314,11 @@ export default defineComponent({
       }
     },
     extendInstance: function (instance, qrCodeData) {
-      console.log('### extendInstance', instance, qrCodeData)
       this.activeInstance = instance
 
       this.qrCodeDialog.data = qrCodeData || instance.lnurl
       this.qrCodeDialog.dataIsUrl = this.isValidUrl(this.qrCodeDialog.data)
       this.qrCodeDialog.show = true
-
-      console.log('### qrCodeDialog', this.qrCodeDialog)
 
       this.checkInstanceStatus(instance)
     },
@@ -2421,6 +2429,47 @@ export default defineComponent({
     matrixFundingOptions() {
       return this.newInstanceDialog.options
     },
+    matrixPaymentCurrencyOptions() {
+      if (this.isHourlyMatrixSelection) {
+        return [{label: 'Bitcoin', value: 'BTC'}]
+      }
+
+      return [
+        {label: 'USD', value: 'USD'},
+        {label: 'Bitcoin', value: 'BTC'}
+      ]
+    },
+    matrixPaymentButtonLabel() {
+      return this.planDialog.paymentCurrency === 'USD'
+        ? 'Pay with USD'
+        : 'Pay with bitcoin'
+    },
+    matrixBitcoinQuantityOptions() {
+      const {min, max} = this.getMatrixQuantityBounds()
+      let unit = 'item'
+
+      switch (this.planDialog.billing) {
+        case 'weekly':
+          unit = 'week'
+          break
+        case 'monthly':
+          unit = 'month'
+          break
+        case 'yearly':
+          unit = 'year'
+          break
+      }
+
+      return Array.from({length: max - min + 1}, (_, index) => {
+        const value = min + index
+        const suffix = value === 1 ? unit : `${unit}s`
+
+        return {
+          label: `${value} ${suffix}`,
+          value
+        }
+      })
+    },
     pricingMatrixCatalog() {
       return this.pricingPlans.reduce((catalog, plan) => {
         catalog[plan.tierKey] = plan.billingOptions.reduce((billingCatalog, option) => {
@@ -2499,6 +2548,7 @@ export default defineComponent({
     showMatrixBitcoinQuantity() {
       return (
         this.isPricingMatrixFlow &&
+        this.planDialog.paymentCurrency === 'BTC' &&
         ['weekly', 'monthly', 'yearly'].includes(this.planDialog.billing)
       )
     },
@@ -2618,21 +2668,7 @@ export default defineComponent({
   line-height: 1.45;
 }
 
-.matrix-payment-qty {
-  display: inline-block;
-  min-width: 16px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-.matrix-payment-count {
-  display: inline-block;
-  min-width: 18px;
-  margin: 0 4px;
-  font-weight: 700;
-  text-align: center;
+.matrix-payment-count-select {
+  min-width: 132px;
 }
 </style>
