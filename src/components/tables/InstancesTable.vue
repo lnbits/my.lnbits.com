@@ -455,7 +455,7 @@
         </div>
         <div v-if="isPricingMatrixFlow" class="q-mt-lg">
           <div
-            class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold text-white"
+            class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold"
           >
             <span>{{ selectedMatrixPriceText }}</span>
             <q-btn
@@ -491,7 +491,7 @@
                   class="q-mt-xs"
                 />
                 <div>
-                  <div class="text-body2 text-white">{{ feature.label }}</div>
+                  <div class="text-body2">{{ feature.label }}</div>
                   <div v-if="feature.hint" class="text-caption text-grey-5">
                     {{ feature.hint }}
                   </div>
