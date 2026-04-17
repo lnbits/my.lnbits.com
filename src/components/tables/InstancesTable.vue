@@ -290,7 +290,11 @@
         balance for this instance.
       </p>
 
-      <p v-if="!qrCodeDialog.dataIsUrl" style="color: white" class="text-center">
+      <p
+        v-if="!qrCodeDialog.dataIsUrl"
+        style="color: white"
+        class="text-center"
+      >
         <q-responsive :ratio="1" class="q-mx-xl">
           <qrcode-vue
             :value="qrCodeDialog.data"
@@ -450,7 +454,9 @@
           </div>
         </div>
         <div v-if="isPricingMatrixFlow" class="q-mt-lg">
-          <div class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold text-white">
+          <div
+            class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold text-white"
+          >
             <span>{{ selectedMatrixPriceText }}</span>
             <q-btn
               v-if="selectedMatrixFundingDetails?.description"
@@ -478,7 +484,12 @@
               class="col-12 col-sm-6"
             >
               <div class="row no-wrap items-start q-gutter-x-sm">
-                <q-icon name="check" color="primary" size="16px" class="q-mt-xs" />
+                <q-icon
+                  name="check"
+                  color="primary"
+                  size="16px"
+                  class="q-mt-xs"
+                />
                 <div>
                   <div class="text-body2 text-white">{{ feature.label }}</div>
                   <div v-if="feature.hint" class="text-caption text-grey-5">
@@ -502,7 +513,10 @@
                 <template v-slot:selected-item="scope">
                   <div class="row items-baseline no-wrap q-gutter-x-sm">
                     <span>{{ scope.opt.label }}</span>
-                    <span v-if="scope.opt.badge" class="text-caption text-grey-5">
+                    <span
+                      v-if="scope.opt.badge"
+                      class="text-caption text-grey-5"
+                    >
                       {{ scope.opt.badge }}
                     </span>
                   </div>
@@ -510,9 +524,14 @@
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
-                      <q-item-label class="row items-baseline no-wrap q-gutter-x-sm">
+                      <q-item-label
+                        class="row items-baseline no-wrap q-gutter-x-sm"
+                      >
                         <span>{{ scope.opt.label }}</span>
-                        <span v-if="scope.opt.badge" class="text-caption text-grey-5">
+                        <span
+                          v-if="scope.opt.badge"
+                          class="text-caption text-grey-5"
+                        >
                           {{ scope.opt.badge }}
                         </span>
                       </q-item-label>
@@ -593,19 +612,23 @@
             class="q-mt-md instance-image-select"
             :class="{
               'instance-image-select--first':
-                planDialog.selectedTag ===
-                newInstanceDialog.options[0]?.value
+                planDialog.selectedTag === newInstanceDialog.options[0]?.value
             }"
             popup-content-class="instance-image-select__menu"
             data-testid="instance-image-select"
             :loading="newInstanceDialog.loading"
-            :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
+            :disable="
+              newInstanceDialog.loading || !newInstanceDialog.options.length
+            "
           >
             <template v-slot:option="scope">
               <q-item
                 v-bind="scope.itemProps"
                 :data-testid="
-                  getImageOptionTestId('instance-image-select-option', scope.opt.value)
+                  getImageOptionTestId(
+                    'instance-image-select-option',
+                    scope.opt.value
+                  )
                 "
               >
                 <q-item-section>
@@ -653,14 +676,18 @@
             >
           </div>
           <div
-            v-else-if="!isPricingMatrixFlow && newInstanceDialog.options.length === 0"
+            v-else-if="
+              !isPricingMatrixFlow && newInstanceDialog.options.length === 0
+            "
             class="q-mt-sm"
           >
             <div
               class="text-subtitle2 text-grey-7"
               data-testid="instance-types-empty"
             >
-              {{ newInstanceDialog.error || 'No instance images are available.' }}
+              {{
+                newInstanceDialog.error || 'No instance images are available.'
+              }}
             </div>
             <q-btn
               class="q-mt-sm"
@@ -676,7 +703,10 @@
             class="q-mt-sm"
             data-testid="plan-image-pricing-summary"
           >
-            <div class="text-caption text-primary" data-testid="plan-image-pricing-message">
+            <div
+              class="text-caption text-primary"
+              data-testid="plan-image-pricing-message"
+            >
               Selected image:
               <strong data-testid="plan-image-pricing-summary-image">{{
                 planSelectedImageLabel
@@ -832,7 +862,9 @@
           pricing.
         </div>
         <div class="q-mt-lg">
-          <div class="text-subtitle1">Choose the image for your new instance.</div>
+          <div class="text-subtitle1">
+            Choose the image for your new instance.
+          </div>
           <q-select
             v-model="onDemandDialog.selectedTag"
             :options="newInstanceDialog.options"
@@ -852,7 +884,9 @@
             popup-content-class="instance-image-select__menu"
             data-testid="on-demand-instance-image-select"
             :loading="newInstanceDialog.loading"
-            :disable="newInstanceDialog.loading || !newInstanceDialog.options.length"
+            :disable="
+              newInstanceDialog.loading || !newInstanceDialog.options.length
+            "
           >
             <template v-slot:option="scope">
               <q-item
@@ -914,7 +948,9 @@
               class="text-subtitle2 text-grey-7"
               data-testid="on-demand-instance-types-empty"
             >
-              {{ newInstanceDialog.error || 'No instance images are available.' }}
+              {{
+                newInstanceDialog.error || 'No instance images are available.'
+              }}
             </div>
             <q-btn
               class="q-mt-sm"
@@ -952,7 +988,8 @@
               class="text-caption text-weight-medium"
               data-testid="on-demand-image-pricing-summary-price"
             >
-              Resulting rate: {{ onDemandImagePricingPresentation.selectedPriceText }}
+              Resulting rate:
+              {{ onDemandImagePricingPresentation.selectedPriceText }}
             </div>
           </div>
         </div>
@@ -1008,7 +1045,11 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)" persistent>
+  <q-dialog
+    v-model="newInstanceDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+  >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
         <div class="text-h6">Select a method</div>
@@ -1022,7 +1063,12 @@
         </div>
         <div class="q-py-lg">
           <q-list padding>
-            <q-item tag="label" clickable v-ripple @click="selectNewInstanceMethod('one-time')">
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('one-time')"
+            >
               <q-item-section avatar top>
                 <q-radio
                   v-model="newInstanceDialog.method"
@@ -1031,9 +1077,12 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-capitalize">One Time Payment</q-item-label>
+                <q-item-label class="text-capitalize"
+                  >One Time Payment</q-item-label
+                >
                 <q-item-label caption
-                  >Pay once for a fixed plan term in Bitcoin or Fiat.</q-item-label
+                  >Pay once for a fixed plan term in Bitcoin or
+                  Fiat.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -1061,7 +1110,8 @@
                   >Subscription Plans</q-item-label
                 >
                 <q-item-label caption
-                  >Subscribe with automatic renewal. Fiat payments only.</q-item-label
+                  >Subscribe with automatic renewal. Fiat payments
+                  only.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -1084,7 +1134,8 @@
               <q-item-section>
                 <q-item-label class="text-capitalize">On-Demand</q-item-label>
                 <q-item-label caption
-                  >Pay as you go. Hourly rate depends on selected image.</q-item-label
+                  >Pay as you go. Hourly rate depends on selected
+                  image.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -1415,7 +1466,6 @@ export default defineComponent({
       )
     },
     async startOnDemandNewInstance() {
-
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
         this.onDemandDialog.selectedTag
       )
@@ -1498,7 +1548,9 @@ export default defineComponent({
 
       if (
         normalizedTag &&
-        this.newInstanceDialog.options.some(option => option.value === normalizedTag)
+        this.newInstanceDialog.options.some(
+          option => option.value === normalizedTag
+        )
       ) {
         return normalizedTag
       }
@@ -1556,7 +1608,9 @@ export default defineComponent({
       }
     },
     normalizeMatrixValue(value) {
-      return typeof value === 'string' && value.trim().length ? value.trim() : null
+      return typeof value === 'string' && value.trim().length
+        ? value.trim()
+        : null
     },
     getPlanPrice(planValue, tag = this.planDialog.selectedTag) {
       const plan = this.getPlanCatalog()[this.normalizePlanName(planValue)]
@@ -1622,7 +1676,8 @@ export default defineComponent({
       )
 
       this.planDialog.selectedTag =
-        selectedOption?.value || this.getAvailableInstanceTypeTag(this.planDialog.selectedTag)
+        selectedOption?.value ||
+        this.getAvailableInstanceTypeTag(this.planDialog.selectedTag)
     },
     syncFundingFromSelectedTag(tag = this.planDialog.selectedTag) {
       const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
@@ -1652,7 +1707,9 @@ export default defineComponent({
       planValue = this.planDialog.plan
     } = {}) {
       const usesSidecar = this.doesInstanceTypeUseSidecar(tag)
-      const statusLabel = usesSidecar ? 'Plus image pricing' : 'Base image pricing'
+      const statusLabel = usesSidecar
+        ? 'Plus image pricing'
+        : 'Base image pricing'
 
       if (context === 'on-demand') {
         const baseRate = this.onDemandDialog.hourlyRateSats
@@ -1746,7 +1803,9 @@ export default defineComponent({
 
       if (
         normalizedFunding &&
-        this.fundingSourceOptions.some(option => option.value === normalizedFunding)
+        this.fundingSourceOptions.some(
+          option => option.value === normalizedFunding
+        )
       ) {
         return normalizedFunding
       }
@@ -1782,7 +1841,8 @@ export default defineComponent({
       await this.loadInstanceTypeOptions()
       this.planDialog.hideFeatures.tab = false
       this.planDialog.subscription = subscription
-      this.planDialog.fiatOnly = typeof fiatOnly === 'boolean' ? fiatOnly : subscription
+      this.planDialog.fiatOnly =
+        typeof fiatOnly === 'boolean' ? fiatOnly : subscription
       this.planDialog.bitcoinOnly = false
       this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
         this.planDialog.selectedTag
@@ -2317,7 +2377,11 @@ export default defineComponent({
   },
   computed: {
     isPricingMatrixFlow() {
-      return Boolean(this.planDialog.tier || this.planDialog.billing || this.planDialog.funding)
+      return Boolean(
+        this.planDialog.tier ||
+        this.planDialog.billing ||
+        this.planDialog.funding
+      )
     },
     isHourlyMatrixSelection() {
       return this.planDialog.billing === 'hourly'
@@ -2354,7 +2418,10 @@ export default defineComponent({
           value: 'weekly'
         },
         {
-          label: this.formatMatrixBillingOptionLabel('Monthly', pricing.monthly),
+          label: this.formatMatrixBillingOptionLabel(
+            'Monthly',
+            pricing.monthly
+          ),
           value: 'monthly'
         },
         {
@@ -2409,17 +2476,20 @@ export default defineComponent({
     },
     pricingMatrixCatalog() {
       return this.pricingPlans.reduce((catalog, plan) => {
-        catalog[plan.tierKey] = plan.billingOptions.reduce((billingCatalog, option) => {
-          const intervalSuffix = option.interval.replace(/^per\s+/i, '')
-          const amount =
-            option.currency === 'sats'
-              ? `${option.amount} sats`
-              : `${option.symbol || '$'}${option.amount}`
+        catalog[plan.tierKey] = plan.billingOptions.reduce(
+          (billingCatalog, option) => {
+            const intervalSuffix = option.interval.replace(/^per\s+/i, '')
+            const amount =
+              option.currency === 'sats'
+                ? `${option.amount} sats`
+                : `${option.symbol || '$'}${option.amount}`
 
-          billingCatalog[option.key] = `${amount} / ${intervalSuffix}`
+            billingCatalog[option.key] = `${amount} / ${intervalSuffix}`
 
-          return billingCatalog
-        }, {})
+            return billingCatalog
+          },
+          {}
+        )
 
         return catalog
       }, {})
