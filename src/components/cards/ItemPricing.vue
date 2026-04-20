@@ -4,7 +4,7 @@
       <q-radio v-model="localPlan" :val="planValue" color="secondary" />
     </q-item-section>
     <q-item-section>
-      <q-item-label class="text-capitalize">{{ planValue }}</q-item-label>
+      <q-item-label class="text-capitalize">{{ displayPlanValue }}</q-item-label>
       <q-item-label caption>{{ caption }}</q-item-label>
       <div v-if="!subscription && activePlan" class="q-mt-md">
         <div>{{ sliderString }}</div>
@@ -57,11 +57,15 @@ const props = defineProps({
 })
 const emits = defineEmits(['update:plan', 'update:count'])
 
+const normalizePlanName = value =>
+  typeof value === 'string' ? value.replace(/_plus$/, '') : ''
+
 const localPlan = ref(props.plan)
 const localCount = ref(props.count)
 const activePlan = computed(() => props.plan === props.planValue)
+const displayPlanValue = computed(() => normalizePlanName(props.planValue))
 const sliderString = computed(() => {
-  switch (localPlan.value) {
+  switch (normalizePlanName(localPlan.value)) {
     case 'weekly':
       return 'How many weeks:'
     case 'monthly':

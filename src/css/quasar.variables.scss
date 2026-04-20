@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // quasar-variables.scss
 
 // ===== LIGHT THEME (Default) =====
@@ -51,13 +53,13 @@ $surface-variant: #EFE7F7;
 
 // ===== Additional Quasar Variable Overrides =====
 $primary-shades: (
-    'light': lighten($primary, 15%),
-    'dark': darken($primary, 10%)
+    'light': color.adjust($primary, $lightness: 15%),
+    'dark': color.adjust($primary, $lightness: -10%)
 );
 
 $secondary-shades: (
-    'light': lighten($secondary, 15%),
-    'dark': darken($secondary, 10%)
+    'light': color.adjust($secondary, $lightness: 15%),
+    'dark': color.adjust($secondary, $lightness: -10%)
 );
 
 $card-border-radius: 16px;

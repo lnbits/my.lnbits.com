@@ -48,7 +48,7 @@
       >
         <template v-slot:top-right>
           <q-btn
-            @click="selectPlan.show = true"
+            @click="openNewInstanceDialog"
             label="New Instance"
             icon="add_to_queue"
             color="primary"
@@ -93,6 +93,17 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 Copy first_install_token.
+              </q-tooltip>
+            </q-btn>
+            <q-btn
+              @click="extendInstance(props.row)"
+              icon="qr_code_2"
+              size="sm"
+              flat
+              dense
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                Extend the life of this instance per hour. Pay with BTC.
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -172,41 +183,7 @@
         </template>
 
         <template v-slot:body-cell-methods="props">
-          <q-td :props="props">
-            <q-btn
-              @click="extendInstance(props.row)"
-              icon="qr_code_2"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance per hour. Pay with BTC.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              @click="subscriptionInstance(props.row.id, 'BTC')"
-              icon="currency_bitcoin"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Pay for a one-time plan with BTC.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              @click="subscriptionInstance(props.row.id, 'USD')"
-              icon="attach_money"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Get a subscription plan or pay once with USD.
-              </q-tooltip>
-            </q-btn>
-          </q-td>
+          <q-td :props="props" />
         </template>
 
         <template v-slot:body-cell-progress="props">
@@ -297,8 +274,7 @@
       </h5>
       <div v-if="qrCodeDialog.dataIsUrl">
         <p>
-          Scan the QR code to open the link for the checkount page. Or open the
-          link in a new tab.
+          Open the link for the checkout page in a new tab.
           <q-btn
             type="a"
             :href="qrCodeDialog.data"
@@ -314,7 +290,11 @@
         balance for this instance.
       </p>
 
-      <p style="color: white" class="text-center">
+      <p
+        v-if="!qrCodeDialog.dataIsUrl"
+        style="color: white"
+        class="text-center"
+      >
         <q-responsive :ratio="1" class="q-mx-xl">
           <qrcode-vue
             :value="qrCodeDialog.data"
@@ -433,20 +413,13 @@
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">
-          {{
-            planDialog.instanceId
-              ? `${
-                  planDialog.fiatOnly ? 'Add Subscription to' : 'Extend'
-                } Instance (${planDialog.instanceId})`
-              : 'Create New Instance'
-          }}
-        </div>
+        <div class="text-h6">Create New Instance</div>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <div v-if="!planDialog.hideFeatures.tab">
           <q-btn-toggle
             v-model="planDialog.subscription"
+            @update:model-value="onPlanDialogModeChange"
             spread
             style="border-radius: 0"
             unelevated
@@ -469,20 +442,297 @@
       </q-card-section>
       <q-card-section class="q-mb-lg">
         <div>
-          <div v-if="planDialog.subscription">
+          <div v-if="!isPricingMatrixFlow && planDialog.subscription">
             Choose a subscription plan and we'll automatically renew it for you.
             Cancel anytime with no commitments or hidden fees. Fiat payments
             only.
           </div>
-          <div v-else>
+          <div v-else-if="!isPricingMatrixFlow">
             Pay once for immediate access—no recurring charges. Perfect for
             temporary projects or when you need flexibility without a
             subscription.
           </div>
         </div>
-        <div class="q-py-lg">
+        <div v-if="isPricingMatrixFlow" class="q-mt-lg">
+          <div
+            class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold"
+          >
+            <span>{{ selectedMatrixPriceText }}</span>
+            <q-btn
+              v-if="selectedMatrixFundingDetails?.description"
+              round
+              dense
+              flat
+              icon="info"
+              size="xs"
+              color="grey-4"
+            >
+              <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                <div class="matrix-funding-tooltip">
+                  {{ selectedMatrixFundingDetails.description }}
+                </div>
+              </q-tooltip>
+            </q-btn>
+          </div>
+          <div
+            v-if="selectedMatrixTierDetails"
+            class="row q-col-gutter-md q-row-gutter-sm q-mt-sm"
+          >
+            <div
+              v-for="feature in selectedMatrixTierDetails.features"
+              :key="feature.key"
+              class="col-12 col-sm-6"
+            >
+              <div class="row no-wrap items-start q-gutter-x-sm">
+                <q-icon
+                  name="check"
+                  color="primary"
+                  size="16px"
+                  class="q-mt-xs"
+                />
+                <div>
+                  <div class="text-body2">{{ feature.label }}</div>
+                  <div v-if="feature.hint" class="text-caption text-grey-5">
+                    {{ feature.hint }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row q-col-gutter-md q-mt-sm">
+            <div class="col-12 col-md-6">
+              <q-select
+                v-model="planDialog.tier"
+                :options="matrixTierOptions"
+                emit-value
+                map-options
+                dense
+                outlined
+                label="Tier"
+              >
+                <template v-slot:selected-item="scope">
+                  <div class="row items-baseline no-wrap q-gutter-x-sm">
+                    <span>{{ scope.opt.label }}</span>
+                    <span
+                      v-if="scope.opt.badge"
+                      class="text-caption text-grey-5"
+                    >
+                      {{ scope.opt.badge }}
+                    </span>
+                  </div>
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label
+                        class="row items-baseline no-wrap q-gutter-x-sm"
+                      >
+                        <span>{{ scope.opt.label }}</span>
+                        <span
+                          v-if="scope.opt.badge"
+                          class="text-caption text-grey-5"
+                        >
+                          {{ scope.opt.badge }}
+                        </span>
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+            <div class="col-12 col-md-6">
+              <q-select
+                v-model="planDialog.billing"
+                :options="matrixBillingOptions"
+                emit-value
+                map-options
+                dense
+                outlined
+                label="Billing"
+                @update:model-value="onMatrixBillingChange"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="q-mt-lg">
+          <div
+            class="text-subtitle1"
+            v-if="!(isPricingMatrixFlow && q.screen.lt.sm)"
+          >
+            {{
+              isPricingMatrixFlow
+                ? 'Choose your funding source.'
+                : 'Choose the image for your new instance.'
+            }}
+          </div>
+          <q-select
+            v-if="isPricingMatrixFlow"
+            v-model="planDialog.selectedTag"
+            :options="matrixFundingOptions"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Funding source"
+            dense
+            outlined
+            class="q-mt-md"
+            data-testid="instance-funding-select"
+            @update:model-value="onMatrixFundingChange"
+          />
+          <div v-if="isPricingMatrixFlow" class="q-mt-md">
+            <div class="text-caption text-grey-5 q-mb-xs">Payment currency</div>
+            <div class="row items-center q-col-gutter-md q-row-gutter-sm">
+              <div
+                v-for="option in matrixPaymentCurrencyOptions"
+                :key="option.value"
+                class="col-auto"
+              >
+                <q-radio
+                  v-model="planDialog.paymentCurrency"
+                  :val="option.value"
+                  :label="option.label"
+                  color="primary"
+                />
+              </div>
+            </div>
+          </div>
+          <q-select
+            v-else
+            v-model="planDialog.selectedTag"
+            @update:model-value="syncSelectedPlanVariant"
+            :options="newInstanceDialog.options"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Instance image"
+            dense
+            outlined
+            class="q-mt-md instance-image-select"
+            :class="{
+              'instance-image-select--first':
+                planDialog.selectedTag === newInstanceDialog.options[0]?.value
+            }"
+            popup-content-class="instance-image-select__menu"
+            data-testid="instance-image-select"
+            :loading="newInstanceDialog.loading"
+            :disable="
+              newInstanceDialog.loading || !newInstanceDialog.options.length
+            "
+          >
+            <template v-slot:option="scope">
+              <q-item
+                v-bind="scope.itemProps"
+                :data-testid="
+                  getImageOptionTestId(
+                    'instance-image-select-option',
+                    scope.opt.value
+                  )
+                "
+              >
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label
+                    caption
+                    class="text-primary"
+                    :data-testid="
+                      getImageOptionTestId(
+                        'instance-image-select-option-delta',
+                        scope.opt.value
+                      )
+                    "
+                  >
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'plan',
+                        tag: scope.opt.value,
+                        planValue: planDialog.plan
+                      }).optionDeltaText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-item-label caption>
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'plan',
+                        tag: scope.opt.value,
+                        planValue: planDialog.plan
+                      }).selectedPriceText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <div
+            v-if="!isPricingMatrixFlow && newInstanceDialog.loading"
+            class="row items-center q-gutter-sm q-mt-sm text-grey-7"
+          >
+            <q-spinner-hourglass size="1.2rem" color="primary" />
+            <span data-testid="instance-types-loading"
+              >Loading instance images...</span
+            >
+          </div>
+          <div
+            v-else-if="
+              !isPricingMatrixFlow && newInstanceDialog.options.length === 0
+            "
+            class="q-mt-sm"
+          >
+            <div
+              class="text-subtitle2 text-grey-7"
+              data-testid="instance-types-empty"
+            >
+              {{
+                newInstanceDialog.error || 'No instance images are available.'
+              }}
+            </div>
+            <q-btn
+              class="q-mt-sm"
+              outline
+              color="warning"
+              label="Retry"
+              data-testid="instance-types-retry"
+              @click="retryLoadInstanceTypeOptions"
+            />
+          </div>
+          <div
+            v-else-if="!isPricingMatrixFlow"
+            class="q-mt-sm"
+            data-testid="plan-image-pricing-summary"
+          >
+            <div
+              class="text-caption text-primary"
+              data-testid="plan-image-pricing-message"
+            >
+              Selected image:
+              <strong data-testid="plan-image-pricing-summary-image">{{
+                planSelectedImageLabel
+              }}</strong>
+              <span data-testid="plan-image-pricing-summary-status"
+                >({{ planImagePricingPresentation.statusLabel }})</span
+              >
+            </div>
+            <div
+              class="text-caption text-grey-7"
+              data-testid="plan-image-pricing-summary-reason"
+            >
+              {{ planImageSidecarReason }}
+            </div>
+            <div
+              class="text-caption text-weight-medium"
+              data-testid="plan-image-pricing-summary-price"
+            >
+              {{ planImagePricingSummaryPriceText }}
+            </div>
+          </div>
+        </div>
+        <div v-if="!isPricingMatrixFlow" class="q-py-lg">
           <q-list padding>
             <ItemPricing
+              :key="`weekly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -491,13 +741,14 @@
                   ? 'Automatically renews every week. Great for ongoing projects without long-term commitment. Cancel anytime before renewal.'
                   : 'Pay once for 1 week, or more, of access. No automatic renewal. Perfect for testing, demos, or short-term projects.'
               "
-              :price="2.0"
+              :price="getPlanPrice('weekly')"
               :min="1"
               :max="8"
               :step="1"
-              plan-value="weekly"
+              :plan-value="getPlanOptionValue('weekly')"
             />
             <ItemPricing
+              :key="`monthly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -506,13 +757,14 @@
                   ? 'Best value for regular use. Renews monthly. Cancel anytime, no questions asked.'
                   : 'Pay once for 1 month, or more, of access with no recurring charges. Ideal when you need a month of service without ongoing commitment.'
               "
-              :price="7.0"
+              :price="getPlanPrice('monthly')"
               :min="1"
               :max="12"
               :step="1"
-              plan-value="monthly"
+              :plan-value="getPlanOptionValue('monthly')"
             />
             <ItemPricing
+              :key="`yearly-${selectedImageHasSidecarTag}`"
               v-model:plan="planDialog.plan"
               v-model:count="planDialog.count"
               :subscription="planDialog.subscription"
@@ -521,11 +773,11 @@
                   ? 'Renews annually. Buy 12 months for the price of 10.'
                   : 'Buy 12 months for the price of 10. Set it and forget it. '
               "
-              :price="70.0"
+              :price="getPlanPrice('yearly')"
               :min="1"
               :max="5"
               :step="1"
-              plan-value="yearly"
+              :plan-value="getPlanOptionValue('yearly')"
             />
           </q-list>
         </div>
@@ -543,17 +795,40 @@
           color="primary"
           size="2.55em"
         ></q-spinner-bars>
+        <div v-else-if="isPricingMatrixFlow">
+          <div class="row items-center q-gutter-sm">
+            <q-select
+              v-if="showMatrixBitcoinQuantity"
+              v-model="planDialog.count"
+              :options="matrixBitcoinQuantityOptions"
+              emit-value
+              map-options
+              dense
+              outlined
+              options-dense
+              class="matrix-payment-count-select"
+            />
+            <q-btn
+              :disable="isPlanSubmitDisabled()"
+              color="positive"
+              no-caps
+              @click="submitPlanRequest"
+            >
+              <span>{{ matrixPaymentButtonLabel }}</span>
+            </q-btn>
+          </div>
+        </div>
         <q-btn
           v-else-if="planDialog.subscription"
-          :disable="!planDialog.plan"
-          label="Subscribe"
+          :disable="isPlanSubmitDisabled()"
+          label="Payment"
           color="positive"
           @click="submitPlanRequest"
         ></q-btn>
         <div v-else>
           <q-btn
             v-if="!planDialog.bitcoinOnly"
-            :disable="!planDialog.plan"
+            :disable="isPlanSubmitDisabled()"
             label="Buy with USD"
             color="positive"
             outline
@@ -561,7 +836,7 @@
           ></q-btn>
           <q-btn
             v-if="!planDialog.fiatOnly"
-            :disable="!planDialog.plan"
+            :disable="isPlanSubmitDisabled()"
             label="Buy with BTC"
             color="positive"
             class="q-ml-sm"
@@ -571,16 +846,151 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-dialog v-model="selectPlan.show" backdrop-filter="blur(4px)" persistent>
+  <q-dialog
+    v-model="onDemandDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+    @hide="resetOnDemandDialog"
+  >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">Select a method</div>
+        <div class="text-h6">Create On-demand Instance</div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
         <div>
-          <div>
-            Choose a subscription plan and we'll automatically renew it for you.
-            Cancel anytime with no commitments or hidden fees.
+          Choose your instance image, then continue with hourly on-demand
+          pricing.
+        </div>
+        <div class="q-mt-lg">
+          <div class="text-subtitle1">
+            Choose the image for your new instance.
+          </div>
+          <q-select
+            v-model="onDemandDialog.selectedTag"
+            :options="newInstanceDialog.options"
+            option-label="label"
+            option-value="value"
+            emit-value
+            map-options
+            label="Instance image"
+            dense
+            outlined
+            class="q-mt-md instance-image-select"
+            :class="{
+              'instance-image-select--first':
+                onDemandDialog.selectedTag ===
+                newInstanceDialog.options[0]?.value
+            }"
+            popup-content-class="instance-image-select__menu"
+            data-testid="on-demand-instance-image-select"
+            :loading="newInstanceDialog.loading"
+            :disable="
+              newInstanceDialog.loading || !newInstanceDialog.options.length
+            "
+          >
+            <template v-slot:option="scope">
+              <q-item
+                v-bind="scope.itemProps"
+                :data-testid="
+                  getImageOptionTestId(
+                    'on-demand-instance-image-select-option',
+                    scope.opt.value
+                  )
+                "
+              >
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label
+                    caption
+                    class="text-primary"
+                    :data-testid="
+                      getImageOptionTestId(
+                        'on-demand-instance-image-select-option-delta',
+                        scope.opt.value
+                      )
+                    "
+                  >
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'on-demand',
+                        tag: scope.opt.value
+                      }).optionDeltaText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-item-label caption>
+                    {{
+                      getImageOptionPricingPresentation({
+                        context: 'on-demand',
+                        tag: scope.opt.value
+                      }).selectedPriceText
+                    }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <div
+            v-if="newInstanceDialog.loading"
+            class="row items-center q-gutter-sm q-mt-sm text-grey-7"
+          >
+            <q-spinner-hourglass size="1.2rem" color="primary" />
+            <span data-testid="on-demand-instance-types-loading"
+              >Loading instance images...</span
+            >
+          </div>
+          <div
+            v-else-if="newInstanceDialog.options.length === 0"
+            class="q-mt-sm"
+          >
+            <div
+              class="text-subtitle2 text-grey-7"
+              data-testid="on-demand-instance-types-empty"
+            >
+              {{
+                newInstanceDialog.error || 'No instance images are available.'
+              }}
+            </div>
+            <q-btn
+              class="q-mt-sm"
+              outline
+              color="warning"
+              label="Retry"
+              data-testid="on-demand-instance-types-retry"
+              @click="retryLoadInstanceTypeOptions"
+            />
+          </div>
+          <div
+            v-else
+            class="q-mt-sm"
+            data-testid="on-demand-image-pricing-summary"
+          >
+            <div
+              class="text-caption text-primary"
+              data-testid="on-demand-image-pricing-message"
+            >
+              Selected image:
+              <strong data-testid="on-demand-image-pricing-summary-image">{{
+                onDemandSelectedImageLabel
+              }}</strong>
+              <span data-testid="on-demand-image-pricing-summary-status"
+                >({{ onDemandImagePricingPresentation.statusLabel }})</span
+              >
+            </div>
+            <div
+              class="text-caption text-grey-7"
+              data-testid="on-demand-image-pricing-summary-reason"
+            >
+              {{ onDemandImageSidecarReason }}
+            </div>
+            <div
+              class="text-caption text-weight-medium"
+              data-testid="on-demand-image-pricing-summary-price"
+            >
+              Resulting rate:
+              {{ onDemandImagePricingPresentation.selectedPriceText }}
+            </div>
           </div>
         </div>
         <div class="q-py-lg">
@@ -588,7 +998,80 @@
             <q-item tag="label">
               <q-item-section avatar top>
                 <q-radio
-                  v-model="selectPlan.method"
+                  v-model="onDemandDialog.plan"
+                  val="hourly"
+                  color="secondary"
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-capitalize">Hourly</q-item-label>
+                <q-item-label caption
+                  >Pay as you go. Your instance can be topped up by the
+                  hour.</q-item-label
+                >
+              </q-item-section>
+              <q-item-section side top>
+                <q-item-label>
+                  {{ onDemandImagePricingPresentation.selectedPriceText }}
+                </q-item-label>
+                <q-item-label caption class="text-primary">
+                  {{ onDemandImagePricingPresentation.deltaText }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn
+          class="q-mr-auto"
+          label="Close"
+          color="grey-6"
+          outline
+          v-close-popup
+        ></q-btn>
+        <q-spinner-bars
+          v-if="onDemandDialog.inProgress"
+          color="primary"
+          size="2.55em"
+        ></q-spinner-bars>
+        <q-btn
+          v-else
+          :disable="isCreateInstanceSubmitDisabled(onDemandDialog.selectedTag)"
+          label="Continue"
+          color="positive"
+          @click="startOnDemandNewInstance"
+        ></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog
+    v-model="newInstanceDialog.show"
+    backdrop-filter="blur(4px)"
+    persistent
+  >
+    <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
+      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+        <div class="text-h6">Select a method</div>
+      </q-card-section>
+      <q-card-section class="q-mb-lg">
+        <div>
+          <div>
+            Choose how you want to pay for your new instance. You can continue
+            with one-time, subscription, or on-demand pricing in the next step.
+          </div>
+        </div>
+        <div class="q-py-lg">
+          <q-list padding>
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('one-time')"
+            >
+              <q-item-section avatar top>
+                <q-radio
+                  v-model="newInstanceDialog.method"
                   val="one-time"
                   color="secondary"
                 />
@@ -598,7 +1081,8 @@
                   >One Time Payment</q-item-label
                 >
                 <q-item-label caption
-                  >Choose a one time plan, pay in Bitcoin or Fiat</q-item-label
+                  >Pay once for a fixed plan term in Bitcoin or
+                  Fiat.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -608,10 +1092,15 @@
                 </div>
               </q-item-section>
             </q-item>
-            <q-item tag="label">
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('subscription')"
+            >
               <q-item-section avatar top>
                 <q-radio
-                  v-model="selectPlan.method"
+                  v-model="newInstanceDialog.method"
                   val="subscription"
                   color="secondary"
                 />
@@ -621,17 +1110,23 @@
                   >Subscription Plans</q-item-label
                 >
                 <q-item-label caption
-                  >Choose a subscription plan, pay in Fiat</q-item-label
+                  >Subscribe with automatic renewal. Fiat payments
+                  only.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
                 <q-icon name="attach_money" color="green" size="xs" />
               </q-item-section>
             </q-item>
-            <q-item tag="label">
+            <q-item
+              tag="label"
+              clickable
+              v-ripple
+              @click="selectNewInstanceMethod('on-demand')"
+            >
               <q-item-section avatar top>
                 <q-radio
-                  v-model="selectPlan.method"
+                  v-model="newInstanceDialog.method"
                   val="on-demand"
                   color="secondary"
                 />
@@ -639,7 +1134,8 @@
               <q-item-section>
                 <q-item-label class="text-capitalize">On-Demand</q-item-label>
                 <q-item-label caption
-                  >Pay as you go, 21 sats per hour</q-item-label
+                  >Pay as you go. Hourly rate depends on selected
+                  image.</q-item-label
                 >
               </q-item-section>
               <q-item-section side>
@@ -659,87 +1155,11 @@
           v-close-popup
         ></q-btn>
         <q-btn
-          :disable="!selectPlan.method"
+          :disable="!newInstanceDialog.method"
           label="Proceed"
           color="positive"
-          @click="showNewInstanceProvisioning"
+          @click="proceedNewInstanceMethod"
         ></q-btn>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-  <q-dialog v-model="newInstanceDialog.show" backdrop-filter="blur(4px)">
-    <q-card style="width: 95%; max-width: 640px" class="table-bg q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          color="white"
-          class="absolute-top-right q-ma-sm"
-          v-close-popup
-        />
-        <div class="text-h6">New LNbits Instance</div>
-      </q-card-section>
-      <q-card-section>
-        Choose the image for your new instance.
-        <q-select
-          v-model="newInstanceDialog.selectedTag"
-          :options="newInstanceDialog.options"
-          option-label="label"
-          option-value="value"
-          emit-value
-          map-options
-          label="Instance image"
-          dense
-          outlined
-          class="q-mt-md instance-image-select"
-          :class="{
-            'instance-image-select--first':
-              newInstanceDialog.selectedTag ===
-              newInstanceDialog.options[0]?.value
-          }"
-          popup-content-class="instance-image-select__menu"
-          data-testid="instance-image-select"
-          :loading="newInstanceDialog.loading"
-          :disable="newInstanceDialog.loading"
-        />
-      </q-card-section>
-      <q-card-section v-if="newInstanceDialog.loading" class="text-center">
-        <q-spinner-hourglass size="1.8rem" color="primary" />
-        <div
-          class="text-caption text-grey-7 q-mt-sm"
-          data-testid="instance-types-loading"
-        >
-          Loading instance images...
-        </div>
-      </q-card-section>
-      <q-card-section v-else-if="newInstanceDialog.options.length === 0">
-        <div
-          class="text-subtitle1 text-grey-7"
-          data-testid="instance-types-empty"
-        >
-          {{ newInstanceDialog.error || 'No instance images are available.' }}
-        </div>
-        <q-btn
-          class="q-mt-sm"
-          outline
-          color="warning"
-          label="Retry"
-          data-testid="instance-types-retry"
-          @click="retryLoadInstanceTypeOptions"
-        />
-      </q-card-section>
-      <q-card-actions class="q-pa-md">
-        <q-btn
-          label="Create"
-          color="primary"
-          outline
-          class="full-width"
-          data-testid="confirm-instance-create"
-          :disable="isCreateInstanceSubmitDisabled()"
-          @click="confirmNewInstanceProvider()"
-        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -751,6 +1171,11 @@ import {defineComponent} from 'vue'
 import {useQuasar, copyToClipboard} from 'quasar'
 import {saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
+import {
+  getPricingPlans,
+  mapInstanceTypesToFundingOptions,
+  mapInstanceTypesToImageOptions
+} from 'src/utils/pricing'
 import QrcodeVue from 'qrcode.vue'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
@@ -759,7 +1184,11 @@ import CardStats from 'components/cards/CardStats.vue'
 export default defineComponent({
   name: 'TableDarkMode',
   props: {
-    plan: String
+    plan: String,
+    tier: String,
+    billing: String,
+    funding: String,
+    image: String
   },
   components: {
     ItemPricing,
@@ -780,6 +1209,8 @@ export default defineComponent({
         show: false,
         instance: null
       },
+      pricingPlans: [],
+      fundingSourceOptions: [],
       activeInstance: null,
       pagination: {
         rowsPerPage: 25,
@@ -798,7 +1229,7 @@ export default defineComponent({
         },
         {
           name: 'methods',
-          label: 'Payment Plans',
+          label: '',
           field: 'methods',
           sortable: false,
           align: 'left'
@@ -921,24 +1352,33 @@ export default defineComponent({
         inProgress: false,
         fiat: true,
         plan: null,
+        tier: null,
+        billing: null,
+        funding: null,
+        paymentCurrency: 'USD',
         count: 1,
-        instanceId: null,
+        selectedTag: null,
         hideFeatures: {
           tab: false
         }
       },
-      selectPlan: {
+      onDemandDialog: {
         show: false,
-        method: null
+        inProgress: false,
+        plan: 'hourly',
+        hourlyRateSats: 21,
+        hourlyRatePlusSats: 27,
+        selectedTag: null
       },
       newInstanceDialog: {
         show: false,
-        action: null,
+        method: null,
         options: [],
         selectedTag: null,
         loading: false,
         error: null
-      }
+      },
+      instanceTypesRequestId: 0
     }
   },
   setup() {
@@ -969,20 +1409,65 @@ export default defineComponent({
     }
   },
   methods: {
-    async openNewInstanceDialog(action) {
-      this.newInstanceDialog.action = action
-      this.newInstanceDialog.show = true
-      this.newInstanceDialog.selectedTag = null
-      this.newInstanceDialog.error = null
-      if (action === 'on-demand' || action === 'plan-request') {
-        await this.loadInstanceTypeOptions()
+    async loadPricingData() {
+      try {
+        this.pricingPlans = await getPricingPlans()
+      } catch (error) {
+        console.warn(error)
+        this.pricingPlans = []
       }
     },
-    async confirmNewInstanceProvider(provider) {
-      const action = this.newInstanceDialog.action
+    async openNewInstanceDialog() {
+      await this.loadInstanceTypeOptions()
+      this.newInstanceDialog.show = false
+      this.newInstanceDialog.error = null
+      this.newInstanceDialog.method = null
+      this.initializePricingMatrixSelection({
+        tier: 'premium',
+        billing: 'monthly',
+        funding: 'spark_l2'
+      })
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
+      this.planDialog.show = true
+    },
+    selectNewInstanceMethod(method) {
+      this.newInstanceDialog.method = method
+    },
+    async proceedNewInstanceMethod() {
+      const method = this.newInstanceDialog.method
 
+      if (!method) {
+        return
+      }
+
+      this.newInstanceDialog.show = false
+
+      if (method === 'on-demand') {
+        await this.openOnDemandNewInstanceDialog()
+      } else {
+        await this.openNewInstancePlanDialog({
+          subscription: method !== 'one-time',
+          fiatOnly: method !== 'one-time'
+        })
+      }
+
+      this.newInstanceDialog.method = null
+    },
+    async openOnDemandNewInstanceDialog() {
+      this.onDemandDialog.plan = 'hourly'
+      this.onDemandDialog.inProgress = false
+      this.onDemandDialog.selectedTag = null
+      this.onDemandDialog.show = true
+      await this.loadInstanceTypeOptions()
+      this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.onDemandDialog.selectedTag
+      )
+    },
+    async startOnDemandNewInstance() {
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
-        provider || this.newInstanceDialog.selectedTag
+        this.onDemandDialog.selectedTag
       )
 
       if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
@@ -995,29 +1480,16 @@ export default defineComponent({
         return
       }
 
-      if (!selectedTag || !this.isInstanceTypeTagValid(selectedTag)) {
-        this.newInstanceDialog.error = 'Please select an instance image.'
-        this.q.notify({
-          message: this.newInstanceDialog.error,
-          color: 'negative'
-        })
-        return
-      }
+      this.onDemandDialog.inProgress = true
 
-      this.newInstanceDialog.show = false
-      this.newInstanceDialog.action = null
-
-      if (action === 'on-demand') {
+      try {
         const instance = await this.createInstance(selectedTag)
         if (instance) {
+          this.onDemandDialog.show = false
           await this.extendInstance(instance)
         }
-      } else if (action === 'plan-request') {
-        const instance = await this.createInstance(selectedTag)
-        if (instance) {
-          this.planDialog.instanceId = instance.id
-          await this.submitPlan()
-        }
+      } finally {
+        this.onDemandDialog.inProgress = false
       }
     },
     normalizeSelectedInstanceTypeTag(value) {
@@ -1071,62 +1543,404 @@ export default defineComponent({
 
       return !this.isInstanceTypeOptionAvailable(tag)
     },
+    getAvailableInstanceTypeTag(preferredTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(preferredTag)
+
+      if (
+        normalizedTag &&
+        this.newInstanceDialog.options.some(
+          option => option.value === normalizedTag
+        )
+      ) {
+        return normalizedTag
+      }
+
+      return this.newInstanceDialog.options[0]?.value || null
+    },
+    doesInstanceTypeUseSidecar(tag = this.newInstanceDialog.selectedTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+
+      if (!normalizedTag) {
+        return false
+      }
+
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      return selectedOption?.hasSidecarTag === true
+    },
+    getPlanCatalog() {
+      return {
+        weekly: {
+          price: 2.0,
+          plusPrice: 2.6
+        },
+        monthly: {
+          price: 7.0,
+          plusPrice: 9.1
+        },
+        yearly: {
+          price: 70.0,
+          plusPrice: 91.0
+        }
+      }
+    },
+    normalizePlanName(planName) {
+      if (typeof planName !== 'string') {
+        return ''
+      }
+
+      return planName.replace(/_plus$/, '')
+    },
+    mapBillingToLegacyPlanKey(billing) {
+      switch (billing) {
+        case 'hourly':
+          return 'hourly'
+        case 'weekly':
+          return 'weekly'
+        case 'monthly':
+          return 'monthly'
+        case 'yearly':
+          return 'yearly'
+        default:
+          return null
+      }
+    },
+    normalizeMatrixValue(value) {
+      return typeof value === 'string' && value.trim().length
+        ? value.trim()
+        : null
+    },
+    getPlanPrice(planValue, tag = this.planDialog.selectedTag) {
+      const plan = this.getPlanCatalog()[this.normalizePlanName(planValue)]
+
+      if (!plan) {
+        return 0
+      }
+
+      return this.shouldUsePlusPricing(tag) ? plan.plusPrice : plan.price
+    },
+    shouldUsePlusPricing(tag = this.planDialog.selectedTag) {
+      return this.doesInstanceTypeUseSidecar(tag)
+    },
+    getPlanOptionValue(planValue, tag = this.planDialog.selectedTag) {
+      const normalizedPlanValue = this.normalizePlanName(planValue)
+
+      return this.shouldUsePlusPricing(tag)
+        ? `${normalizedPlanValue}_plus`
+        : normalizedPlanValue
+    },
+    formatUsdAmount(amount) {
+      return `$${Number(amount || 0).toFixed(2)}`
+    },
+    formatMatrixBillingOptionLabel(label, priceText) {
+      if (!priceText) {
+        return label
+      }
+
+      const compactPrice = priceText
+        .replace(/\s*\/\s*hour$/i, '')
+        .replace(/\s*\/\s*week$/i, '')
+        .replace(/\s*\/\s*month$/i, '')
+        .replace(/\s*\/\s*year$/i, '')
+
+      return `${label} · ${compactPrice}`
+    },
+    normalizeTestIdSegment(value) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(value)
+
+      if (!normalizedTag) {
+        return 'unknown'
+      }
+
+      return normalizedTag
+        .replace(/[^a-z0-9]+/gi, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase()
+    },
+    getImageOptionTestId(prefix, value) {
+      return `${prefix}-${this.normalizeTestIdSegment(value)}`
+    },
+    getImageLabel(tag, fallback = 'Not selected') {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      return selectedOption?.label || fallback
+    },
+    syncSelectedTagFromFunding() {
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.fundingValue === this.planDialog.funding
+      )
+
+      this.planDialog.selectedTag =
+        selectedOption?.value ||
+        this.getAvailableInstanceTypeTag(this.planDialog.selectedTag)
+    },
+    syncFundingFromSelectedTag(tag = this.planDialog.selectedTag) {
+      const normalizedTag = this.normalizeSelectedInstanceTypeTag(tag)
+      const selectedOption = this.newInstanceDialog.options.find(
+        option => option.value === normalizedTag
+      )
+
+      if (selectedOption?.fundingValue) {
+        this.planDialog.funding = selectedOption.fundingValue
+      }
+    },
+    getImageSidecarReason(tag) {
+      return this.doesInstanceTypeUseSidecar(tag)
+        ? 'This image requires sidecar runtime.'
+        : 'This image does not require sidecar runtime.'
+    },
+    getImageOptionPricingPresentation({context, tag, planValue} = {}) {
+      return this.getCanonicalImagePricingPresentation({
+        context,
+        tag,
+        planValue
+      })
+    },
+    getCanonicalImagePricingPresentation({
+      context,
+      tag,
+      planValue = this.planDialog.plan
+    } = {}) {
+      const usesSidecar = this.doesInstanceTypeUseSidecar(tag)
+      const statusLabel = usesSidecar
+        ? 'Plus image pricing'
+        : 'Base image pricing'
+
+      if (context === 'on-demand') {
+        const baseRate = this.onDemandDialog.hourlyRateSats
+        const plusRate = this.onDemandDialog.hourlyRatePlusSats
+        const selectedRate = usesSidecar ? plusRate : baseRate
+        const hourlyDelta = plusRate - baseRate
+
+        return {
+          statusLabel,
+          selectedPriceText: `${selectedRate} sats / hour`,
+          optionDeltaText: usesSidecar
+            ? `+${hourlyDelta} sats / hour`
+            : 'Included',
+          deltaText: usesSidecar
+            ? `+${hourlyDelta} sats / hour vs base image`
+            : '0 sats / hour vs base image',
+          sidecarExplanation: usesSidecar
+            ? `${plusRate} sats / hour includes sidecar runtime for this image.`
+            : `${baseRate} sats / hour because this image does not require sidecar runtime.`
+        }
+      }
+
+      const normalizedPlanValue = this.normalizePlanName(planValue || 'monthly')
+      const plan = this.getPlanCatalog()[normalizedPlanValue]
+
+      if (!plan) {
+        return {
+          statusLabel,
+          selectedPriceText: this.formatUsdAmount(0),
+          optionDeltaText: 'Included',
+          deltaText: `${this.formatUsdAmount(0)} per ${normalizedPlanValue} vs base image`,
+          sidecarExplanation: 'Plan pricing details are currently unavailable.'
+        }
+      }
+
+      const selectedPrice = this.getPlanPrice(normalizedPlanValue, tag)
+      const planDelta = plan.plusPrice - plan.price
+
+      return {
+        statusLabel,
+        selectedPriceText: `${this.formatUsdAmount(selectedPrice)} / ${normalizedPlanValue}`,
+        optionDeltaText: usesSidecar
+          ? `+${this.formatUsdAmount(planDelta)} / ${normalizedPlanValue}`
+          : 'Included',
+        deltaText: usesSidecar
+          ? `+${this.formatUsdAmount(planDelta)} per ${normalizedPlanValue} vs base image`
+          : `${this.formatUsdAmount(0)} per ${normalizedPlanValue} vs base image`,
+        sidecarExplanation: usesSidecar
+          ? `${this.formatUsdAmount(plan.plusPrice)} per ${normalizedPlanValue} includes sidecar runtime for this image.`
+          : `${this.formatUsdAmount(plan.price)} per ${normalizedPlanValue} because this image does not require sidecar runtime.`
+      }
+    },
+    syncSelectedPlanVariant() {
+      if (!this.planDialog.plan) {
+        return
+      }
+
+      this.planDialog.plan = this.getPlanOptionValue(this.planDialog.plan)
+    },
+    syncLegacyPlanFromMatrixBilling() {
+      const mappedPlan = this.mapBillingToLegacyPlanKey(this.planDialog.billing)
+
+      if (!mappedPlan) {
+        this.planDialog.plan = null
+        return
+      }
+
+      this.planDialog.plan = mappedPlan
+      this.syncSelectedPlanVariant()
+    },
+    onMatrixBillingChange() {
+      this.planDialog.subscription = this.planDialog.billing !== 'hourly'
+      this.planDialog.count = 1
+      this.planDialog.paymentCurrency = this.isHourlyMatrixSelection
+        ? 'BTC'
+        : this.planDialog.paymentCurrency === 'BTC'
+          ? 'BTC'
+          : 'USD'
+      this.syncLegacyPlanFromMatrixBilling()
+    },
+    onMatrixFundingChange() {
+      this.syncFundingFromSelectedTag()
+    },
+    onPlanDialogModeChange(isSubscription) {
+      this.planDialog.subscription = isSubscription
+      this.planDialog.fiatOnly = isSubscription === true
+      this.planDialog.bitcoinOnly = false
+    },
+    getDefaultFundingValue(preferredFunding) {
+      const normalizedFunding = this.normalizeMatrixValue(preferredFunding)
+
+      if (
+        normalizedFunding &&
+        this.fundingSourceOptions.some(
+          option => option.value === normalizedFunding
+        )
+      ) {
+        return normalizedFunding
+      }
+
+      return this.fundingSourceOptions[0]?.value || 'spark_l2'
+    },
+    getMatrixQuantityBounds() {
+      switch (this.planDialog.billing) {
+        case 'weekly':
+          return {min: 1, max: 8}
+        case 'monthly':
+          return {min: 1, max: 12}
+        case 'yearly':
+          return {min: 1, max: 5}
+        default:
+          return {min: 1, max: 1}
+      }
+    },
+    initializePricingMatrixSelection({tier, billing, funding, image} = {}) {
+      this.planDialog.tier = this.normalizeMatrixValue(tier)
+      this.planDialog.billing = this.normalizeMatrixValue(billing) || 'monthly'
+      this.planDialog.funding = this.getDefaultFundingValue(funding)
+      this.planDialog.hideFeatures.tab = true
+      this.planDialog.paymentCurrency =
+        this.planDialog.billing === 'hourly' ? 'BTC' : 'USD'
+      this.planDialog.fiatOnly = this.planDialog.paymentCurrency === 'USD'
+      this.planDialog.bitcoinOnly = this.planDialog.paymentCurrency === 'BTC'
+      this.onMatrixBillingChange()
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(image)
+      this.syncFundingFromSelectedTag(this.planDialog.selectedTag)
+    },
+    async openNewInstancePlanDialog({subscription = true, fiatOnly} = {}) {
+      await this.loadInstanceTypeOptions()
+      this.planDialog.hideFeatures.tab = false
+      this.planDialog.subscription = subscription
+      this.planDialog.fiatOnly =
+        typeof fiatOnly === 'boolean' ? fiatOnly : subscription
+      this.planDialog.bitcoinOnly = false
+      this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
+      this.planDialog.plan = 'monthly'
+      this.syncSelectedPlanVariant()
+      this.planDialog.show = true
+    },
+    getSelectedPaymentPlanName() {
+      if (this.isPricingMatrixFlow) {
+        return this.planDialog.billing || null
+      }
+
+      if (!this.planDialog.plan) {
+        return null
+      }
+
+      return this.getPlanOptionValue(this.planDialog.plan)
+    },
+    isPlanSubmitDisabled() {
+      if (!this.planDialog.plan || this.planDialog.inProgress) {
+        return true
+      }
+
+      return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
+    },
     async loadInstanceTypeOptions() {
+      const requestId = ++this.instanceTypesRequestId
       this.newInstanceDialog.loading = true
       this.newInstanceDialog.error = null
 
       try {
         const {data} = await saas.getInstanceTypes()
+        const options = mapInstanceTypesToImageOptions(data)
+        const fundingOptions = mapInstanceTypesToFundingOptions(data)
 
-        const types = Array.isArray(data) ? data : []
-
-        const options = types
-          .map(item => {
-            const tag = this.normalizeInstanceTypeTag(item?.tag)
-            const label = this.normalizeInstanceTypeLabel(item?.label)
-
-            if (!tag || !label) {
-              return null
-            }
-
-            return {
-              value: tag,
-              label
-            }
-          })
-          .filter(Boolean)
+        if (requestId !== this.instanceTypesRequestId) {
+          return
+        }
 
         this.newInstanceDialog.options = options
-        this.newInstanceDialog.selectedTag = options[0]?.value || null
+        this.fundingSourceOptions = fundingOptions
 
         if (!options.length) {
           this.newInstanceDialog.error = 'No instance images are available.'
           this.newInstanceDialog.selectedTag = null
-        } else if (
-          this.isInstanceTypeTagValid(this.newInstanceDialog.selectedTag) &&
-          !options.some(
-            option =>
-              option.value ===
-              this.normalizeSelectedInstanceTypeTag(
-                this.newInstanceDialog.selectedTag
+          if (this.planDialog.show) {
+            this.planDialog.selectedTag = null
+          }
+          if (this.onDemandDialog.show) {
+            this.onDemandDialog.selectedTag = null
+          }
+        } else {
+          if (this.planDialog.show) {
+            if (this.isPricingMatrixFlow) {
+              this.planDialog.funding = this.getDefaultFundingValue(
+                this.planDialog.funding
               )
-          )
-        ) {
-          this.newInstanceDialog.selectedTag = null
+              this.syncSelectedTagFromFunding()
+            } else {
+              this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
+                this.planDialog.selectedTag
+              )
+            }
+          }
+          if (this.onDemandDialog.show) {
+            this.onDemandDialog.selectedTag = this.getAvailableInstanceTypeTag(
+              this.onDemandDialog.selectedTag
+            )
+          }
         }
+
+        this.syncSelectedPlanVariant()
       } catch (error) {
+        if (requestId !== this.instanceTypesRequestId) {
+          return
+        }
         console.warn(error)
         this.newInstanceDialog.error =
           saas.mapErrorToString(error) || 'Failed to load instance images.'
         this.newInstanceDialog.options = []
+        this.fundingSourceOptions = []
         this.newInstanceDialog.selectedTag = null
+        if (this.planDialog.show) {
+          this.planDialog.selectedTag = null
+        }
+        if (this.onDemandDialog.show) {
+          this.onDemandDialog.selectedTag = null
+        }
         this.q.notify({
           message: 'Failed to load instance images',
           caption: this.newInstanceDialog.error,
           color: 'negative'
         })
       } finally {
-        this.newInstanceDialog.loading = false
+        if (requestId === this.instanceTypesRequestId) {
+          this.newInstanceDialog.loading = false
+        }
       }
     },
     async retryLoadInstanceTypeOptions() {
@@ -1148,44 +1962,10 @@ export default defineComponent({
       const label = value.trim()
       return label.length > 0 ? label : undefined
     },
-    showNewInstanceProvisioning: async function () {
-      this.selectPlan.show = false
-      if (this.selectPlan.method === 'one-time') {
-        this.planDialog.hideFeatures.tab = true
-        this.planDialog.subscription = false
-        this.planDialog.fiatOnly = false
-        this.planDialog.bitcoinOnly = false
-        this.planDialog.show = true
-      } else if (this.selectPlan.method === 'subscription') {
-        this.planDialog.plan = 'monthly'
-        this.planDialog.hideFeatures.tab = true
-        this.planDialog.subscription = true
-        this.planDialog.fiatOnly = true
-        this.planDialog.bitcoinOnly = false
-        this.planDialog.show = true
-      } else if (this.selectPlan.method === 'on-demand') {
-        this.openNewInstanceDialog('on-demand')
-      }
-      this.selectPlan.method = null
-    },
-    subscriptionInstance(instanceId, currency) {
-      currency = (currency || 'USD').trim().toUpperCase()
-      this.planDialog.fiatOnly = currency == 'USD'
-      this.planDialog.bitcoinOnly = currency == 'BTC'
-      this.planDialog.subscription = currency == 'USD'
-      this.planDialog.plan = 'monthly'
-      if (instanceId) {
-        this.planDialog.instanceId = instanceId
-      }
-      this.planDialog.hideFeatures.tab = currency !== 'USD'
-
-      this.planDialog.show = true
-    },
-
-    createInstance: async function (provider) {
+    createInstance: async function (provider, paymentPlan = {}) {
       try {
         this.inProgress = true
-        const {data} = await saas.createInstance(provider)
+        const {data} = await saas.createInstance(provider, paymentPlan)
         const instance = saas.mapInstance(data)
         this.data.push(instance)
         return instance
@@ -1207,42 +1987,87 @@ export default defineComponent({
         fiatOnly: false,
         bitcoinOnly: false,
         plan: null,
+        tier: null,
+        billing: null,
+        funding: null,
+        paymentCurrency: 'USD',
         count: 1,
-        instanceId: null,
+        selectedTag: null,
         hideFeatures: {
           tab: false
         }
       }
+      this.newInstanceDialog.selectedTag = null
+      this.newInstanceDialog.error = null
+      this.instanceTypesRequestId += 1
+    },
+    resetOnDemandDialog() {
+      this.onDemandDialog.inProgress = false
+      this.onDemandDialog.plan = 'hourly'
+      this.onDemandDialog.selectedTag = null
+      this.newInstanceDialog.error = null
+      this.instanceTypesRequestId += 1
     },
 
     async submitPlanRequest(useFiat) {
       // validate planDialog data, make saas request for payment details
-      this.planDialog.fiatOnly = useFiat === true
-      console.log('### planDialog', this.planDialog)
+      if (this.isPricingMatrixFlow) {
+        const wantsFiat = this.planDialog.paymentCurrency === 'USD'
 
-      if (this.planDialog.instanceId) {
-        this.submitPlan()
-      } else {
-        this.openNewInstanceDialog('plan-request')
+        this.planDialog.subscription =
+          this.planDialog.billing !== 'hourly' && wantsFiat
+        this.planDialog.fiatOnly = wantsFiat
+        this.planDialog.bitcoinOnly = wantsFiat === false
+      } else if (typeof useFiat === 'boolean') {
+        this.planDialog.fiatOnly = useFiat
       }
+
+      const selectedTag = this.normalizeSelectedInstanceTypeTag(
+        this.planDialog.selectedTag
+      )
+
+      if (this.isCreateInstanceSubmitDisabled(selectedTag)) {
+        this.newInstanceDialog.error =
+          this.newInstanceDialog.error || 'Please select an instance image.'
+        this.q.notify({
+          message: this.newInstanceDialog.error,
+          color: 'negative'
+        })
+        return
+      }
+
+      const instance = await this.createInstance(selectedTag, {
+        tier: this.planDialog.tier,
+        interval: this.planDialog.billing
+      })
+      if (!instance) {
+        return
+      }
+
+      if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
+        this.planDialog.show = false
+        this.extendInstance(instance, instance.lnurl)
+        return
+      }
+
+      await this.submitPlan(instance.id)
     },
-    async submitPlan() {
+    async submitPlan(instanceId) {
       if (this.planDialog.subscription) {
-        return await this.submitSubscriptionPlan()
+        return await this.submitSubscriptionPlan(instanceId)
       }
-      await this.submitOneTimePlan()
+      await this.submitOneTimePlan(instanceId)
     },
-    async submitSubscriptionPlan() {
+    async submitSubscriptionPlan(instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.subscribeToPlan(
-          this.planDialog.instanceId,
-          this.planDialog.plan
+          instanceId,
+          this.getSelectedPaymentPlanName()
         )
-        console.log('### subscribe data', data)
         this.planDialog.show = false
         this.extendInstance(
-          this.data.find(i => i.id === this.planDialog.instanceId),
+          this.data.find(i => i.id === instanceId),
           data.checkout_session_url
         )
         return true
@@ -1258,20 +2083,20 @@ export default defineComponent({
         this.planDialog.inProgress = false
       }
     },
-    async submitOneTimePlan() {
+    async submitOneTimePlan(instanceId) {
       try {
         this.planDialog.inProgress = true
         const {data} = await saas.createOneTimePlan(
-          this.planDialog.instanceId,
-          this.planDialog.plan,
+          instanceId,
+          this.getSelectedPaymentPlanName(),
           this.planDialog.count,
           this.planDialog.fiatOnly
         )
-        console.log('### one time plan data', data)
         this.planDialog.show = false
         this.extendInstance(
-          this.data.find(i => i.id === this.planDialog.instanceId),
-          data.payment_request
+          this.data.find(i => i.id === instanceId),
+          data.payment_request,
+          !this.planDialog.fiatOnly
         )
         return true
       } catch (error) {
@@ -1486,14 +2311,11 @@ export default defineComponent({
       }
     },
     extendInstance: function (instance, qrCodeData) {
-      console.log('### extendInstance', instance, qrCodeData)
       this.activeInstance = instance
 
       this.qrCodeDialog.data = qrCodeData || instance.lnurl
       this.qrCodeDialog.dataIsUrl = this.isValidUrl(this.qrCodeDialog.data)
       this.qrCodeDialog.show = true
-
-      console.log('### qrCodeDialog', this.qrCodeDialog)
 
       this.checkInstanceStatus(instance)
     },
@@ -1553,18 +2375,271 @@ export default defineComponent({
       }
     }
   },
+  computed: {
+    isPricingMatrixFlow() {
+      return Boolean(
+        this.planDialog.tier ||
+        this.planDialog.billing ||
+        this.planDialog.funding
+      )
+    },
+    isHourlyMatrixSelection() {
+      return this.planDialog.billing === 'hourly'
+    },
+    pricingMatrixTierCatalog() {
+      return this.pricingPlans.reduce((catalog, plan) => {
+        catalog[plan.tierKey] = {
+          label: plan.title,
+          badge: plan.badge ? `- ${plan.badge}` : '',
+          features: plan.features
+        }
+
+        return catalog
+      }, {})
+    },
+    matrixTierOptions() {
+      return this.pricingPlans.map(plan => ({
+        label: plan.title,
+        badge: plan.badge ? `- ${plan.badge}` : '',
+        value: plan.tierKey
+      }))
+    },
+    matrixBillingOptions() {
+      const tier = this.planDialog.tier
+      const pricing = this.pricingMatrixCatalog[tier] || {}
+
+      return [
+        {
+          label: this.formatMatrixBillingOptionLabel('Hourly', pricing.hourly),
+          value: 'hourly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel('Weekly', pricing.weekly),
+          value: 'weekly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel(
+            'Monthly',
+            pricing.monthly
+          ),
+          value: 'monthly'
+        },
+        {
+          label: this.formatMatrixBillingOptionLabel('Yearly', pricing.yearly),
+          value: 'yearly'
+        }
+      ]
+    },
+    matrixFundingOptions() {
+      return this.newInstanceDialog.options
+    },
+    matrixPaymentCurrencyOptions() {
+      if (this.isHourlyMatrixSelection) {
+        return [{label: 'Bitcoin', value: 'BTC'}]
+      }
+
+      return [
+        {label: 'USD', value: 'USD'},
+        {label: 'Bitcoin', value: 'BTC'}
+      ]
+    },
+    matrixPaymentButtonLabel() {
+      return this.planDialog.paymentCurrency === 'USD'
+        ? 'Pay with USD'
+        : 'Pay with bitcoin'
+    },
+    matrixBitcoinQuantityOptions() {
+      const {min, max} = this.getMatrixQuantityBounds()
+      let unit = 'item'
+
+      switch (this.planDialog.billing) {
+        case 'weekly':
+          unit = 'week'
+          break
+        case 'monthly':
+          unit = 'month'
+          break
+        case 'yearly':
+          unit = 'year'
+          break
+      }
+
+      return Array.from({length: max - min + 1}, (_, index) => {
+        const value = min + index
+        const suffix = value === 1 ? unit : `${unit}s`
+
+        return {
+          label: `${value} ${suffix}`,
+          value
+        }
+      })
+    },
+    pricingMatrixCatalog() {
+      return this.pricingPlans.reduce((catalog, plan) => {
+        catalog[plan.tierKey] = plan.billingOptions.reduce(
+          (billingCatalog, option) => {
+            const intervalSuffix = option.interval.replace(/^per\s+/i, '')
+            const amount =
+              option.currency === 'sats'
+                ? `${option.amount} sats`
+                : `${option.symbol || '$'}${option.amount}`
+
+            billingCatalog[option.key] = `${amount} / ${intervalSuffix}`
+
+            return billingCatalog
+          },
+          {}
+        )
+
+        return catalog
+      }, {})
+    },
+    selectedMatrixPriceText() {
+      const tier = this.planDialog.tier
+      const billing = this.planDialog.billing
+
+      if (!tier || !billing) {
+        return 'Unavailable'
+      }
+
+      const tierLabel = this.pricingMatrixTierCatalog[tier]?.label
+      const priceText = this.pricingMatrixCatalog[tier]?.[billing]
+
+      if (!tierLabel || !priceText) {
+        return 'Unavailable'
+      }
+
+      const fundingLabel = this.selectedMatrixFundingDetails?.label
+
+      return fundingLabel
+        ? `${tierLabel}: ${priceText} - ${fundingLabel}`
+        : `${tierLabel}: ${priceText}`
+    },
+    selectedMatrixFundingDetails() {
+      const selectedImageOption = this.newInstanceDialog.options.find(
+        option => option.value === this.planDialog.selectedTag
+      )
+
+      if (selectedImageOption) {
+        return selectedImageOption
+      }
+
+      const funding = this.planDialog.funding
+
+      if (!funding) {
+        return null
+      }
+
+      const matchedFundingOption = this.fundingSourceOptions.find(
+        option => option.value === funding
+      )
+
+      if (matchedFundingOption) {
+        return matchedFundingOption
+      }
+
+      const matchedImageOption = this.newInstanceDialog.options.find(
+        option => option.fundingValue === funding
+      )
+
+      if (!matchedImageOption) {
+        return null
+      }
+
+      return {
+        value: funding,
+        label: matchedImageOption.label,
+        description: matchedImageOption.description || ''
+      }
+    },
+    showMatrixBitcoinQuantity() {
+      return (
+        this.isPricingMatrixFlow &&
+        this.planDialog.paymentCurrency === 'BTC' &&
+        ['weekly', 'monthly', 'yearly'].includes(this.planDialog.billing)
+      )
+    },
+    selectedMatrixTierDetails() {
+      const tier = this.planDialog.tier
+
+      if (!tier) {
+        return null
+      }
+
+      return this.pricingMatrixTierCatalog[tier] || null
+    },
+    selectedImageHasSidecarTag() {
+      return this.shouldUsePlusPricing()
+    },
+    planSelectedImageLabel() {
+      return this.getImageLabel(this.planDialog.selectedTag)
+    },
+    onDemandSelectedImageLabel() {
+      return this.getImageLabel(this.onDemandDialog.selectedTag)
+    },
+    planImageSidecarReason() {
+      return this.getImageSidecarReason(this.planDialog.selectedTag)
+    },
+    onDemandImageSidecarReason() {
+      return this.getImageSidecarReason(this.onDemandDialog.selectedTag)
+    },
+    planImagePricingSummaryPriceText() {
+      const unitPrice = this.getPlanPrice(
+        this.planDialog.plan,
+        this.planDialog.selectedTag
+      )
+      const unitPriceText = this.planImagePricingPresentation.selectedPriceText
+
+      if (this.planDialog.subscription) {
+        return `Renews at ${unitPriceText}.`
+      }
+
+      const count = Number(this.planDialog.count || 1)
+      const totalPriceText = this.formatUsdAmount(unitPrice * count)
+
+      return count > 1
+        ? `Resulting total: ${totalPriceText} (${unitPriceText} x ${count}).`
+        : `Resulting total: ${unitPriceText}.`
+    },
+    planImagePricingPresentation() {
+      return this.getCanonicalImagePricingPresentation({
+        context: 'plan',
+        tag: this.planDialog.selectedTag,
+        planValue: this.planDialog.plan
+      })
+    },
+    onDemandImagePricingPresentation() {
+      return this.getCanonicalImagePricingPresentation({
+        context: 'on-demand',
+        tag: this.onDemandDialog.selectedTag
+      })
+    }
+  },
   async created() {
     try {
       // temporary feature flag for alan
       this.showFeatureFlag = saas.isTestingMode()
 
       this.inProgress = true
+      await this.loadPricingData()
       await this.refreshState()
     } catch (error) {
       console.warn(error)
     } finally {
       this.inProgress = false
-      if (this.plan) {
+      if (this.tier || this.billing || this.funding || this.image) {
+        await this.loadInstanceTypeOptions()
+        this.initializePricingMatrixSelection({
+          tier: this.tier,
+          billing: this.billing,
+          funding: this.funding,
+          image: this.image
+        })
+        this.planDialog.show = true
+        this.$router.replace({query: null}).catch(() => {
+          // Ignore errors
+        })
+      } else if (this.plan) {
         this.planDialog.plan = this.plan
         this.planDialog.show = true
         // remove query params from URL
@@ -1592,5 +2667,15 @@ export default defineComponent({
 
 .instance-image-select__menu .q-item:nth-child(1) .q-item__label {
   color: #22c55e;
+}
+
+.matrix-funding-tooltip {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.matrix-payment-count-select {
+  min-width: 132px;
 }
 </style>
