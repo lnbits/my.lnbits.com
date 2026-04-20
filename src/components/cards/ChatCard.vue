@@ -3,6 +3,7 @@
     <iframe
       id="lnbits-chat-embed-iframe"
       ref="chatIframe"
+      loading="lazy"
       style="
         position: fixed;
         right: 24px;
