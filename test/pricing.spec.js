@@ -66,6 +66,7 @@ test('renders pricing plans from the dev pricing API', async ({page}) => {
   const pricingCards = page.locator('.pc')
 
   await expect(pricingCards).toHaveCount(4)
+  await expect(page.locator('.pc__select--stacked')).toHaveCount(0)
   await expect(page.getByRole('heading', {name: 'Personal'})).toBeVisible()
   await expect(page.getByRole('heading', {name: 'Premium'})).toBeVisible()
   await expect(page.getByRole('heading', {name: 'Business'})).toBeVisible()
@@ -73,6 +74,8 @@ test('renders pricing plans from the dev pricing API', async ({page}) => {
   await expect(page.locator('.pc__badge').filter({hasText: 'Most Popular'})).toBeVisible()
   await expect(page.locator('.p-plans__grid')).toContainText('Monthly')
   await expect(page.locator('.p-plans__grid')).toContainText('$10')
+  await expect(page.getByRole('link', {name: 'Register'})).toHaveCount(4)
+  await expect(page.locator('.pc__cta').first()).toHaveAttribute('href', '/')
 
   await page.locator('.pc').first().locator('.pc__select').first().click()
   await expect(page.locator('.q-menu .q-item')).toHaveText([
@@ -212,7 +215,7 @@ test('shows every instance type returned by the API in the create instance fundi
   expect(optionLabels).toEqual(expectedLabels)
   await page.keyboard.press('Escape')
 
-  await page.getByRole('button', {name: 'Payment'}).click()
+  await page.getByRole('button', {name: /Pay with/i}).click()
   await expect.poll(() => createInstanceRequestBody).toMatchObject({
     instance_type: 'lnbits-spark',
     payment_plan_tier: 'premium',
