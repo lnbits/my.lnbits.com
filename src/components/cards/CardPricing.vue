@@ -55,6 +55,7 @@
         class="pc__select"
       />
       <q-select
+        v-if="loggedIn"
         v-model="selectedFundingOption"
         :options="fundingOptions"
         dense
@@ -69,7 +70,7 @@
 
     <q-btn
       :to="ctaTo"
-      :label="buttonLabel"
+      :label="ctaLabel"
       no-caps
       unelevated
       class="full-width pc__cta"
@@ -150,7 +151,7 @@ const selectedFundingDetails = computed(
 
 const ctaTo = computed(() => {
   if (!props.loggedIn) {
-    return '/login'
+    return '/'
   }
 
   return {
@@ -166,6 +167,10 @@ const ctaTo = computed(() => {
     }
   }
 })
+
+const ctaLabel = computed(() =>
+  props.loggedIn ? props.buttonLabel : 'Register'
+)
 
 const badgeClass = computed(() => `pc__badge--${props.badgeTone}`)
 
