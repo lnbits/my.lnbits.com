@@ -2227,7 +2227,14 @@ export default defineComponent({
         }
       })
     },
-    checkInstanceStatus: function (instance) {
+    checkInstanceStatus: async function (instance) {
+      let response
+      try {
+        response = await fetch(`https://${instance.name}/static/i18n/en.js`)
+      } catch (error) {
+        // Ignore CORS errors and other network errors
+        response = null
+      }
       const retryId = setInterval(async () => {
         try {
           const {data} = await saas.getInstances()
@@ -2243,7 +2250,9 @@ export default defineComponent({
               message: `Instance ${instance.id} extended!`,
               color: 'positive'
             })
-            await this.checkInstanceProvisioning(updatedInstance.id)
+            if (!response || response.status === 503) {
+              await this.checkInstanceProvisioning(updatedInstance.id)
+            }
           }
           if (!this.qrCodeDialog.show) {
             await this.refreshState()
