@@ -601,9 +601,7 @@
             <div class="text-subtitle1">
               {{ selectedDomainRequestConfig.title }}
             </div>
-            <div class="text-caption text-grey-5 q-mt-xs">
-              {{ selectedDomainRequestConfig.message }}
-            </div>
+            <div class="text-caption text-grey-5 q-mt-xs" v-html="selectedDomainRequestConfig.message" />
             <q-input
               v-model="planDialog.domain"
               :label="selectedDomainRequestConfig.label"
@@ -1468,7 +1466,8 @@ export default defineComponent({
         return {
           title: 'Custom domain',
           message:
-            'This payment plan supports a custom subdomain or a full custom domain. Enter the hostname you want to use for this instance.',
+            '<p>This payment plan supports a custom subdomain or a full custom domain. Enter the hostname you want to use for this instance.</p>' +
+            '<p>You will need to configure your domain\'s DNS settings. <a href="https://community.lnbits.com/t/custom-domain-names-dns-setup-guide/60" title="LNbits SaaS custom DNS settings" target="_blank">Find out how here.</a></p>',
           label: 'Domain or subdomain',
           hint: 'Examples: my-team or pay.example.com',
           missingMessage: 'Enter a custom domain or subdomain.',
@@ -1482,7 +1481,8 @@ export default defineComponent({
         return {
           title: 'Custom subdomain',
           message:
-            'This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.',
+            '<p>This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.</p>' + 
+            '<p>You will need to configure your domain\'s DNS settings. <a href="https://community.lnbits.com/t/custom-domain-names-dns-setup-guide/60" title="LNbits SaaS custom DNS settings" target="_blank">Find out how here.</a></p>',
           label: 'Subdomain',
           hint: 'Example: my-team.lnbits.com',
           suffix: '.lnbits.com',
