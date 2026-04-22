@@ -308,6 +308,8 @@ export const mapPricingResponseToPlans = payload => {
       title,
       description: tier?.description || '',
       buttonLabel: tier?.button_label || `Get ${title}`,
+      customDomain: tier?.custom_domain === true,
+      customSubdomain: tier?.custom_subdomain === true,
       defaultBilling: getDefaultBilling(tier, billingOptions, saas),
       badge: formatLabel(badge),
       badgeTone:

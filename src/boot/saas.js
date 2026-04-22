@@ -120,6 +120,7 @@ var saas = {
       withCredentials: true,
       data: {
         instance_type: instanceType,
+        domain: paymentPlan.domain || undefined,
         payment_plan_tier: paymentPlan.tier || undefined,
         payment_plan_interval: paymentPlan.interval || undefined
       }

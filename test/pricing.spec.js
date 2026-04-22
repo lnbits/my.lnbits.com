@@ -49,6 +49,13 @@ const pricingPayload = {
   }
 }
 
+const createPricingPayload = premiumOverrides => ({
+  premium: {
+    ...pricingPayload.premium,
+    ...premiumOverrides
+  }
+})
+
 test('renders pricing plans from the dev pricing API', async ({page}) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('apiEnv', 'dev')
@@ -199,6 +206,9 @@ test('shows every instance type returned by the API in the create instance fundi
   )
 
   await page.goto('/instances?tier=premium&billing=monthly&funding=spark_l2')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
 
   const responseJson = await (await instanceTypesResponse).json()
   const expectedLabels = getInstanceTypeLabels(responseJson)
@@ -215,10 +225,193 @@ test('shows every instance type returned by the API in the create instance fundi
   expect(optionLabels).toEqual(expectedLabels)
   await page.keyboard.press('Escape')
 
-  await page.getByRole('button', {name: /Pay with/i}).click()
+  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
   await expect.poll(() => createInstanceRequestBody).toMatchObject({
     instance_type: 'lnbits-spark',
     payment_plan_tier: 'premium',
     payment_plan_interval: 'monthly'
+  })
+})
+
+test('prompts for a custom subdomain when the selected payment plan allows it', async ({page}) => {
+  let createInstanceRequestBody = null
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem('apiEnv', 'dev')
+    window.localStorage.setItem('email', 'pricing-test@example.com')
+  })
+
+  await page.route('https://api.dev.lnbits.com/pricing', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        createPricingPayload({
+          custom_subdomain: true,
+          custom_domain: false
+        })
+      )
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance', route =>
+    route.request().method() === 'POST'
+      ? (() => {
+          createInstanceRequestBody = route.request().postDataJSON()
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              id: 'instance-1',
+              domain: 'instance-1.example.com',
+              is_enabled: true,
+              is_active: true,
+              timestamp: 1700000000,
+              timestamp_start: 1700000000,
+              timestamp_stop: 1700086400,
+              installtoken: 'install-token',
+              lnurl: ''
+            })
+          })
+        })()
+      : route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        })
+  )
+  await page.route('https://api.dev.lnbits.com/', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({timestamp: Math.floor(Date.now() / 1000)})
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/types', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(instanceTypesPayload)
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/subscribe', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        payment_request: 'lnbc1test',
+        payment_hash: 'payment-hash'
+      })
+    })
+  )
+
+  await page.goto('/instances?tier=premium&billing=monthly&funding=spark_l2')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
+
+  const domainInput = page.getByTestId('instance-domain-input')
+
+  await expect(domainInput).toBeVisible()
+  await expect(domainInput).toHaveAttribute('aria-label', 'Subdomain')
+  await expect(page.locator('.q-field__suffix')).toContainText('.lnbits.com')
+  await domainInput.fill('my-team')
+  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+
+  await expect.poll(() => createInstanceRequestBody).toMatchObject({
+    instance_type: 'lnbits-spark',
+    payment_plan_tier: 'premium',
+    payment_plan_interval: 'monthly',
+    domain: 'my-team.lnbits.com'
+  })
+})
+
+test('prompts for a custom domain when the selected payment plan allows it', async ({page}) => {
+  let createInstanceRequestBody = null
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem('apiEnv', 'dev')
+    window.localStorage.setItem('email', 'pricing-test@example.com')
+  })
+
+  await page.route('https://api.dev.lnbits.com/pricing', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        createPricingPayload({
+          custom_subdomain: false,
+          custom_domain: true
+        })
+      )
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance', route =>
+    route.request().method() === 'POST'
+      ? (() => {
+          createInstanceRequestBody = route.request().postDataJSON()
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              id: 'instance-1',
+              domain: 'instance-1.example.com',
+              is_enabled: true,
+              is_active: true,
+              timestamp: 1700000000,
+              timestamp_start: 1700000000,
+              timestamp_stop: 1700086400,
+              installtoken: 'install-token',
+              lnurl: ''
+            })
+          })
+        })()
+      : route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        })
+  )
+  await page.route('https://api.dev.lnbits.com/', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({timestamp: Math.floor(Date.now() / 1000)})
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/types', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(instanceTypesPayload)
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/subscribe', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        payment_request: 'lnbc1test',
+        payment_hash: 'payment-hash'
+      })
+    })
+  )
+
+  await page.goto('/instances?tier=premium&billing=monthly&funding=spark_l2')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
+
+  const domainInput = page.getByTestId('instance-domain-input')
+
+  await expect(domainInput).toBeVisible()
+  await expect(domainInput).toHaveAttribute('aria-label', 'Domain or subdomain')
+  await domainInput.fill('pay.example.com')
+  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+
+  await expect.poll(() => createInstanceRequestBody).toMatchObject({
+    instance_type: 'lnbits-spark',
+    payment_plan_tier: 'premium',
+    payment_plan_interval: 'monthly',
+    domain: 'pay.example.com'
   })
 })

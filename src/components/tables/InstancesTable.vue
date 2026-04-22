@@ -597,8 +597,29 @@
               </div>
             </div>
           </div>
+          <div v-if="selectedDomainRequestConfig" class="q-mt-md">
+            <div class="text-subtitle1">
+              {{ selectedDomainRequestConfig.title }}
+            </div>
+            <div class="text-caption text-grey-5 q-mt-xs">
+              {{ selectedDomainRequestConfig.message }}
+            </div>
+            <q-input
+              v-model="planDialog.domain"
+              :label="selectedDomainRequestConfig.label"
+              :hint="selectedDomainRequestConfig.hint"
+              :suffix="selectedDomainRequestConfig.suffix || undefined"
+              :error="Boolean(planDomainValidationMessage)"
+              :error-message="planDomainValidationMessage"
+              dense
+              outlined
+              bottom-slots
+              class="q-mt-md"
+              data-testid="instance-domain-input"
+            />
+          </div>
           <q-select
-            v-else
+            v-if="!isPricingMatrixFlow"
             v-model="planDialog.selectedTag"
             @update:model-value="syncSelectedPlanVariant"
             :options="newInstanceDialog.options"
@@ -1355,6 +1376,7 @@ export default defineComponent({
         tier: null,
         billing: null,
         funding: null,
+        domain: '',
         paymentCurrency: 'USD',
         count: 1,
         selectedTag: null,
@@ -1409,6 +1431,74 @@ export default defineComponent({
     }
   },
   methods: {
+    getSelectedPricingPlan(tierKey = this.planDialog.tier) {
+      if (!tierKey) {
+        return null
+      }
+
+      return this.pricingPlans.find(plan => plan.tierKey === tierKey) || null
+    },
+    normalizeDomainValue(value) {
+      if (typeof value !== 'string') {
+        return ''
+      }
+
+      return value.trim().toLowerCase()
+    },
+    isValidHostnameLabel(value) {
+      return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(
+        this.normalizeDomainValue(value)
+      )
+    },
+    isValidHostname(value) {
+      const normalizedValue = this.normalizeDomainValue(value)
+
+      if (!normalizedValue || normalizedValue.length > 253) {
+        return false
+      }
+
+      return normalizedValue
+        .split('.')
+        .every(label => this.isValidHostnameLabel(label))
+    },
+    getSelectedDomainRequestConfig() {
+      const selectedPlan = this.getSelectedPricingPlan()
+
+      if (selectedPlan?.customDomain) {
+        return {
+          title: 'Custom domain',
+          message:
+            'This payment plan supports a custom subdomain or a full custom domain. Enter the hostname you want to use for this instance.',
+          label: 'Domain or subdomain',
+          hint: 'Examples: my-team or pay.example.com',
+          missingMessage: 'Enter a custom domain or subdomain.',
+          invalidMessage: 'Use a valid hostname such as my-team or pay.example.com.',
+          formatValue: value => this.normalizeDomainValue(value),
+          isValid: value => this.isValidHostname(value)
+        }
+      }
+
+      if (selectedPlan?.customSubdomain) {
+        return {
+          title: 'Custom subdomain',
+          message:
+            'This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.',
+          label: 'Subdomain',
+          hint: 'Example: my-team.lnbits.com',
+          suffix: '.lnbits.com',
+          missingMessage: 'Enter a custom subdomain.',
+          invalidMessage: 'Use only letters, numbers, and hyphens for the subdomain.',
+          formatValue: value => {
+            const normalizedValue = this.normalizeDomainValue(value)
+
+            return normalizedValue ? `${normalizedValue}.lnbits.com` : ''
+          },
+          isValid: value => this.isValidHostnameLabel(value)
+        }
+      }
+
+      return null
+    },
     async loadPricingData() {
       try {
         this.pricingPlans = await getPricingPlans()
@@ -1867,6 +1957,10 @@ export default defineComponent({
         return true
       }
 
+      if (!this.isSelectedPlanDomainValid) {
+        return true
+      }
+
       return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
     },
     async loadInstanceTypeOptions() {
@@ -1990,6 +2084,7 @@ export default defineComponent({
         tier: null,
         billing: null,
         funding: null,
+        domain: '',
         paymentCurrency: 'USD',
         count: 1,
         selectedTag: null,
@@ -2036,7 +2131,20 @@ export default defineComponent({
         return
       }
 
+      if (!this.isSelectedPlanDomainValid) {
+        this.q.notify({
+          message: this.planDomainValidationMessage,
+          color: 'negative'
+        })
+        return
+      }
+
+      this.planDialog.domain = this.normalizedPlanDomain
+
       const instance = await this.createInstance(selectedTag, {
+        domain: this.selectedDomainRequestConfig
+          ? this.submittedPlanDomain
+          : undefined,
         tier: this.planDialog.tier,
         interval: this.planDialog.billing
       })
@@ -2447,6 +2555,41 @@ export default defineComponent({
       return this.planDialog.paymentCurrency === 'USD'
         ? 'Pay with USD'
         : 'Pay with bitcoin'
+    },
+    selectedDomainRequestConfig() {
+      return this.getSelectedDomainRequestConfig()
+    },
+    normalizedPlanDomain() {
+      return this.normalizeDomainValue(this.planDialog.domain)
+    },
+    submittedPlanDomain() {
+      const config = this.selectedDomainRequestConfig
+
+      if (!config) {
+        return ''
+      }
+
+      return config.formatValue(this.normalizedPlanDomain)
+    },
+    planDomainValidationMessage() {
+      const config = this.selectedDomainRequestConfig
+
+      if (!config) {
+        return ''
+      }
+
+      if (!this.normalizedPlanDomain) {
+        return config.missingMessage
+      }
+
+      if (!config.isValid(this.normalizedPlanDomain)) {
+        return config.invalidMessage
+      }
+
+      return ''
+    },
+    isSelectedPlanDomainValid() {
+      return this.planDomainValidationMessage.length === 0
     },
     matrixBitcoinQuantityOptions() {
       const {min, max} = this.getMatrixQuantityBounds()
