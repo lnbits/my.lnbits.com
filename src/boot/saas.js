@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { env } from 'echarts'
 import {secondsToDhm} from 'src/boot/utils'
 
 const normalizeApiEnv = env => {
