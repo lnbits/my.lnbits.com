@@ -1469,7 +1469,8 @@ export default defineComponent({
             '<p>This payment plan supports a custom subdomain or a full custom domain. Enter the hostname you want to use for this instance.</p>' +
             '<p>You will need to configure your domain\'s DNS settings. <a href="https://community.lnbits.com/t/custom-domain-names-dns-setup-guide/60" title="LNbits SaaS custom DNS settings" target="_blank">Find out how here.</a></p>',
           label: 'Domain or subdomain',
-          hint: 'Examples: my-team or pay.example.com',
+          hint: 'Optional. Examples: my-team or pay.example.com',
+          optional: true,
           missingMessage: 'Enter a custom domain or subdomain.',
           invalidMessage: 'Use a valid hostname such as my-team or pay.example.com.',
           formatValue: value => this.normalizeDomainValue(value),
@@ -1481,11 +1482,12 @@ export default defineComponent({
         return {
           title: 'Custom subdomain',
           message:
-            '<p>This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.</p>' + 
+            '<p>This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.</p>' +
             '<p>You will need to configure your domain\'s DNS settings. <a href="https://community.lnbits.com/t/custom-domain-names-dns-setup-guide/60" title="LNbits SaaS custom DNS settings" target="_blank">Find out how here.</a></p>',
           label: 'Subdomain',
-          hint: 'Example: my-team.lnbits.com',
+          hint: 'Optional. Example: my-team.lnbits.com',
           suffix: '.lnbits.com',
+          optional: true,
           missingMessage: 'Enter a custom subdomain.',
           invalidMessage: 'Use only letters, numbers, and hyphens for the subdomain.',
           formatValue: value => {
@@ -2588,7 +2590,7 @@ export default defineComponent({
       }
 
       if (!this.normalizedPlanDomain) {
-        return config.missingMessage
+        return config.optional ? '' : config.missingMessage
       }
 
       if (!config.isValid(this.normalizedPlanDomain)) {

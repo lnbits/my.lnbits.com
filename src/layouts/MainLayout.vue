@@ -103,7 +103,7 @@
       </q-list>
     </q-drawer>
 
-    <q-page-container>
+    <q-page-container class="app-shell__page-container">
       <router-view />
     </q-page-container>
   </q-layout>

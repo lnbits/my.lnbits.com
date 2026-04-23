@@ -9,6 +9,7 @@
   --surface-glass: rgba(255, 255, 255, 0.08);
   --surface-glass-strong: rgba(255, 255, 255, 0.12);
   --stroke-glass: rgba(255, 255, 255, 0.16);
+  --chat-embed-safe-space: 0px;
 }
 
 body {
@@ -543,6 +544,12 @@ pre {
 .app-shell .q-page-container,
 .app-shell .q-page {
   background: transparent;
+}
+
+@media (min-width: 600px) {
+  .app-shell__page-container {
+    padding-bottom: var(--chat-embed-safe-space);
+  }
 }
 
 .body--dark .app-shell .q-header {
