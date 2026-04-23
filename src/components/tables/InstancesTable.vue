@@ -1485,8 +1485,9 @@ export default defineComponent({
             '<p>This payment plan includes a custom subdomain. Enter the subdomain you want to reserve for this instance.</p>' +
             '<p>You will need to configure your domain\'s DNS settings. <a href="https://community.lnbits.com/t/custom-domain-names-dns-setup-guide/60" title="LNbits SaaS custom DNS settings" target="_blank">Find out how here.</a></p>',
           label: 'Subdomain',
-          hint: 'Example: my-team.lnbits.com',
+          hint: 'Optional. Example: my-team.lnbits.com',
           suffix: '.lnbits.com',
+          optional: true,
           missingMessage: 'Enter a custom subdomain.',
           invalidMessage: 'Use only letters, numbers, and hyphens for the subdomain.',
           formatValue: value => {
