@@ -529,6 +529,10 @@ pre {
     linear-gradient(160deg, #0b0614, #140a22 40%, #1b0f2e 70%, #23113a);
 }
 
+.body--dark .q-dialog--modal .text-caption a {
+  color: white;
+}
+
 .body--light .app-shell {
   background: radial-gradient(900px 600px at 0% -10%, rgba(178, 56, 255, 0.08), transparent 60%),
     radial-gradient(1000px 700px at 100% 0%, rgba(255, 79, 216, 0.08), transparent 60%),
