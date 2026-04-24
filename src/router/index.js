@@ -43,6 +43,7 @@ export default route(function (/* { store, ssrContext } */) {
       to.path !== '/pricing' &&
       to.path !== '/terms-of-service' &&
       to.path !== '/payment-confirmation' &&
+      to.path !== '/paymentsuccess' &&
       to.path !== '/confirm' &&
       !saas.email
     ) {
