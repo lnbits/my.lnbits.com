@@ -49,7 +49,7 @@ const routes = [
     component: () => import('pages/PaymentConfirmation.vue')
   },
   {
-    path: '/paymentsuccess',
+    path: '/paid',
     component: () => import('pages/PaymentSuccess.vue')
   },
   {
