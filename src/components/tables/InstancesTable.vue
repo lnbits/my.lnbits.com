@@ -166,12 +166,18 @@
               class="q-ml-sm"
               flat
               dense
-              :disable="props.row.enabled"
+              :disable="
+                props.row.enabled || props.row.hasActiveFiatSubscription
+              "
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 <span v-if="props.row.enabled">
                   Destroy: you can only destroy a disabled instance. Please
                   disable it first.
+                </span>
+                <span v-else-if="props.row.hasActiveFiatSubscription">
+                  Please end the subscription from /subscriptions for this
+                  instance first
                 </span>
                 <span v-else>
                   Destroy: destroying will delete your instance and every bit of
@@ -2301,10 +2307,19 @@ export default defineComponent({
       )
     },
     destroyInstance: function (id) {
-      if (this.data.find(i => i.id === id)?.enabled) {
+      const instance = this.data.find(i => i.id === id)
+
+      if (instance?.enabled) {
         return this.q.notify({
           message:
             'You can only destroy a disabled instance. Please disable it first.',
+          color: 'warning'
+        })
+      }
+      if (instance?.hasActiveFiatSubscription) {
+        return this.q.notify({
+          message:
+            'Please end the subscription from /subscriptions for this instance first',
           color: 'warning'
         })
       }
@@ -2470,12 +2485,37 @@ export default defineComponent({
         return false
       }
     },
+    getActiveFiatSubscriptionInstanceIds(subscriptions = []) {
+      return new Set(
+        subscriptions
+          .filter(subscription => {
+            if (!subscription) {
+              return false
+            }
+
+            if (+subscription.ended_at) {
+              return false
+            }
+
+            return true
+          })
+          .map(subscription => `${subscription.instance_id}`)
+      )
+    },
     refreshState: async function () {
       try {
-        const {data} = await saas.getInstances()
+        const [{data: instancesData}, {data: subscriptionsData}] =
+          await Promise.all([saas.getInstances(), saas.getUserSubscriptions()])
 
         await this.serverStatus()
-        const tableData = (data || []).map(i => saas.mapInstance(i))
+        const activeFiatSubscriptionInstanceIds =
+          this.getActiveFiatSubscriptionInstanceIds(subscriptionsData || [])
+        const tableData = (instancesData || []).map(i => ({
+          ...saas.mapInstance(i),
+          hasActiveFiatSubscription: activeFiatSubscriptionInstanceIds.has(
+            `${i.id}`
+          )
+        }))
 
         this.activityStats[0].value = tableData.length
         this.activityStats[1].value = tableData.filter(
