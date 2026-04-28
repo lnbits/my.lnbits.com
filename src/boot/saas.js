@@ -32,7 +32,7 @@ var saas = {
   },
   serverTime: null,
   chatUrl:
-    'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
+    'https://support.lnbits.com/chat/embed/hMn4ptqCuMSiUB8nVWWCWo?min=1&label=Chat%20to%20us',
 
   email: localStorage.getItem('email'),
 
