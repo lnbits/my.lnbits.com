@@ -2119,6 +2119,11 @@ export default defineComponent({
         this.planDialog.fiatOnly = useFiat
       }
 
+      if (this.isFiatPaymentSelected()) {
+        this.notifyFiatPaymentsDisabled()
+        return
+      }
+
       const selectedTag = this.normalizeSelectedInstanceTypeTag(
         this.planDialog.selectedTag
       )
@@ -2167,6 +2172,18 @@ export default defineComponent({
         return await this.submitSubscriptionPlan(instanceId)
       }
       await this.submitOneTimePlan(instanceId)
+    },
+    isFiatPaymentSelected() {
+      return this.planDialog.fiatOnly || this.planDialog.subscription
+    },
+    notifyFiatPaymentsDisabled() {
+      this.q.notify({
+        message: 'Fiat payments are temporarily unavailable.',
+        caption: 'Please choose Bitcoin payment for now.',
+        color: 'warning',
+        textColor: 'dark',
+        icon: 'warning'
+      })
     },
     async submitSubscriptionPlan(instanceId) {
       try {

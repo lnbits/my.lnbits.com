@@ -56,6 +56,10 @@ const createPricingPayload = premiumOverrides => ({
   }
 })
 
+const chooseBitcoinPayment = async page => {
+  await page.locator('.q-radio').filter({hasText: 'Bitcoin'}).click()
+}
+
 test('renders pricing plans from the dev pricing API', async ({page}) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('apiEnv', 'dev')
@@ -225,12 +229,83 @@ test('shows every instance type returned by the API in the create instance fundi
   expect(optionLabels).toEqual(expectedLabels)
   await page.keyboard.press('Escape')
 
-  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+  await chooseBitcoinPayment(page)
+  await page.getByRole('button', {name: /Pay with bitcoin/}).click()
   await expect.poll(() => createInstanceRequestBody).toMatchObject({
     instance_type: 'lnbits-spark',
     payment_plan_tier: 'premium',
     payment_plan_interval: 'monthly'
   })
+})
+
+test('warns instead of checking out when fiat payment is selected', async ({page}) => {
+  let createInstanceRequestBody = null
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem('apiEnv', 'dev')
+    window.localStorage.setItem('email', 'pricing-test@example.com')
+  })
+
+  await page.route('https://api.dev.lnbits.com/pricing', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(pricingPayload)
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance', route =>
+    route.request().method() === 'POST'
+      ? (() => {
+          createInstanceRequestBody = route.request().postDataJSON()
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              id: 'instance-1',
+              domain: 'instance-1.example.com',
+              is_enabled: true,
+              is_active: true,
+              timestamp: 1700000000,
+              timestamp_start: 1700000000,
+              timestamp_stop: 1700086400,
+              installtoken: 'install-token',
+              lnurl: ''
+            })
+          })
+        })()
+      : route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        })
+  )
+  await page.route('https://api.dev.lnbits.com/', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({timestamp: Math.floor(Date.now() / 1000)})
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/types', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(instanceTypesPayload)
+    })
+  )
+
+  await page.goto('/instances?tier=premium&billing=monthly&funding=spark_l2')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
+
+  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+
+  await expect(
+    page.getByText('Fiat payments are temporarily unavailable.')
+  ).toBeVisible()
+  await page.waitForTimeout(100)
+  expect(createInstanceRequestBody).toBeNull()
 })
 
 test('prompts for a custom subdomain when the selected payment plan allows it', async ({page}) => {
@@ -315,7 +390,8 @@ test('prompts for a custom subdomain when the selected payment plan allows it', 
   await expect(domainInput).toHaveAttribute('aria-label', 'Subdomain')
   await expect(page.locator('.q-field__suffix')).toContainText('.lnbits.com')
   await domainInput.fill('my-team')
-  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+  await chooseBitcoinPayment(page)
+  await page.getByRole('button', {name: /Pay with bitcoin/}).click()
 
   await expect.poll(() => createInstanceRequestBody).toMatchObject({
     instance_type: 'lnbits-spark',
@@ -406,7 +482,8 @@ test('prompts for a custom domain when the selected payment plan allows it', asy
   await expect(domainInput).toBeVisible()
   await expect(domainInput).toHaveAttribute('aria-label', 'Domain or subdomain')
   await domainInput.fill('pay.example.com')
-  await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
+  await chooseBitcoinPayment(page)
+  await page.getByRole('button', {name: /Pay with bitcoin/}).click()
 
   await expect.poll(() => createInstanceRequestBody).toMatchObject({
     instance_type: 'lnbits-spark',
