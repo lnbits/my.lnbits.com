@@ -52,7 +52,6 @@
       <q-input
         v-model="email"
         outlined
-        type="email"
         autocomplete="email"
         label="Email"
         lazy-rules
@@ -202,6 +201,12 @@ export default defineComponent({
       this.setMode('login')
     },
     checkEmail(val) {
+      if (!this.isSignupRequest) {
+        if (!val) {
+          return 'Email is required'
+        }
+        return true
+      }
       return (
         (val && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) ||
         'Please enter a valid email address'
@@ -213,10 +218,6 @@ export default defineComponent({
       )
     },
     validateForm() {
-      // const emailMessage = this.checkEmail(this.email)
-      // if (emailMessage !== true) {
-      //   return emailMessage
-      // }
       const passwordMessage = this.checkPassword(this.password)
       if (passwordMessage !== true) {
         return passwordMessage
