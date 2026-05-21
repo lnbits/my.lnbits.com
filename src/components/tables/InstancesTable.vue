@@ -1188,7 +1188,7 @@
 import {defineComponent} from 'vue'
 
 import {useQuasar, copyToClipboard} from 'quasar'
-import {saas} from 'src/boot/saas'
+import {normalizeApiEnv, saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
 import {
   getPricingPlans,
@@ -2119,7 +2119,7 @@ export default defineComponent({
         this.planDialog.fiatOnly = useFiat
       }
 
-      if (this.isFiatPaymentSelected()) {
+      if (this.shouldBlockFiatPayments()) {
         this.notifyFiatPaymentsDisabled()
         return
       }
@@ -2175,6 +2175,15 @@ export default defineComponent({
     },
     isFiatPaymentSelected() {
       return this.planDialog.fiatOnly || this.planDialog.subscription
+    },
+    shouldBlockFiatPayments() {
+      const apiEnv = normalizeApiEnv(localStorage.getItem('apiEnv'))
+
+      return (
+        apiEnv !== 'dev' &&
+        apiEnv !== 'local' &&
+        this.isFiatPaymentSelected()
+      )
     },
     notifyFiatPaymentsDisabled() {
       this.q.notify({
