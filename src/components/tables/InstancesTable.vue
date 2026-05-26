@@ -2184,12 +2184,14 @@ export default defineComponent({
     },
     shouldBlockFiatPayments() {
       const apiEnv = normalizeApiEnv(localStorage.getItem('apiEnv'))
-
+      return false
+      /*
       return (
         apiEnv !== 'dev' &&
         apiEnv !== 'local' &&
         this.isFiatPaymentSelected()
       )
+      */
     },
     notifyFiatPaymentsDisabled() {
       this.q.notify({
