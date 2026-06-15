@@ -23,51 +23,6 @@ const getApiBaseUrl = apiEnv => {
   return 'https://api.lnbits.com'
 }
 
-const pickString = (...values) => {
-  for (const value of values) {
-    if (typeof value !== 'string') {
-      continue
-    }
-
-    const normalizedValue = value.trim()
-
-    if (normalizedValue.length) {
-      return normalizedValue
-    }
-  }
-
-  return null
-}
-
-const normalizeBillingInterval = value => {
-  const normalizedValue = pickString(value)?.toLowerCase()
-
-  if (!normalizedValue) {
-    return null
-  }
-
-  const directBillingMap = {
-    hour: 'hourly',
-    hourly: 'hourly',
-    week: 'weekly',
-    weekly: 'weekly',
-    month: 'monthly',
-    monthly: 'monthly',
-    year: 'yearly',
-    yearly: 'yearly'
-  }
-
-  if (directBillingMap[normalizedValue]) {
-    return directBillingMap[normalizedValue]
-  }
-
-  const billingMatch = normalizedValue.match(
-    /(?:^|[_\-\s])(hourly|weekly|monthly|yearly)(?:$|[_\-\s])/
-  )
-
-  return billingMatch ? billingMatch[1] : null
-}
-
 var saas = {
   slideimg: 'assets/images/hero/bitcoin-accounts.png',
   url: function (path = '') {
@@ -345,23 +300,6 @@ var saas = {
     const timeLeft = Math.floor(
       Math.max(instance.timestamp_stop - this.serverTime, 0)
     )
-    const paymentPlan = instance.payment_plan || instance.paymentPlan || {}
-    const paymentPlanName = pickString(
-      instance.payment_plan_name,
-      instance.paymentPlanName,
-      paymentPlan.name,
-      paymentPlan.payment_plan_name
-    )
-    const paymentPlanInterval = normalizeBillingInterval(
-      pickString(
-        instance.payment_plan_interval,
-        instance.paymentPlanInterval,
-        instance.billing,
-        instance.interval,
-        paymentPlan.interval,
-        paymentPlan.payment_plan_interval
-      ) || paymentPlanName
-    )
 
     return {
       id: instance.id,
@@ -379,32 +317,11 @@ var saas = {
       timestampStart: instance.timestamp_start,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
-      instanceType: pickString(
-        instance.instance_type,
-        instance.instanceType,
-        instance.image,
-        instance.image_tag,
-        instance.imageTag,
-        instance.provider,
-        paymentPlan.instance_type
-      ),
-      fundingSource: pickString(
-        instance.funding_source,
-        instance.fundingSource,
-        instance.funding,
-        instance.payment_plan_funding,
-        paymentPlan.funding,
-        paymentPlan.funding_source
-      ),
-      paymentPlanName,
-      paymentPlanTier: pickString(
-        instance.payment_plan_tier,
-        instance.paymentPlanTier,
-        instance.tier,
-        paymentPlan.tier,
-        paymentPlan.payment_plan_tier
-      ),
-      paymentPlanInterval,
+      instanceType: instance.instance_type,
+      fundingSource: instance.funding_source,
+      paymentPlanName: instance.payment_plan_name,
+      paymentPlanTier: instance.payment_plan_tier,
+      paymentPlanInterval: instance.payment_plan_interval,
       timeLeft: timeLeft,
       timeLeftFormatted: secondsToDhm(timeLeft),
       statusText: status(instance.is_active, instance.is_enabled),
