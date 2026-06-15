@@ -97,13 +97,13 @@
             </q-btn>
             <q-btn
               @click="extendInstance(props.row)"
-              icon="qr_code_2"
+              icon="more_time"
               size="sm"
               flat
               dense
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance per hour. Pay with BTC.
+                Extend the life of this instance.
               </q-tooltip>
             </q-btn>
             <q-btn
