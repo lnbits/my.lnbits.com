@@ -96,18 +96,6 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              @click="openExtendInstanceDialog(props.row)"
-              icon="more_time"
-              size="sm"
-              flat
-              dense
-              :data-testid="`extend-instance-${props.row.id}`"
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
               type="a"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
@@ -198,15 +186,42 @@
             <q-tooltip
               ><span v-text="props.row.progress + '%'"></span
             ></q-tooltip>
-            <span
-              v-text="props.row.timeLeftFormatted"
-              class="float-right"
-            ></span>
-            <q-linear-progress
-              :color="getColor(props.row.progress)"
-              :value="props.row.progress / 100"
-              class="q-mt-sm"
-            />
+            <div>
+              <div
+                v-text="
+                  props.row.timeLeft > 0 ? props.row.timeLeftFormatted : '\u00a0'
+                "
+                class="text-right"
+                :data-testid="`instance-time-left-${props.row.id}`"
+              ></div>
+              <div class="row no-wrap items-center q-gutter-x-xs q-mt-xs">
+                <q-linear-progress
+                  :color="getColor(props.row.progress)"
+                  :value="props.row.progress / 100"
+                  class="col instance-progress-bar cursor-pointer"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Extend the life of this instance."
+                  :data-testid="`extend-instance-progress-${props.row.id}`"
+                  @click="openExtendInstanceDialog(props.row)"
+                  @keydown.enter="openExtendInstanceDialog(props.row)"
+                  @keydown.space.prevent="openExtendInstanceDialog(props.row)"
+                />
+                <q-btn
+                  @click="openExtendInstanceDialog(props.row)"
+                  icon="more_time"
+                  size="sm"
+                  flat
+                  dense
+                  class="col-auto"
+                  :data-testid="`extend-instance-${props.row.id}`"
+                >
+                  <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                    Extend the life of this instance.
+                  </q-tooltip>
+                </q-btn>
+              </div>
+            </div>
           </q-td>
         </template>
 
@@ -2715,7 +2730,7 @@ export default defineComponent({
     },
     planDialogTitle() {
       if (this.isEditInstanceDialog) {
-        return `Edit instance ${this.getInstanceDomain(
+        return `Extend instance ${this.getInstanceDomain(
           this.planDialog.instance
         )}`
       }

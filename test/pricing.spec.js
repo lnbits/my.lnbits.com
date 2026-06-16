@@ -613,10 +613,10 @@ test('opens extend action in an edit instance dialog', async ({page}) => {
     .locator('#lnbits-chat-embed-iframe')
     .evaluateAll(nodes => nodes.forEach(node => node.remove()))
 
-  await page.getByTestId('extend-instance-instance-1').click()
+  await page.getByTestId('extend-instance-progress-instance-1').click()
 
   await expect(
-    page.getByText('Edit instance instance-1.example.com')
+    page.getByText('Extend instance instance-1.example.com')
   ).toBeVisible()
 
   const tierSelect = page.getByTestId('instance-tier-select')
@@ -666,4 +666,11 @@ test('defaults edit instance billing to monthly when missing', async ({page}) =>
   await expect(page.getByTestId('instance-billing-select')).toContainText(
     'Monthly'
   )
+  await expect
+    .poll(async () =>
+      page
+        .getByTestId('instance-time-left-instance-1')
+        .evaluate(element => element.textContent.charCodeAt(0))
+    )
+    .toBe(160)
 })
