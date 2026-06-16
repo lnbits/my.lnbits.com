@@ -300,6 +300,7 @@ var saas = {
     const timeLeft = Math.floor(
       Math.max(instance.timestamp_stop - this.serverTime, 0)
     )
+
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -316,6 +317,11 @@ var saas = {
       timestampStart: instance.timestamp_start,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
+      instanceType: instance.instance_type,
+      fundingSource: instance.funding_source,
+      paymentPlanName: instance.payment_plan_name,
+      paymentPlanTier: instance.payment_plan_tier,
+      paymentPlanInterval: instance.payment_plan_interval,
       timeLeft: timeLeft,
       timeLeftFormatted: secondsToDhm(timeLeft),
       statusText: status(instance.is_active, instance.is_enabled),

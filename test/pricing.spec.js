@@ -60,6 +60,115 @@ const chooseBitcoinPayment = async page => {
   await page.locator('.q-radio').filter({hasText: 'Bitcoin'}).click()
 }
 
+const createExistingInstancePayload = overrides => ({
+  id: 'instance-1',
+  domain: 'instance-1.example.com',
+  is_enabled: true,
+  is_active: true,
+  timestamp: 1700000000,
+  timestamp_start: 1700000000,
+  timestamp_stop: 1700086400,
+  installtoken: 'install-token',
+  lnurl: 'lnurl1test',
+  payment_plan_tier: 'premium',
+  instance_type: 'lnbits-spark',
+  ...overrides
+})
+
+const setupExistingInstanceRoutes = async (page, instanceOverrides = {}) => {
+  const requests = {
+    buyRequestBody: null,
+    createInstanceRequestBody: null,
+    subscribeRequestBody: null
+  }
+  const instance = createExistingInstancePayload(instanceOverrides)
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem('apiEnv', 'dev')
+    window.localStorage.setItem('email', 'pricing-test@example.com')
+  })
+
+  await page.route('https://api.dev.lnbits.com/pricing', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(pricingPayload)
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/types', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(instanceTypesPayload)
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/subscriptions', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([])
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/buy', route => {
+    requests.buyRequestBody = route.request().postDataJSON()
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        payment_request: 'lnbc1test',
+        payment_hash: 'payment-hash'
+      })
+    })
+  })
+  await page.route('https://api.dev.lnbits.com/instance/subscribe', route => {
+    requests.subscribeRequestBody = route.request().postDataJSON()
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        checkout_session_url: 'https://checkout.example.com/session'
+      })
+    })
+  })
+  await page.route('https://api.dev.lnbits.com/instance', route => {
+    if (route.request().method() === 'POST') {
+      requests.createInstanceRequestBody = route.request().postDataJSON()
+    }
+
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([instance])
+    })
+  })
+  await page.route('https://api.dev.lnbits.com/', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({timestamp: Math.floor(Date.now() / 1000)})
+    })
+  )
+  await page.route('https://instance-1.example.com/static/i18n/en.js', route =>
+    route.fulfill({
+      status: 503,
+      contentType: 'text/plain',
+      body: 'not ready'
+    })
+  )
+
+  return requests
+}
+
+test.beforeEach(async ({page}) => {
+  await page.route('https://api.dev.lnbits.com/instance/subscriptions', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([])
+    })
+  )
+})
+
 test('renders pricing plans from the dev pricing API', async ({page}) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('apiEnv', 'dev')
@@ -491,4 +600,77 @@ test('prompts for a custom domain when the selected payment plan allows it', asy
     payment_plan_interval: 'monthly',
     domain: 'pay.example.com'
   })
+})
+
+test('opens extend action in an edit instance dialog', async ({page}) => {
+  const requests = await setupExistingInstanceRoutes(page, {
+    payment_plan_interval: 'yearly',
+    instance_type: 'lnbits-own-funding'
+  })
+
+  await page.goto('/instances')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
+
+  await page.getByTestId('extend-instance-progress-instance-1').click()
+
+  await expect(
+    page.getByText('Extend instance instance-1.example.com')
+  ).toBeVisible()
+
+  const tierSelect = page.getByTestId('instance-tier-select')
+  const billingSelect = page.getByTestId('instance-billing-select')
+  const fundingSelect = page.getByTestId('instance-funding-select')
+  const tierField = tierSelect.locator(
+    'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " q-field ")][1]'
+  )
+  const billingField = billingSelect.locator(
+    'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " q-field ")][1]'
+  )
+  const fundingField = fundingSelect.locator(
+    'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " q-field ")][1]'
+  )
+
+  await expect(tierSelect).toContainText('Premium')
+  await expect(tierField).toHaveClass(/q-field--disabled/)
+  await expect(billingSelect).toContainText('Yearly')
+  await expect(billingField).not.toHaveClass(/q-field--disabled/)
+  await expect(fundingSelect).toContainText('LNbits with your own funding')
+  await expect(fundingField).toHaveClass(/q-field--disabled/)
+
+  await billingSelect.click()
+  await page.locator('.q-menu .q-item').filter({hasText: /Monthly/}).click()
+  await chooseBitcoinPayment(page)
+  await page.getByRole('button', {name: 'Extend Instance'}).click()
+
+  await expect.poll(() => requests.buyRequestBody).toMatchObject({
+    instance_id: 'instance-1',
+    payment_plan_name: 'monthly',
+    quantity: 1,
+    is_fiat: false
+  })
+  expect(requests.createInstanceRequestBody).toBeNull()
+})
+
+test('defaults edit instance billing to monthly when missing', async ({page}) => {
+  await setupExistingInstanceRoutes(page)
+
+  await page.goto('/instances')
+  await page
+    .locator('#lnbits-chat-embed-iframe')
+    .evaluateAll(nodes => nodes.forEach(node => node.remove()))
+
+  await page.getByTestId('extend-instance-instance-1').click()
+
+  await expect(page.getByTestId('instance-billing-select')).toContainText(
+    'Monthly'
+  )
+  await expect
+    .poll(async () =>
+      page
+        .getByTestId('instance-time-left-instance-1')
+        .evaluate(element => element.textContent.charCodeAt(0))
+    )
+    .toBe(160)
 })

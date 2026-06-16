@@ -186,7 +186,7 @@ export default defineComponent({
         console.warn(error)
         this.$q.notify({
           message: 'Failed to end subscription!',
-          caption: this.saas.mapErrorToString(error),
+          caption: saas.mapErrorToString(error),
           color: 'negative',
           icon: 'warning'
         })
@@ -239,7 +239,7 @@ export default defineComponent({
         console.warn(error)
         this.$q.notify({
           message: 'Failed to fetch subscriptions!',
-          caption: this.saas.mapErrorToString(error),
+          caption: saas.mapErrorToString(error),
           color: 'negative',
           icon: 'warning'
         })
@@ -259,7 +259,7 @@ export default defineComponent({
       } catch (error) {
         this.$q.notify({
           message: 'Failed to fetch instance subscriptions!',
-          caption: this.saas.mapErrorToString(error),
+          caption: saas.mapErrorToString(error),
           color: 'negative',
           icon: 'warning'
         })

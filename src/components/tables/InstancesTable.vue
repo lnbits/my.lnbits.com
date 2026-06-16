@@ -96,17 +96,6 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              @click="extendInstance(props.row)"
-              icon="qr_code_2"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Extend the life of this instance per hour. Pay with BTC.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
               type="a"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
@@ -197,15 +186,42 @@
             <q-tooltip
               ><span v-text="props.row.progress + '%'"></span
             ></q-tooltip>
-            <span
-              v-text="props.row.timeLeftFormatted"
-              class="float-right"
-            ></span>
-            <q-linear-progress
-              :color="getColor(props.row.progress)"
-              :value="props.row.progress / 100"
-              class="q-mt-sm"
-            />
+            <div>
+              <div
+                v-text="
+                  props.row.timeLeft > 0 ? props.row.timeLeftFormatted : '\u00a0'
+                "
+                class="text-right"
+                :data-testid="`instance-time-left-${props.row.id}`"
+              ></div>
+              <div class="row no-wrap items-center q-gutter-x-xs q-mt-xs">
+                <q-linear-progress
+                  :color="getColor(props.row.progress)"
+                  :value="props.row.progress / 100"
+                  class="col instance-progress-bar cursor-pointer"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Extend the life of this instance."
+                  :data-testid="`extend-instance-progress-${props.row.id}`"
+                  @click="openExtendInstanceDialog(props.row)"
+                  @keydown.enter="openExtendInstanceDialog(props.row)"
+                  @keydown.space.prevent="openExtendInstanceDialog(props.row)"
+                />
+                <q-btn
+                  @click="openExtendInstanceDialog(props.row)"
+                  icon="more_time"
+                  size="sm"
+                  flat
+                  dense
+                  class="col-auto"
+                  :data-testid="`extend-instance-${props.row.id}`"
+                >
+                  <q-tooltip class="bg-indigo" :offset="[10, 10]">
+                    Extend the life of this instance.
+                  </q-tooltip>
+                </q-btn>
+              </div>
+            </div>
           </q-td>
         </template>
 
@@ -419,7 +435,7 @@
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
       <q-card-section class="q-py-lg gradient-bg--primary text-white column">
-        <div class="text-h6">Create New Instance</div>
+        <div class="text-h6">{{ planDialogTitle }}</div>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <div v-if="!planDialog.hideFeatures.tab">
@@ -515,6 +531,9 @@
                 dense
                 outlined
                 label="Tier"
+                data-testid="instance-tier-select"
+                :readonly="isEditInstanceDialog"
+                :disable="isEditInstanceDialog"
               >
                 <template v-slot:selected-item="scope">
                   <div class="row items-baseline no-wrap q-gutter-x-sm">
@@ -555,6 +574,7 @@
                 dense
                 outlined
                 label="Billing"
+                data-testid="instance-billing-select"
                 @update:model-value="onMatrixBillingChange"
               />
             </div>
@@ -584,6 +604,8 @@
             outlined
             class="q-mt-md"
             data-testid="instance-funding-select"
+            :readonly="isEditInstanceDialog"
+            :disable="isEditInstanceDialog"
             @update:model-value="onMatrixFundingChange"
           />
           <div v-if="isPricingMatrixFlow" class="q-mt-md">
@@ -603,7 +625,10 @@
               </div>
             </div>
           </div>
-          <div v-if="selectedDomainRequestConfig" class="q-mt-md">
+          <div
+            v-if="selectedDomainRequestConfig && !isEditInstanceDialog"
+            class="q-mt-md"
+          >
             <div class="text-subtitle1">
               {{ selectedDomainRequestConfig.title }}
             </div>
@@ -1376,6 +1401,8 @@ export default defineComponent({
         subscription: true,
         inProgress: false,
         fiat: true,
+        fiatOnly: false,
+        bitcoinOnly: false,
         plan: null,
         tier: null,
         billing: null,
@@ -1384,6 +1411,7 @@ export default defineComponent({
         paymentCurrency: 'USD',
         count: 1,
         selectedTag: null,
+        instance: null,
         hideFeatures: {
           tab: false
         }
@@ -1435,6 +1463,28 @@ export default defineComponent({
     }
   },
   methods: {
+    getPlanDialogDefaults() {
+      return {
+        show: false,
+        subscription: true,
+        inProgress: false,
+        fiat: true,
+        fiatOnly: false,
+        bitcoinOnly: false,
+        plan: null,
+        tier: null,
+        billing: null,
+        funding: null,
+        domain: '',
+        paymentCurrency: 'USD',
+        count: 1,
+        selectedTag: null,
+        instance: null,
+        hideFeatures: {
+          tab: false
+        }
+      }
+    },
     getSelectedPricingPlan(tierKey = this.planDialog.tier) {
       if (!tierKey) {
         return null
@@ -1520,6 +1570,7 @@ export default defineComponent({
       this.newInstanceDialog.show = false
       this.newInstanceDialog.error = null
       this.newInstanceDialog.method = null
+      this.planDialog.instance = null
       this.initializePricingMatrixSelection({
         tier: 'premium',
         billing: 'monthly',
@@ -1528,6 +1579,22 @@ export default defineComponent({
       this.planDialog.selectedTag = this.getAvailableInstanceTypeTag(
         this.planDialog.selectedTag
       )
+      this.planDialog.show = true
+    },
+    async openExtendInstanceDialog(instance) {
+      await this.loadInstanceTypeOptions()
+      this.newInstanceDialog.show = false
+      this.newInstanceDialog.error = null
+      this.newInstanceDialog.method = null
+      this.activeInstance = instance
+
+      this.initializePricingMatrixSelection({
+        tier: this.getInstanceTier(instance),
+        billing: this.getInstanceBilling(instance),
+        funding: this.getInstanceFunding(instance),
+        image: this.getInstanceImage(instance)
+      })
+      this.planDialog.instance = instance
       this.planDialog.show = true
     },
     selectNewInstanceMethod(method) {
@@ -1704,6 +1771,38 @@ export default defineComponent({
         default:
           return null
       }
+    },
+    normalizeBillingValue(value) {
+      if (typeof value !== 'string') {
+        return null
+      }
+
+      const normalizedValue = value.trim().toLowerCase()
+
+      if (!normalizedValue) {
+        return null
+      }
+
+      const directBillingMap = {
+        hour: 'hourly',
+        hourly: 'hourly',
+        week: 'weekly',
+        weekly: 'weekly',
+        month: 'monthly',
+        monthly: 'monthly',
+        year: 'yearly',
+        yearly: 'yearly'
+      }
+
+      if (directBillingMap[normalizedValue]) {
+        return directBillingMap[normalizedValue]
+      }
+
+      const billingMatch = normalizedValue.match(
+        /(?:^|[_\-\s])(hourly|weekly|monthly|yearly)(?:$|[_\-\s])/
+      )
+
+      return billingMatch ? billingMatch[1] : null
     },
     normalizeMatrixValue(value) {
       return typeof value === 'string' && value.trim().length
@@ -1910,6 +2009,72 @@ export default defineComponent({
 
       return this.fundingSourceOptions[0]?.value || 'spark_l2'
     },
+    getInstanceDomain(instance) {
+      return instance?.name || instance?.domain || `${instance?.id || ''}`
+    },
+    getInstanceTier(instance) {
+      const tier = this.normalizeMatrixValue(
+        instance?.paymentPlanTier || instance?.tier
+      )
+
+      if (tier && this.pricingPlans.some(plan => plan.tierKey === tier)) {
+        return tier
+      }
+
+      if (this.pricingPlans.some(plan => plan.tierKey === 'premium')) {
+        return 'premium'
+      }
+
+      return this.pricingPlans[0]?.tierKey || null
+    },
+    getInstanceBilling(instance) {
+      return (
+        this.normalizeBillingValue(
+          instance?.paymentPlanInterval ||
+            instance?.billing ||
+            instance?.paymentPlanName
+        ) || 'monthly'
+      )
+    },
+    getInstanceImage(instance) {
+      const image = this.normalizeSelectedInstanceTypeTag(
+        instance?.instanceType || instance?.image || instance?.selectedTag
+      )
+
+      if (
+        image &&
+        this.newInstanceDialog.options.some(option => option.value === image)
+      ) {
+        return image
+      }
+
+      const funding = this.normalizeMatrixValue(
+        instance?.fundingSource || instance?.funding
+      )
+      const fundingOption = this.newInstanceDialog.options.find(
+        option => option.fundingValue === funding || option.value === funding
+      )
+
+      return fundingOption?.value || this.getAvailableInstanceTypeTag(null)
+    },
+    getInstanceFunding(instance) {
+      const image = this.getInstanceImage(instance)
+      const imageOption = this.newInstanceDialog.options.find(
+        option => option.value === image
+      )
+      const funding = this.normalizeMatrixValue(
+        instance?.fundingSource || instance?.funding
+      )
+
+      if (
+        funding &&
+        this.fundingSourceOptions.some(option => option.value === funding)
+      ) {
+        return funding
+      }
+
+      return imageOption?.fundingValue || this.getDefaultFundingValue(funding)
+    },
     getMatrixQuantityBounds() {
       switch (this.planDialog.billing) {
         case 'weekly':
@@ -2083,23 +2248,7 @@ export default defineComponent({
       }
     },
     resetSubscriptionDialog() {
-      this.planDialog = {
-        show: false,
-        subscription: false,
-        fiatOnly: false,
-        bitcoinOnly: false,
-        plan: null,
-        tier: null,
-        billing: null,
-        funding: null,
-        domain: '',
-        paymentCurrency: 'USD',
-        count: 1,
-        selectedTag: null,
-        hideFeatures: {
-          tab: false
-        }
-      }
+      this.planDialog = this.getPlanDialogDefaults()
       this.newInstanceDialog.selectedTag = null
       this.newInstanceDialog.error = null
       this.instanceTypesRequestId += 1
@@ -2149,6 +2298,19 @@ export default defineComponent({
           message: this.planDomainValidationMessage,
           color: 'negative'
         })
+        return
+      }
+
+      if (this.isEditInstanceDialog) {
+        const instance = this.planDialog.instance
+
+        if (this.planDialog.billing === 'hourly') {
+          this.planDialog.show = false
+          this.extendInstance(instance, instance.lnurl)
+          return
+        }
+
+        await this.submitPlan(instance.id)
         return
       }
 
@@ -2563,6 +2725,18 @@ export default defineComponent({
     }
   },
   computed: {
+    isEditInstanceDialog() {
+      return Boolean(this.planDialog.instance)
+    },
+    planDialogTitle() {
+      if (this.isEditInstanceDialog) {
+        return `Extend instance ${this.getInstanceDomain(
+          this.planDialog.instance
+        )}`
+      }
+
+      return 'Create New Instance'
+    },
     isPricingMatrixFlow() {
       return Boolean(
         this.planDialog.tier ||
@@ -2631,6 +2805,10 @@ export default defineComponent({
       ]
     },
     matrixPaymentButtonLabel() {
+      if (this.isEditInstanceDialog) {
+        return 'Extend Instance'
+      }
+
       return this.planDialog.paymentCurrency === 'USD'
         ? 'Pay with USD'
         : 'Pay with bitcoin'
