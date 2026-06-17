@@ -209,11 +209,13 @@
                 />
                 <q-btn
                   @click="openExtendInstanceDialog(props.row)"
-                  icon="more_time"
+                  label="extend"
+                  color="green"
                   size="sm"
-                  flat
+                  unelevated
                   dense
-                  class="col-auto"
+                  no-caps
+                  class="col-auto instance-extend-btn"
                   :data-testid="`extend-instance-${props.row.id}`"
                 >
                   <q-tooltip class="bg-indigo" :offset="[10, 10]">
@@ -3077,5 +3079,15 @@ export default defineComponent({
 
 .matrix-payment-count-select {
   min-width: 132px;
+}
+
+.instance-extend-btn {
+  min-height: 16px !important;
+  padding: 1px 8px !important;
+  border-radius: 4px !important;
+}
+
+.instance-extend-btn .q-btn__content {
+  line-height: 1.1;
 }
 </style>
