@@ -119,7 +119,7 @@
               dense
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Reset: delete all your admin settings including your super user.
+                Reset the instance super user.
               </q-tooltip>
             </q-btn>
             <q-btn
