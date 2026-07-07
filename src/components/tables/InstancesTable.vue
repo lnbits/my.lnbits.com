@@ -1366,7 +1366,7 @@ export default defineComponent({
           image: 'images/slide_1.jpg',
           title: 'Choose Your Funding Source',
           description:
-            'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
+            'LNbits will use your selected funding source when it starts. You can configure your own external funding source in the Settings > Funding screen.'
         },
         {
           image: 'images/slide_2.jpg',
