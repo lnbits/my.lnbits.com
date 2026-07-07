@@ -355,15 +355,15 @@
             class="text-h6"
             v-text="
               isProvisioning
-                ? 'Your VPS is being provisioned...'
-                : 'Provisioned'
+                ? 'Your LNbits instance is being provisioned...'
+                : 'Provisioning complete'
             "
           ></div>
           <div
             v-text="
               isProvisioning
-                ? 'Please wait while we set up your server. This may take a few minutes.'
-                : 'Your VPS is ready!'
+                ? 'Please wait while we set up your LNbits instance. This may take a few minutes.'
+                : 'Your LNbits instance is ready!'
             "
           ></div>
         </div>
