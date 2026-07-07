@@ -111,18 +111,6 @@
             </q-btn>
 
             <q-btn
-              @click="resetInstance(props.row.id)"
-              :disable="!props.row.enabled || !props.row.installToken"
-              icon="power_off"
-              size="sm"
-              flat
-              dense
-            >
-              <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Reset: delete all your admin settings including your super user.
-              </q-tooltip>
-            </q-btn>
-            <q-btn
               v-if="props.row.enabled"
               :disable="props.row.expired"
               @click="disableInstance(props.row.id)"
@@ -1366,7 +1354,7 @@ export default defineComponent({
           image: 'images/slide_1.jpg',
           title: 'Choose Your Funding Source',
           description:
-            'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
+            'You can change your funding source in the Settings > Funding screen.'
         },
         {
           image: 'images/slide_2.jpg',
@@ -2418,32 +2406,6 @@ export default defineComponent({
       } finally {
         this.planDialog.inProgress = false
       }
-    },
-    resetInstance: function (id) {
-      this.confirm(
-        `Reset ${id}`,
-        'Are you sure you want to reset?' +
-          ' Resetting will delete all your admin settings including your super user.'
-      ).onOk(async () => {
-        try {
-          this.inProgress = true
-          const {data} = await saas.updateInstance(id, 'reset')
-          this.q.notify({
-            message: data.message || `${data}`,
-            color: 'positive'
-          })
-          await this.refreshState()
-        } catch (error) {
-          console.warn(error)
-          this.q.notify({
-            message: `Failed to reset instance ${id}.`,
-            caption: saas.mapErrorToString(error),
-            color: 'negative'
-          })
-        } finally {
-          this.inProgress = false
-        }
-      })
     },
     disableInstance: function (id) {
       this.confirm(
