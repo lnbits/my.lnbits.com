@@ -1366,7 +1366,7 @@ export default defineComponent({
           image: 'images/slide_1.jpg',
           title: 'Choose Your Funding Source',
           description:
-            'Your LNbits will use a Liquid sidechain wallet to receive bitcoin payments. You can change to another funding source in the Settings > Funding screen.'
+            'You can change your funding source in the Settings > Funding screen.'
         },
         {
           image: 'images/slide_2.jpg',
@@ -2423,7 +2423,7 @@ export default defineComponent({
       this.confirm(
         `Reset ${id}`,
         'Are you sure you want to reset?' +
-          ' Resetting will delete all your admin settings including your super user.'
+          ' Resetting will reset the super user.'
       ).onOk(async () => {
         try {
           this.inProgress = true
