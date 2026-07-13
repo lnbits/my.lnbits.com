@@ -355,15 +355,15 @@
             class="text-h6"
             v-text="
               isProvisioning
-                ? 'Your VPS is being provisioned...'
-                : 'Provisioned'
+                ? 'Your LNbits instance is being provisioned...'
+                : 'Provisioning complete'
             "
           ></div>
           <div
             v-text="
               isProvisioning
-                ? 'Please wait while we set up your server. This may take a few minutes.'
-                : 'Your VPS is ready!'
+                ? 'Please wait while we set up your LNbits instance. This may take a few minutes.'
+                : 'Your LNbits instance is ready!'
             "
           ></div>
         </div>
@@ -1366,7 +1366,7 @@ export default defineComponent({
           image: 'images/slide_1.jpg',
           title: 'Choose Your Funding Source',
           description:
-            'You can change your funding source in the Settings > Funding screen.'
+            'LNbits will use your selected funding source when it starts. You can configure your own external funding source in the Settings > Funding screen.'
         },
         {
           image: 'images/slide_2.jpg',
