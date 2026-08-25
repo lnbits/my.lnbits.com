@@ -160,6 +160,13 @@ const setupExistingInstanceRoutes = async (page, instanceOverrides = {}) => {
 }
 
 test.beforeEach(async ({page}) => {
+  await page.route('https://api.dev.lnbits.com/user/preferences', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({chat_id: null})
+    })
+  )
   await page.route('https://api.dev.lnbits.com/instance/subscriptions', route =>
     route.fulfill({
       status: 200,

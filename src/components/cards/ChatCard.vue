@@ -12,9 +12,19 @@
 <script setup>
 import {onBeforeUnmount, onMounted, ref} from 'vue'
 import {saas} from 'src/boot/saas'
+import {
+  getChatIdFromUrl,
+  getChatUrlForId,
+  isValidChatId
+} from 'src/utils/chat'
 
 const chatIframe = ref(null)
 const chatUrl = ref('')
+const chatOrigin = new URL(saas.chatUrl).origin
+
+let preferenceSyncEnabled = false
+let syncedChatId = null
+let preferenceUpdateQueue = Promise.resolve()
 
 const CHAT_BOTTOM_OFFSET = 24
 const CHAT_COLLAPSED_HEIGHT = 56
@@ -36,29 +46,108 @@ function syncChatLayout(isOpen) {
   )
 }
 
+function setChatUrl(url, persist = false) {
+  const iframe = chatIframe.value
+  if (!iframe || !url) return
+
+  chatUrl.value = url
+  iframe.src = url
+  if (persist) {
+    localStorage.setItem('chatUrl', url)
+  }
+}
+
+function persistChatId(chatId) {
+  if (!preferenceSyncEnabled || chatId === syncedChatId) {
+    return preferenceUpdateQueue
+  }
+
+  preferenceUpdateQueue = preferenceUpdateQueue.then(async () => {
+    if (!preferenceSyncEnabled || chatId === syncedChatId) return
+
+    try {
+      await saas.updateUserChatId(chatId)
+      syncedChatId = chatId
+    } catch (error) {
+      console.warn('Failed to update chat preference', error)
+    }
+  })
+
+  return preferenceUpdateQueue
+}
+
+function getTrustedChatUrl(value) {
+  try {
+    const url = new URL(value)
+    return url.origin === chatOrigin && getChatIdFromUrl(url)
+      ? url.toString()
+      : null
+  } catch {
+    return null
+  }
+}
+
 function handleMessage(event) {
   if (!event.data || event.data.source !== 'lnbits-chat-embed') return
 
   const iframe = chatIframe.value
-  if (!iframe) return
+  if (
+    !iframe ||
+    event.source !== iframe.contentWindow ||
+    event.origin !== chatOrigin
+  ) {
+    return
+  }
 
-  if (event.data.url && event.data.url !== chatUrl.value) {
-    chatUrl.value = event.data.url
-    localStorage.setItem('chatUrl', chatUrl.value)
-    iframe.src = chatUrl.value
+  const nextChatUrl = getTrustedChatUrl(event.data.url)
+  if (nextChatUrl && nextChatUrl !== chatUrl.value) {
+    const nextChatId = getChatIdFromUrl(nextChatUrl)
+
+    setChatUrl(nextChatUrl, true)
+    if (nextChatId) {
+      void persistChatId(nextChatId)
+    }
   }
 
   syncChatLayout(Boolean(event.data.open))
 }
 
-onMounted(() => {
+async function initializeChat() {
   const iframe = chatIframe.value
   if (!iframe) return
 
-  chatUrl.value = localStorage.getItem('chatUrl') || saas.chatUrl
-  iframe.src = chatUrl.value
+  const localChatUrl = localStorage.getItem('chatUrl')
+  const localChatId = getChatIdFromUrl(localChatUrl)
+
+  try {
+    const {data} = await saas.getUserPreferences()
+    const backendChatId = data?.chat_id ?? null
+
+    if (isValidChatId(backendChatId)) {
+      const backendChatUrl = getChatUrlForId(backendChatId, saas.chatUrl)
+
+      preferenceSyncEnabled = true
+      syncedChatId = backendChatId
+      setChatUrl(backendChatUrl || localChatUrl || saas.chatUrl, true)
+      return
+    }
+
+    preferenceSyncEnabled = backendChatId === null || backendChatId === ''
+    setChatUrl(localChatUrl || saas.chatUrl)
+    if (preferenceSyncEnabled && localChatId) {
+      void persistChatId(localChatId)
+    }
+  } catch (error) {
+    preferenceSyncEnabled = false
+    setChatUrl(localChatUrl || saas.chatUrl)
+    console.warn('Failed to load chat preference', error)
+  }
+}
+
+onMounted(() => {
   syncChatLayout(false)
   window.addEventListener('message', handleMessage)
+  void initializeChat()
 })
 
 onBeforeUnmount(() => {

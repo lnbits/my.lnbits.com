@@ -142,6 +142,23 @@ var saas = {
       withCredentials: true
     })
   },
+  getUserPreferences: function () {
+    return axios({
+      method: 'GET',
+      url: this.url('/user/preferences'),
+      withCredentials: true
+    })
+  },
+  updateUserChatId: function (chatId) {
+    return axios({
+      method: 'PATCH',
+      url: this.url('/user/preferences'),
+      withCredentials: true,
+      data: {
+        chat_id: chatId
+      }
+    })
+  },
   updateInstance: function (id, action) {
     return axios({
       method: 'PUT',
