@@ -268,8 +268,13 @@ var saas = {
       url: this.url('/logout'),
       withCredentials: true
     })
+    const chatUrl = localStorage.getItem('chatUrl')
+
     this.email = null
     localStorage.clear()
+    if (chatUrl) {
+      localStorage.setItem('chatUrl', chatUrl)
+    }
     return response
   },
 
