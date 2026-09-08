@@ -19,6 +19,7 @@
       title="LNbits support chat"
       class="lnbits-chat-embed-iframe"
       :class="{'lnbits-chat-embed-iframe--expanded': chatExpanded}"
+      @load="handleIframeLoad"
     ></iframe>
   </div>
 
@@ -199,6 +200,23 @@ function openChat(url, isNew = false) {
       message: 'Chat could not be opened. Please try again.'
     })
   }, 30000)
+}
+
+function handleIframeLoad(event) {
+  if (
+    !mounted ||
+    !saas.email ||
+    event.target !== chatIframe.value ||
+    startingNewChat ||
+    !expectedChatId
+  ) {
+    return
+  }
+
+  // A saved session already has an ID; its launcher need not wait for postMessage.
+  clearTimeout(openingTimeout)
+  openingChat.value = false
+  void persistChatId()
 }
 
 function continueChat() {

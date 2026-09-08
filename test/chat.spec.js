@@ -173,6 +173,44 @@ test('offers choices using the backend chat ID and continues without reloading',
   await expect(iframe(page)).toHaveAttribute('src', chatUrl('backend-session'))
 })
 
+test('finishes reopening a saved chat without waiting for an iframe message', async ({
+  page
+}) => {
+  const state = await setupApi(page, {chatId: EXISTING_CHAT_ID})
+  await openAuthenticatedPage(page)
+  await page.clock.install()
+  await continuePreviousChat(page)
+  await expect(
+    page.frameLocator('#lnbits-chat-embed-iframe').getByText('Support chat')
+  ).toBeVisible()
+
+  await expect(launcher(page).locator('.q-spinner')).toHaveCount(0)
+  await page.clock.fastForward(30001)
+  await expect(iframe(page)).toBeVisible()
+  await expect(
+    page.getByText('Chat could not be opened. Please try again.')
+  ).toHaveCount(0)
+  expect(state.patches).toEqual([])
+
+  await clickLauncher(page)
+  await expect(page.getByLabel('Previous Chat URL', {exact: true})).toHaveValue(
+    chatUrl(EXISTING_CHAT_ID)
+  )
+  await page
+    .getByRole('button', {name: 'Start New Session', exact: true})
+    .click()
+  await expect(
+    page.frameLocator('#lnbits-chat-embed-iframe').getByText('Support chat')
+  ).toBeVisible()
+  // Loading a new iframe does not prove a new session was created.
+  await expect(launcher(page).locator('.q-spinner')).toHaveCount(1)
+  expect(state.patches).toEqual([])
+  expect(await storedChatUrl(page)).toBe(chatUrl(EXISTING_CHAT_ID))
+  await emitChatUrl(page, chatUrl('replacement-session'))
+  await expect.poll(() => state.chatId).toBe('replacement-session')
+  await expect(launcher(page).locator('.q-spinner')).toHaveCount(0)
+})
+
 for (const emptyChatId of [null, '']) {
   test(`preserves and migrates a local chat when the backend returns ${String(emptyChatId)}`, async ({
     page
