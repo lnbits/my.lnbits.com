@@ -78,7 +78,8 @@ const setupApi = async (page, {chatId = null, getStatus = 200} = {}) => {
 }
 
 const openAuthenticatedPage = async (page, localChatUrl = null) => {
-  await page.goto('/login')
+  await page.goto('/login?env=dev')
+  await expect(page.getByRole('heading', {name: 'Sign in', exact: true})).toBeVisible()
   await page.evaluate(url => {
     window.localStorage.setItem('apiEnv', 'dev')
     window.localStorage.setItem('email', 'chat-test@example.com')

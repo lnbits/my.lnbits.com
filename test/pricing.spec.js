@@ -57,7 +57,7 @@ const createPricingPayload = premiumOverrides => ({
 })
 
 const chooseBitcoinPayment = async page => {
-  await page.locator('.q-radio').filter({hasText: 'Bitcoin'}).click()
+  await page.locator('.q-radio').filter({hasText: 'Bitcoin · Lightning'}).click()
 }
 
 const createExistingInstancePayload = overrides => ({
@@ -160,6 +160,25 @@ const setupExistingInstanceRoutes = async (page, instanceOverrides = {}) => {
 }
 
 test.beforeEach(async ({page}) => {
+  await page.route('https://support.lnbits.com/**', route =>
+    route.fulfill({status: 204})
+  )
+  await page.route('https://api.dev.lnbits.com/pricing', route =>
+    route.fulfill({
+      json: {
+        personal: {...pricingPayload.premium, label: 'Personal', monthly: {price: 10}},
+        premium: pricingPayload.premium,
+        business: {...pricingPayload.premium, label: 'Business'},
+        enterprise: {...pricingPayload.premium, label: 'Enterprise'}
+      }
+    })
+  )
+  await page.route('https://api.dev.lnbits.com/instance/types', route =>
+    route.fulfill({json: instanceTypesPayload})
+  )
+  await page.route('https://api.dev.lnbits.com/instance/buy', route =>
+    route.fulfill({json: {payment_request: 'lnbc1test'}})
+  )
   await page.route('https://api.dev.lnbits.com/user/preferences', route =>
     route.fulfill({
       status: 200,
@@ -354,7 +373,7 @@ test('shows every instance type returned by the API in the create instance fundi
   })
 })
 
-test('warns instead of checking out when fiat payment is selected', async ({page}) => {
+test('uses subscription checkout when USD payment is selected', async ({page}) => {
   let createInstanceRequestBody = null
 
   await page.addInitScript(() => {
@@ -409,6 +428,11 @@ test('warns instead of checking out when fiat payment is selected', async ({page
       body: JSON.stringify(instanceTypesPayload)
     })
   )
+  await page.route('https://api.dev.lnbits.com/instance/subscribe', route =>
+    route.fulfill({
+      json: {checkout_session_url: 'https://checkout.example.com/session'}
+    })
+  )
 
   await page.goto('/instances?tier=premium&billing=monthly&funding=spark_l2')
   await page
@@ -417,11 +441,14 @@ test('warns instead of checking out when fiat payment is selected', async ({page
 
   await page.getByRole('button', {name: /Pay with USD|Payment/}).click()
 
-  await expect(
-    page.getByText('Fiat payments are temporarily unavailable.')
-  ).toBeVisible()
-  await page.waitForTimeout(100)
-  expect(createInstanceRequestBody).toBeNull()
+  await expect(page.getByRole('link', {name: 'Open Checkout Page'})).toHaveAttribute(
+    'href', 'https://checkout.example.com/session'
+  )
+  expect(createInstanceRequestBody).toMatchObject({
+    instance_type: 'lnbits-spark',
+    payment_plan_tier: 'premium',
+    payment_plan_interval: 'monthly'
+  })
 })
 
 test('prompts for a custom subdomain when the selected payment plan allows it', async ({page}) => {

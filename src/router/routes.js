@@ -15,6 +15,7 @@ const routes = [
           image: route.query.image
         })
       },
+      {path: '/relays', component: () => import('pages/Relays.vue')},
       {path: '/activity', component: () => import('pages/Activity.vue')},
       {path: '/subscriptions', component: () => import('pages/Subscriptions.vue')},
       {path: '/payments', component: () => import('pages/Payments.vue')},

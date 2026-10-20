@@ -49,7 +49,7 @@
                           <q-btn
                             v-if="col.field === 'instance_name'"
                             type="a"
-                            :href="`/activity?instance_id=${props.row.id}`"
+                            :href="`/activity?instance_id=${props.row.instance_id}`"
                             :label="props.row.instance_name"
                             no-caps
                             flat
@@ -58,7 +58,7 @@
                             <q-tooltip class="bg-indigo" :offset="[10, 10]">
                               <span
                                 v-text="
-                                  `Show activity for instance ${props.row.id}`
+                                  `Show activity for ${props.row.instance_name}`
                                 "
                               >
                               </span>
@@ -138,7 +138,7 @@ export default defineComponent({
       columns: [
         {
           name: 'instance_name',
-          label: 'Instance',
+          label: 'Instance / Relay',
           field: 'instance_name',
           sortable: true
         },
@@ -212,8 +212,8 @@ export default defineComponent({
         const {data} = await saas.getInstances()
         this.instances = data.map(i => ({
           value: i.id,
-          label: `[${i.id}] ${i.domain}`,
-          name: i.domain
+          label: `[${i.id}] ${i.relay_url || i.domain}`,
+          name: i.relay_url || i.domain
         }))
       } catch (error) {
         console.warn(error)
@@ -294,11 +294,6 @@ export default defineComponent({
 
 <style scoped>
 .bg-custom {
-  background: #26a69a;
-  background: linear-gradient(
-    145deg,
-    var(--q-secondary) 0%,
-    rgba(237, 178, 83, 1) 190%
-  );
+  background: var(--q-primary);
 }
 </style>

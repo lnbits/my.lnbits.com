@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="app-shell">
-    <q-header class="bg-transparent" style="color: inherit">
+    <q-header style="color: inherit">
       <q-toolbar>
         <q-btn
           flat
@@ -49,16 +49,24 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list class="q-mt-xl">
-        <q-item to="/instances" active-class="text-primary">
+      <q-list class="app-navigation q-pa-sm q-mt-md">
+        <q-item role="link" to="/instances" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="table_chart" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Instances</q-item-label>
+            <q-item-label>LNbits Instances</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/payments" active-class="text-primary">
+        <q-item role="link" to="/relays" active-class="text-primary">
+          <q-item-section avatar>
+            <q-icon name="hub" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Nostr &amp; Iroh Relays</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item role="link" to="/payments" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="payment" />
           </q-item-section>
@@ -66,7 +74,7 @@
             <q-item-label>Payments</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/subscriptions" active-class="text-primary">
+        <q-item role="link" to="/subscriptions" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="subscriptions" />
           </q-item-section>
@@ -75,7 +83,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item to="/activity" active-class="text-primary">
+        <q-item role="link" to="/activity" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="manage_history" />
           </q-item-section>
@@ -84,7 +92,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item to="/pricing" active-class="text-primary">
+        <q-item role="link" to="/pricing" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="currency_bitcoin" />
           </q-item-section>
@@ -92,7 +100,7 @@
             <q-item-label>Pricing</q-item-label>
           </q-item-section>
         </q-item>
-        <q-item to="/terms-of-service" active-class="text-primary">
+        <q-item role="link" to="/terms-of-service" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="description" />
           </q-item-section>
@@ -151,6 +159,18 @@ export default defineComponent({
     email: function () {
       return saas.email
     }
+  },
+  watch: {
+    '$route.path': {
+      immediate: true,
+      handler(path) {
+        document.body.classList.add('backend-ui')
+        document.body.classList.toggle('relay-theme', path === '/relays')
+      }
+    }
+  },
+  beforeUnmount() {
+    document.body.classList.remove('backend-ui', 'relay-theme')
   },
   methods: {
     logout: async function () {

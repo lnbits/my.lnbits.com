@@ -16,48 +16,34 @@
       </div>
     </q-card-section>
   </q-card>
-  <div class="q-mb-md">
-    <div class="row q-mt-md">
-      <div class="col-12">
-        <q-item class="q-pa-none bg-grey-8">
-          <q-item-section side class="q-pa-lg q-mr-none text-white bg-black">
-            <q-icon name="info" color="white" size="24px"></q-icon>
-          </q-item-section>
-          <q-item-section class="q-pa-md q-ml-none text-white">
-            <q-item-label class="text-white text-h6 text-weight-bolder"
-              >New Instances Creation</q-item-label
-            >
-            <q-item-label
-              >It takes a few minutes to create a new instance after the payment
-              is confirmed. Please wait.</q-item-label
-            >
-          </q-item-section>
-        </q-item>
-      </div>
-    </div>
-  </div>
+  <q-banner class="provisioning-note q-mb-md" rounded>
+    <template v-slot:avatar><q-icon name="info_outline" /></template>
+    {{ isRelay ? 'Relays' : 'Instances' }} take a few minutes to become available
+    after payment.
+  </q-banner>
   <q-card class="no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table
         class="table-bg"
         :rows="data"
-        :columns="columns"
+        :columns="serviceColumns"
         :pagination.sync="pagination"
-        title="LNbits Instances"
+        :title="isRelay ? 'Nostr & Iroh Relays' : 'LNbits Instances'"
         :loading="inProgress"
       >
         <template v-slot:top-right>
           <q-btn
             @click="openNewInstanceDialog"
-            label="New Instance"
-            icon="add_to_queue"
+            :label="isRelay ? 'New Relay' : 'New Instance'"
+            icon="add"
             color="primary"
+            :disable="inProgress"
             class="float-right text-capitalize"
           />
         </template>
         <template v-slot:body-cell-action="props">
           <q-td :props="props">
-            <q-btn icon="info" size="sm" flat dense>
+            <q-btn v-if="!isRelay" icon="info" size="sm" flat dense>
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 <span>
                   For instances with a preconfigured funding source like Spark
@@ -71,6 +57,7 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              v-if="!isRelay"
               type="a"
               :href="props.row.instanceLink"
               target="_blank"
@@ -84,6 +71,7 @@
               </q-tooltip>
             </q-btn>
             <q-btn
+              v-if="!isRelay"
               @click="copyInstallToken(props.row.installToken)"
               icon="key"
               size="sm"
@@ -97,6 +85,7 @@
             </q-btn>
             <q-btn
               type="a"
+              v-if="!isRelay"
               :href="props.row.backupLink"
               :disable="!props.row.enabled"
               target="_blank"
@@ -111,6 +100,7 @@
             </q-btn>
 
             <q-btn
+              v-if="!isRelay"
               @click="resetInstance(props.row.id)"
               :disable="!props.row.enabled || !props.row.installToken"
               icon="power_off"
@@ -132,7 +122,7 @@
               dense
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Disable: it will make your instance unavailable.
+                Disable: it will make your {{ serviceName }} unavailable.
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -145,7 +135,7 @@
               dense
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                Enable: it will make your instance available again.
+                Enable: it will make your {{ serviceName }} available again.
               </q-tooltip>
             </q-btn>
             <q-btn
@@ -161,15 +151,15 @@
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
                 <span v-if="props.row.enabled">
-                  Destroy: you can only destroy a disabled instance. Please
+                  Destroy: you can only destroy a disabled {{ serviceName }}. Please
                   disable it first.
                 </span>
                 <span v-else-if="props.row.hasActiveFiatSubscription">
                   Please end the subscription from /subscriptions for this
-                  instance first
+                  {{ serviceName }} first.
                 </span>
                 <span v-else>
-                  Destroy: destroying will delete your instance and every bit of
+                  Destroy: destroying will delete your {{ serviceName }} and all its
                   data.</span
                 >
               </q-tooltip>
@@ -201,7 +191,7 @@
                   class="col instance-progress-bar cursor-pointer"
                   role="button"
                   tabindex="0"
-                  aria-label="Extend the life of this instance."
+                  :aria-label="`Extend the life of this ${serviceName}.`"
                   :data-testid="`extend-instance-progress-${props.row.id}`"
                   @click="openExtendInstanceDialog(props.row)"
                   @keydown.enter="openExtendInstanceDialog(props.row)"
@@ -219,7 +209,7 @@
                   :data-testid="`extend-instance-${props.row.id}`"
                 >
                   <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                    Extend the life of this instance.
+                    Extend the life of this {{ serviceName }}.
                   </q-tooltip>
                 </q-btn>
               </div>
@@ -238,7 +228,7 @@
               dense
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                <span> Show activity for this instance. </span>
+                <span> Show activity for this {{ serviceName }}. </span>
               </q-tooltip>
             </q-btn>
           </q-td>
@@ -246,7 +236,19 @@
 
         <template v-slot:body-cell-name="props">
           <q-td :props="props">
+            <div v-if="isRelay" class="row items-center no-wrap q-gutter-sm">
+              <span>{{ props.row.name }}</span>
+              <q-btn
+                flat
+                dense
+                icon="content_copy"
+                size="sm"
+                aria-label="Copy relay address"
+                @click="copyRelayAddress(props.row.name)"
+              />
+            </div>
             <q-btn
+              v-else
               type="a"
               :href="props.row.instanceLink"
               :label="props.row.name"
@@ -292,9 +294,14 @@
     </q-card-section>
   </q-card>
   <q-dialog v-model="qrCodeDialog.show" position="top">
-    <q-card style="min-height: 200px" class="q-pa-lg q-mx-sm">
-      <h5 class="q-mt-sm">
-        <span>Instance: &nbsp;</span><span v-text="activeInstance.id"></span>
+    <q-card
+      style="min-height: 200px; width: 460px; max-width: calc(100vw - 32px)"
+      class="q-pa-lg q-mx-sm"
+      data-testid="payment-dialog"
+    >
+      <h5 class="q-mt-sm payment-address">
+        <span>{{ isRelay ? 'Relay' : 'Instance' }}: &nbsp;</span>
+        <span v-text="activeInstance.id"></span>
       </h5>
       <div v-if="qrCodeDialog.dataIsUrl">
         <p>
@@ -310,8 +317,11 @@
         </p>
       </div>
       <p v-else>
-        Scan the QR code below using a lightning wallet to add credit to your
-        balance for this instance.
+        {{
+          qrCodeDialog.onchain
+            ? 'Scan with a Bitcoin wallet to pay on-chain.'
+            : 'Scan with a Lightning wallet to add credit.'
+        }}
       </p>
 
       <p
@@ -330,7 +340,7 @@
           ></qrcode-vue>
         </q-responsive>
       </p>
-      <h5><span v-text="activeInstance.name"></span></h5>
+      <h5 class="payment-address"><span v-text="activeInstance.name"></span></h5>
       <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <div class="row q-mt-md">
         <q-btn
@@ -348,7 +358,7 @@
   <q-dialog v-model="showProvisioning" backdrop-filter="blur(4px)" persistent>
     <q-card style="width: 95%; max-width: 1200px" class="q-mx-auto">
       <q-card-section
-        class="row items-center q-py-lg gradient-bg--primary text-white"
+        class="row items-center q-py-lg dialog-heading text-white"
       >
         <div>
           <div
@@ -407,7 +417,7 @@
     @hide="readyDialog.instance = null"
   >
     <q-card style="width: 95%; max-width: 520px" class="q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white">
+      <q-card-section class="q-py-lg dialog-heading text-white">
         <div class="text-h6">Congratulations 🎉</div>
         <div>Your instance is now ready.</div>
       </q-card-section>
@@ -436,7 +446,7 @@
     @hide="resetSubscriptionDialog"
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+      <q-card-section class="q-py-lg dialog-heading text-white column">
         <div class="text-h6">{{ planDialogTitle }}</div>
       </q-card-section>
       <q-card-section class="q-pa-none">
@@ -464,7 +474,7 @@
           />
         </div>
       </q-card-section>
-      <q-card-section class="q-mb-lg">
+      <q-card-section class="q-pa-lg">
         <div>
           <div v-if="!isPricingMatrixFlow && planDialog.subscription">
             Choose a subscription plan and we'll automatically renew it for you.
@@ -477,7 +487,7 @@
             subscription.
           </div>
         </div>
-        <div v-if="isPricingMatrixFlow" class="q-mt-lg">
+        <div v-if="isPricingMatrixFlow">
           <div
             class="q-mt-sm row items-center no-wrap q-gutter-x-sm text-h6 text-weight-bold"
           >
@@ -524,7 +534,21 @@
             </div>
           </div>
           <div class="row q-col-gutter-md q-mt-sm">
-            <div class="col-12 col-md-6">
+            <div v-if="isRelay" class="col-12 col-md-6">
+              <q-select
+                v-model="planDialog.selectedTag"
+                :options="matrixFundingOptions"
+                emit-value
+                map-options
+                label="Relay type"
+                dense
+                outlined
+                data-testid="instance-funding-select"
+                :disable="isEditInstanceDialog || isSubmittingPlan"
+                @update:model-value="onMatrixFundingChange"
+              />
+            </div>
+            <div v-if="!isRelay" class="col-12 col-md-6">
               <q-select
                 v-model="planDialog.tier"
                 :options="matrixTierOptions"
@@ -535,7 +559,7 @@
                 label="Tier"
                 data-testid="instance-tier-select"
                 :readonly="isEditInstanceDialog"
-                :disable="isEditInstanceDialog"
+                :disable="isEditInstanceDialog || isSubmittingPlan"
               >
                 <template v-slot:selected-item="scope">
                   <div class="row items-baseline no-wrap q-gutter-x-sm">
@@ -577,6 +601,7 @@
                 outlined
                 label="Billing"
                 data-testid="instance-billing-select"
+                :disable="isSubmittingPlan"
                 @update:model-value="onMatrixBillingChange"
               />
             </div>
@@ -585,7 +610,7 @@
         <div class="q-mt-lg">
           <div
             class="text-subtitle1"
-            v-if="!(isPricingMatrixFlow && q.screen.lt.sm)"
+            v-if="!isRelay && !(isPricingMatrixFlow && q.screen.lt.sm)"
           >
             {{
               isPricingMatrixFlow
@@ -594,7 +619,7 @@
             }}
           </div>
           <q-select
-            v-if="isPricingMatrixFlow"
+            v-if="isPricingMatrixFlow && !isRelay"
             v-model="planDialog.selectedTag"
             :options="matrixFundingOptions"
             option-label="label"
@@ -607,7 +632,7 @@
             class="q-mt-md"
             data-testid="instance-funding-select"
             :readonly="isEditInstanceDialog"
-            :disable="isEditInstanceDialog"
+            :disable="isEditInstanceDialog || isSubmittingPlan"
             @update:model-value="onMatrixFundingChange"
           />
           <div v-if="isPricingMatrixFlow" class="q-mt-md">
@@ -622,10 +647,28 @@
                   v-model="planDialog.paymentCurrency"
                   :val="option.value"
                   :label="option.label"
+                  :disable="isSubmittingPlan"
                   color="primary"
                 />
               </div>
             </div>
+          </div>
+          <q-toggle
+            v-if="
+              isPricingMatrixFlow &&
+              planDialog.paymentCurrency === 'USD' &&
+              !isHourlyMatrixSelection
+            "
+            v-model="planDialog.subscription"
+            :disable="isSubmittingPlan"
+            label="Automatically renew subscription"
+            class="q-mt-md"
+          />
+          <div
+            v-if="isPricingMatrixFlow && isHourlyMatrixSelection"
+            class="text-caption q-mt-sm"
+          >
+            Hourly billing uses a prepaid Lightning balance.
           </div>
           <div
             v-if="selectedDomainRequestConfig && !isEditInstanceDialog"
@@ -647,6 +690,7 @@
               bottom-slots
               class="q-mt-md"
               data-testid="instance-domain-input"
+              :disable="isSubmittingPlan"
             />
           </div>
           <q-select
@@ -838,12 +882,13 @@
         <q-btn
           class="q-mr-auto"
           label="Close"
+          :disable="isSubmittingPlan"
           color="grey-6"
           outline
           v-close-popup
         ></q-btn>
         <q-spinner-bars
-          v-if="planDialog.inProgress"
+          v-if="isSubmittingPlan"
           color="primary"
           size="2.55em"
         ></q-spinner-bars>
@@ -905,7 +950,7 @@
     @hide="resetOnDemandDialog"
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+      <q-card-section class="q-py-lg dialog-heading text-white column">
         <div class="text-h6">Create On-demand Instance</div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
@@ -1103,7 +1148,7 @@
     persistent
   >
     <q-card style="width: 95%; max-width: 700px" class="table-bg q-mx-auto">
-      <q-card-section class="q-py-lg gradient-bg--primary text-white column">
+      <q-card-section class="q-py-lg dialog-heading text-white column">
         <div class="text-h6">Select a method</div>
       </q-card-section>
       <q-card-section class="q-mb-lg">
@@ -1229,6 +1274,7 @@ import {
   mapInstanceTypesToImageOptions
 } from 'src/utils/pricing'
 import QrcodeVue from 'qrcode.vue'
+import {RELAY_TYPES, buildRelayPlans, getRelayType} from 'src/utils/relays'
 
 import ItemPricing from 'components/cards/ItemPricing.vue'
 import CardStats from 'components/cards/CardStats.vue'
@@ -1236,6 +1282,7 @@ import CardStats from 'components/cards/CardStats.vue'
 export default defineComponent({
   name: 'TableDarkMode',
   props: {
+    service: {type: String, default: 'lnbits'},
     plan: String,
     tier: String,
     billing: String,
@@ -1255,13 +1302,16 @@ export default defineComponent({
       qrCodeDialog: {
         show: false,
         data: null,
-        dataIsUrl: false
+        dataIsUrl: false,
+        onchain: false
       },
       readyDialog: {
         show: false,
         instance: null
       },
       pricingPlans: [],
+      paymentStatusTimer: null,
+      provisioningTimer: null,
       fundingSourceOptions: [],
       activeInstance: null,
       pagination: {
@@ -1332,7 +1382,7 @@ export default defineComponent({
 
       activityStats: [
         {
-          title: 'Instances',
+          title: this.service === 'relay' ? 'Relays' : 'Instances',
           icon: 'dns',
           value: 0,
           color1: '#546bfa',
@@ -1561,10 +1611,11 @@ export default defineComponent({
     },
     async loadPricingData() {
       try {
-        this.pricingPlans = await getPricingPlans()
+        const plans = await getPricingPlans()
+        this.pricingPlans = this.isRelay ? buildRelayPlans(plans) : plans
       } catch (error) {
         console.warn(error)
-        this.pricingPlans = []
+        this.pricingPlans = this.isRelay ? buildRelayPlans([]) : []
       }
     },
     async openNewInstanceDialog() {
@@ -1574,7 +1625,7 @@ export default defineComponent({
       this.newInstanceDialog.method = null
       this.planDialog.instance = null
       this.initializePricingMatrixSelection({
-        tier: 'premium',
+        tier: this.isRelay ? 'relay' : 'premium',
         billing: 'monthly',
         funding: 'spark_l2'
       })
@@ -1984,8 +2035,8 @@ export default defineComponent({
       this.planDialog.count = 1
       this.planDialog.paymentCurrency = this.isHourlyMatrixSelection
         ? 'BTC'
-        : this.planDialog.paymentCurrency === 'BTC'
-          ? 'BTC'
+        : this.planDialog.paymentCurrency.startsWith('BTC')
+          ? this.planDialog.paymentCurrency
           : 'USD'
       this.syncLegacyPlanFromMatrixBilling()
     },
@@ -2128,7 +2179,11 @@ export default defineComponent({
       return this.getPlanOptionValue(this.planDialog.plan)
     },
     isPlanSubmitDisabled() {
-      if (!this.planDialog.plan || this.planDialog.inProgress) {
+      if (
+        !this.planDialog.plan ||
+        this.planDialog.inProgress ||
+        this.inProgress
+      ) {
         return true
       }
 
@@ -2139,6 +2194,11 @@ export default defineComponent({
       return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
     },
     async loadInstanceTypeOptions() {
+      if (this.isRelay) {
+        this.newInstanceDialog.options = RELAY_TYPES
+        this.fundingSourceOptions = RELAY_TYPES
+        return
+      }
       const requestId = ++this.instanceTypesRequestId
       this.newInstanceDialog.loading = true
       this.newInstanceDialog.error = null
@@ -2241,7 +2301,7 @@ export default defineComponent({
       } catch (error) {
         console.warn(error)
         this.q.notify({
-          message: 'Failed to create instance',
+          message: `Failed to create ${this.serviceName}`,
           caption: saas.mapErrorToString(error),
           color: 'negative'
         })
@@ -2264,12 +2324,15 @@ export default defineComponent({
     },
 
     async submitPlanRequest(useFiat) {
+      if (this.planDialog.inProgress || this.inProgress) return
       // validate planDialog data, make saas request for payment details
       if (this.isPricingMatrixFlow) {
         const wantsFiat = this.planDialog.paymentCurrency === 'USD'
 
         this.planDialog.subscription =
-          this.planDialog.billing !== 'hourly' && wantsFiat
+          this.planDialog.billing !== 'hourly' &&
+          wantsFiat &&
+          this.planDialog.subscription
         this.planDialog.fiatOnly = wantsFiat
         this.planDialog.bitcoinOnly = wantsFiat === false
       } else if (typeof useFiat === 'boolean') {
@@ -2328,6 +2391,9 @@ export default defineComponent({
       if (!instance) {
         return
       }
+      // Retain the created instance if checkout fails so retrying never creates
+      // a second service.
+      this.planDialog.instance = instance
 
       if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
         this.planDialog.show = false
@@ -2373,6 +2439,9 @@ export default defineComponent({
           instanceId,
           this.getSelectedPaymentPlanName()
         )
+        if (!data.checkout_session_url) {
+          throw new Error('Missing checkout URL')
+        }
         this.planDialog.show = false
         this.extendInstance(
           this.data.find(i => i.id === instanceId),
@@ -2398,13 +2467,23 @@ export default defineComponent({
           instanceId,
           this.getSelectedPaymentPlanName(),
           this.planDialog.count,
-          this.planDialog.fiatOnly
+          this.planDialog.fiatOnly,
+          this.planDialog.paymentCurrency === 'BTC_ONCHAIN'
+            ? 'onchain'
+            : undefined
         )
+        const onchain = this.planDialog.paymentCurrency === 'BTC_ONCHAIN'
+        const paymentData = onchain
+          ? data.checkout_session_url || data.bitcoin_uri
+          : data.checkout_session_url || data.payment_request
+        if (!paymentData) {
+          throw new Error('Missing payment details')
+        }
         this.planDialog.show = false
         this.extendInstance(
           this.data.find(i => i.id === instanceId),
-          data.payment_request,
-          !this.planDialog.fiatOnly
+          paymentData,
+          onchain
         )
         return true
       } catch (error) {
@@ -2448,9 +2527,8 @@ export default defineComponent({
     disableInstance: function (id) {
       this.confirm(
         `Disable ${id}`,
-        'Are you sure you want to disable?' +
-          ' Disabling will make your instance unavailable.' +
-          ' The clock is still ticking!'
+        `Disabling will make your ${this.serviceName} unavailable. ` +
+          'Paid time will continue to run. Disable it?'
       ).onOk(async () => {
         try {
           this.inProgress = true
@@ -2464,7 +2542,7 @@ export default defineComponent({
         } catch (error) {
           console.warn(error)
           this.q.notify({
-            message: `Failed to disable instance ${id}.`,
+            message: `Failed to disable ${this.serviceName} ${id}.`,
             caption: saas.mapErrorToString(error),
             color: 'negative'
           })
@@ -2488,7 +2566,7 @@ export default defineComponent({
           } catch (error) {
             console.warn(error)
             this.q.notify({
-              message: `Failed to enable instance ${id}.`,
+              message: `Failed to enable ${this.serviceName} ${id}.`,
               caption: saas.mapErrorToString(error),
               color: 'negative'
             })
@@ -2504,14 +2582,14 @@ export default defineComponent({
       if (instance?.enabled) {
         return this.q.notify({
           message:
-            'You can only destroy a disabled instance. Please disable it first.',
+            `You can only destroy a disabled ${this.serviceName}. Please disable it first.`,
           color: 'warning'
         })
       }
       if (instance?.hasActiveFiatSubscription) {
         return this.q.notify({
           message:
-            'Please end the subscription from /subscriptions for this instance first',
+            `Please end the subscription from /subscriptions for this ${this.serviceName} first.`,
           color: 'warning'
         })
       }
@@ -2535,7 +2613,7 @@ export default defineComponent({
         } catch (error) {
           console.warn(error)
           this.q.notify({
-            message: `Failed to destroy instance '${id}'`,
+            message: `Failed to destroy ${this.serviceName} '${id}'`,
             caption: saas.mapErrorToString(error),
             color: 'negative'
           })
@@ -2547,7 +2625,9 @@ export default defineComponent({
     checkInstanceStatus: async function (instance) {
       let response
       try {
-        response = await fetch(`https://${instance.name}/static/i18n/en.js`)
+        if (!this.isRelay) {
+          response = await fetch(`https://${instance.name}/static/i18n/en.js`)
+        }
       } catch (error) {
         // Ignore CORS errors and other network errors
         response = null
@@ -2564,10 +2644,10 @@ export default defineComponent({
           ) {
             this.qrCodeDialog.show = false
             this.q.notify({
-              message: `Instance ${instance.id} extended!`,
+              message: `${this.isRelay ? 'Relay' : 'Instance'} ${instance.id} extended.`,
               color: 'positive'
             })
-            if (!response || response.status === 503) {
+            if (!this.isRelay && (!response || response.status === 503)) {
               await this.checkInstanceProvisioning(updatedInstance.id)
             }
           }
@@ -2579,6 +2659,8 @@ export default defineComponent({
           console.warn(error)
         }
       }, 3000)
+      clearInterval(this.paymentStatusTimer)
+      this.paymentStatusTimer = retryId
     },
     async checkInstanceProvisioning(instanceId) {
       let timeout = 5 * 60 * 1000 // 5 minutes max wait
@@ -2623,6 +2705,8 @@ export default defineComponent({
           console.debug('Provisioning ping error (ignored):', error)
         }
       }, 5000)
+      clearInterval(this.provisioningTimer)
+      this.provisioningTimer = intervalId
     },
     serverStatus: async function () {
       try {
@@ -2636,7 +2720,15 @@ export default defineComponent({
         })
       }
     },
-    extendInstance: function (instance, qrCodeData) {
+    extendInstance: function (instance, qrCodeData, onchain = false) {
+      if (!instance || !(qrCodeData || instance.lnurl)) {
+        this.q.notify({
+          message: 'Payment details are unavailable. Please try again.',
+          color: 'negative'
+        })
+        return
+      }
+      this.qrCodeDialog.onchain = onchain
       this.activeInstance = instance
 
       this.qrCodeDialog.data = qrCodeData || instance.lnurl
@@ -2644,6 +2736,11 @@ export default defineComponent({
       this.qrCodeDialog.show = true
 
       this.checkInstanceStatus(instance)
+    },
+    copyRelayAddress(address) {
+      copyToClipboard(address)
+        .then(() => this.q.notify({message: 'Relay address copied', color: 'grey'}))
+        .catch(() => this.q.notify({message: 'Could not copy relay address.', color: 'negative'}))
     },
     copyData: function () {
       copyToClipboard(this.qrCodeDialog.data)
@@ -2671,8 +2768,7 @@ export default defineComponent({
     },
     isValidUrl: function (str) {
       try {
-        new URL(str)
-        return true
+        return ['https:', 'http:'].includes(new URL(str).protocol)
       } catch {
         return false
       }
@@ -2702,12 +2798,14 @@ export default defineComponent({
         await this.serverStatus()
         const activeFiatSubscriptionInstanceIds =
           this.getActiveFiatSubscriptionInstanceIds(subscriptionsData || [])
-        const tableData = (instancesData || []).map(i => ({
-          ...saas.mapInstance(i),
-          hasActiveFiatSubscription: activeFiatSubscriptionInstanceIds.has(
-            `${i.id}`
-          )
-        }))
+        const tableData = (instancesData || [])
+          .filter(i => Boolean(getRelayType(i)) === this.isRelay)
+          .map(i => ({
+            ...saas.mapInstance(i),
+            hasActiveFiatSubscription: activeFiatSubscriptionInstanceIds.has(
+              `${i.id}`
+            )
+          }))
 
         this.activityStats[0].value = tableData.length
         this.activityStats[1].value = tableData.filter(
@@ -2727,17 +2825,47 @@ export default defineComponent({
     }
   },
   computed: {
+    isRelay() {
+      return this.service === 'relay'
+    },
+    serviceName() {
+      return this.isRelay ? 'relay' : 'instance'
+    },
+    serviceColumns() {
+      if (!this.isRelay) return this.columns
+      return this.columns.map(column => {
+        if (column.name === 'methods') {
+          return {
+            name: 'type',
+            label: 'Type',
+            field: row => getRelayType(row)?.label || '',
+            align: 'left'
+          }
+        }
+        return {
+          ...column,
+          label: column.name === 'id'
+            ? 'Relay ID'
+            : column.name === 'name'
+              ? 'Relay address'
+              : column.label
+        }
+      })
+    },
+    isSubmittingPlan() {
+      return this.inProgress || this.planDialog.inProgress
+    },
     isEditInstanceDialog() {
       return Boolean(this.planDialog.instance)
     },
     planDialogTitle() {
       if (this.isEditInstanceDialog) {
-        return `Extend instance ${this.getInstanceDomain(
+        return `Extend ${this.isRelay ? 'relay' : 'instance'} ${this.getInstanceDomain(
           this.planDialog.instance
         )}`
       }
 
-      return 'Create New Instance'
+      return this.isRelay ? 'Create New Relay' : 'Create New Instance'
     },
     isPricingMatrixFlow() {
       return Boolean(
@@ -2803,12 +2931,13 @@ export default defineComponent({
 
       return [
         {label: 'USD', value: 'USD'},
-        {label: 'Bitcoin', value: 'BTC'}
+        {label: 'Bitcoin · Lightning', value: 'BTC'},
+        {label: 'Bitcoin · On-chain', value: 'BTC_ONCHAIN'}
       ]
     },
     matrixPaymentButtonLabel() {
       if (this.isEditInstanceDialog) {
-        return 'Extend Instance'
+        return this.isRelay ? 'Extend Relay' : 'Extend Instance'
       }
 
       return this.planDialog.paymentCurrency === 'USD'
@@ -2912,6 +3041,7 @@ export default defineComponent({
       }
 
       const fundingLabel = this.selectedMatrixFundingDetails?.label
+      if (this.isRelay) return `${fundingLabel || 'Relay'} · ${priceText}`
 
       return fundingLabel
         ? `${tierLabel}: ${priceText} - ${fundingLabel}`
@@ -2957,7 +3087,8 @@ export default defineComponent({
     showMatrixBitcoinQuantity() {
       return (
         this.isPricingMatrixFlow &&
-        this.planDialog.paymentCurrency === 'BTC' &&
+        (this.planDialog.paymentCurrency !== 'USD' ||
+          !this.planDialog.subscription) &&
         ['weekly', 'monthly', 'yearly'].includes(this.planDialog.billing)
       )
     },
@@ -3017,6 +3148,10 @@ export default defineComponent({
       })
     }
   },
+  beforeUnmount() {
+    clearInterval(this.paymentStatusTimer)
+    clearInterval(this.provisioningTimer)
+  },
   async created() {
     try {
       // temporary feature flag for alan
@@ -3055,6 +3190,10 @@ export default defineComponent({
 </script>
 
 <style>
+.payment-address {
+  overflow-wrap: anywhere;
+}
+
 .custom-caption {
   padding: 12px;
   color: white;

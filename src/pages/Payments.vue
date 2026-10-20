@@ -20,7 +20,7 @@
                 outlined
                 dense
                 clearable
-                label="Select Instance"
+                label="Select instance or relay"
               ></q-select>
             </template>
             <template v-slot:body-cell-success="props">
@@ -60,7 +60,7 @@ export default defineComponent({
         {name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true},
         {
           name: 'instance_name',
-          label: 'Instance',
+          label: 'Instance / Relay',
           field: 'instance_name',
           sortable: true
         },
@@ -115,8 +115,8 @@ export default defineComponent({
         const {data} = await saas.getInstances()
         this.instances = data.map(i => ({
           value: i.id,
-          label: `[${i.id}] ${i.domain}`,
-          name: i.domain
+          label: `[${i.id}] ${i.relay_url || i.domain}`,
+          name: i.relay_url || i.domain
         }))
       } catch (error) {
         console.warn(error)

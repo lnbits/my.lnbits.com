@@ -171,7 +171,7 @@ var saas = {
     })
   },
 
-  createOneTimePlan: function (instanceId, planName, quantity, isFiat) {
+  createOneTimePlan: function (instanceId, planName, quantity, isFiat, paymentMethod) {
     return axios({
       method: 'PUT',
       url: this.url('/instance/buy'),
@@ -180,7 +180,8 @@ var saas = {
         instance_id: instanceId,
         quantity: quantity,
         payment_plan_name: planName,
-        is_fiat: isFiat
+        is_fiat: isFiat,
+        ...(paymentMethod ? {payment_method: paymentMethod} : {})
       }
     })
   },
@@ -327,7 +328,7 @@ var saas = {
       enabled: instance.is_enabled,
       active: instance.is_active,
       expired: instance.timestamp_stop < this.serverTime,
-      name: instance.domain,
+      name: instance.relay_url || instance.domain,
       createdDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       timestamp: instance.timestamp,

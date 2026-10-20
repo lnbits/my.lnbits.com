@@ -1,4 +1,5 @@
 import {saas} from 'src/boot/saas'
+import {getRelayType} from 'src/utils/relays'
 
 const BILLING_ORDER = ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
 const PLAN_META_KEYS = [
@@ -384,6 +385,7 @@ const getFundingLabel = image => {
 
 export const mapInstanceTypesToImageOptions = payload =>
   normalizeInstanceImages(payload)
+    .filter(image => !getRelayType({instance_type: image?.tag}))
     .map(image => {
       const tag = typeof image?.tag === 'string' ? image.tag.trim() : ''
       const label = getFundingLabel(image)
@@ -406,6 +408,7 @@ export const mapInstanceTypesToFundingOptions = payload => {
   const seen = new Set()
 
   return normalizeInstanceImages(payload)
+    .filter(image => !getRelayType({instance_type: image?.tag}))
     .map(image => {
       const value = mapFundingValue(image)
       const label = getFundingLabel(image)

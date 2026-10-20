@@ -24,7 +24,7 @@
         :rows="data"
         :columns="columns"
         :pagination.sync="pagination"
-        title="Instances Activity"
+        title="Activity"
         :loading="inProgress"
       >
         <template v-slot:top-right>
@@ -35,7 +35,7 @@
             outlined
             dense
             clearable
-            label="Select Instance"
+            label="Select instance or relay"
           ></q-select>
         </template>
         <template v-slot:body-cell-success="props">
@@ -75,7 +75,7 @@ export default defineComponent({
 
       activityStats: [
         {
-          title: 'Instances',
+          title: 'Instances & Relays',
           icon: 'dns',
           value: 0,
           color1: '#546bfa',
@@ -119,14 +119,14 @@ export default defineComponent({
         },
         {
           name: 'id',
-          label: 'Instance ID',
+          label: 'Instance / Relay ID',
           field: 'instance_id',
           sortable: true,
           align: 'left'
         },
         {
           name: 'instance_name',
-          label: 'Instance Name',
+          label: 'Instance / Relay',
           field: 'instance_name',
           sortable: true,
           align: 'left'
@@ -217,8 +217,8 @@ export default defineComponent({
         this.activityStats[0].value = data.length
         this.instances = data.map(i => ({
           value: i.id,
-          label: `[${i.id}] ${i.domain}`,
-          name: i.domain
+          label: `[${i.id}] ${i.relay_url || i.domain}`,
+          name: i.relay_url || i.domain
         }))
       } catch (error) {
         console.warn(error)

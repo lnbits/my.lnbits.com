@@ -1,17 +1,10 @@
 <template>
-  <q-card class="table-bg q-pa-md no-shadow" bordered>
-    <q-card-section>
-      <q-btn round unelevated color="primary" :icon="icon" />
-    </q-card-section>
-    <q-separator />
-    <q-card-section>
-      <div class="text-subtitle1 stat-title">
-        {{ title }}
-      </div>
-      <div class="text-h4 text-weight-bolder stat-value">
-        {{ value }}
-      </div>
-    </q-card-section>
+  <q-card class="table-bg stat-card no-shadow" bordered>
+    <div class="row items-center justify-between no-wrap q-gutter-sm">
+      <div class="stat-title">{{ title }}</div>
+      <q-icon :name="icon" color="primary" size="20px" />
+    </div>
+    <div class="stat-value">{{ value }}</div>
   </q-card>
 </template>
 
