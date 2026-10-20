@@ -32,7 +32,7 @@ var saas = {
   },
   serverTime: null,
   chatUrl:
-    'https://demo.lnbits.com/chat/embed/d5oaTjnA6bk7WhE5wznHwJ?min=1&label=Chat%20to%20us',
+    'https://support.lnbits.com/chat/embed/hMn4ptqCuMSiUB8nVWWCWo?min=1&label=Chat%20to%20us',
 
   email: localStorage.getItem('email'),
 
@@ -140,6 +140,23 @@ var saas = {
       method: 'GET',
       url: this.url('/pricing'),
       withCredentials: true
+    })
+  },
+  getUserPreferences: function () {
+    return axios({
+      method: 'GET',
+      url: this.url('/user/preferences'),
+      withCredentials: true
+    })
+  },
+  updateUserChatId: function (chatId) {
+    return axios({
+      method: 'PATCH',
+      url: this.url('/user/preferences'),
+      withCredentials: true,
+      data: {
+        chat_id: chatId
+      }
     })
   },
   updateInstance: function (id, action) {
@@ -300,6 +317,7 @@ var saas = {
     const timeLeft = Math.floor(
       Math.max(instance.timestamp_stop - this.serverTime, 0)
     )
+
     return {
       id: instance.id,
       instanceLink: `https://${instance.domain}/wallet`,
@@ -316,6 +334,11 @@ var saas = {
       timestampStart: instance.timestamp_start,
       timestampStop: instance.timestamp_stop,
       lnurl: instance.lnurl,
+      instanceType: instance.instance_type,
+      fundingSource: instance.funding_source,
+      paymentPlanName: instance.payment_plan_name,
+      paymentPlanTier: instance.payment_plan_tier,
+      paymentPlanInterval: instance.payment_plan_interval,
       timeLeft: timeLeft,
       timeLeftFormatted: secondsToDhm(timeLeft),
       statusText: status(instance.is_active, instance.is_enabled),
