@@ -103,7 +103,7 @@
             <q-btn
               v-if="!isRelay"
               @click="resetInstance(props.row.id)"
-              :disable="!props.row.enabled || !props.row.installToken"
+              :disable="!props.row.enabled || !props.row.installToken || !!lifecycle.pending[props.row.id]"
               icon="power_off"
               size="sm"
               flat
@@ -114,9 +114,25 @@
               </q-tooltip>
             </q-btn>
             <q-btn
-              v-if="props.row.enabled"
+              v-if="lifecycle.pending[props.row.id]"
+              tag="span"
+              size="sm"
+              flat
+              dense
+              :ripple="false"
+              aria-disabled="true"
+              aria-label="Processing instance change"
+              :data-testid="`instance-processing-${props.row.id}`"
+              class="instance-lifecycle-processing"
+            >
+              <q-spinner size="1em" />
+              <q-tooltip :offset="[10, 10]">processing, can take up to 5mins</q-tooltip>
+            </q-btn>
+            <q-btn
+              v-else-if="lifecycle.isEnabled(props.row)"
               :disable="props.row.expired"
               @click="disableInstance(props.row.id)"
+              :aria-label="`Disable ${serviceName} ${props.row.id}`"
               icon="stop"
               size="sm"
               flat
@@ -130,6 +146,7 @@
               v-else
               :disable="props.row.expired"
               @click="enableInstance(props.row.id)"
+              :aria-label="`Enable ${serviceName} ${props.row.id}`"
               icon="play_circle_outline"
               size="sm"
               flat
@@ -147,7 +164,7 @@
               flat
               dense
               :disable="
-                props.row.enabled || props.row.hasActiveFiatSubscription
+                props.row.enabled || props.row.hasActiveFiatSubscription || !!lifecycle.pending[props.row.id]
               "
             >
               <q-tooltip class="bg-indigo" :offset="[10, 10]">
@@ -1269,6 +1286,7 @@ import {defineComponent} from 'vue'
 import {useQuasar, copyToClipboard} from 'quasar'
 import {normalizeApiEnv, saas} from 'src/boot/saas'
 import {secondsToDhm} from 'src/boot/utils'
+import {useInstanceLifecycle} from 'src/composables/useInstanceLifecycle'
 import {
   getPricingPlans,
   mapInstanceTypesToFundingOptions,
@@ -1493,6 +1511,10 @@ export default defineComponent({
 
     return {
       q: $q,
+      lifecycle: useInstanceLifecycle(() => $q.notify({
+        message: 'Could not check availability. Showing the saved enable/disable state.',
+        color: 'warning'
+      })),
       confirm(title, message) {
         return $q.dialog({
           title,
@@ -2500,6 +2522,7 @@ export default defineComponent({
       }
     },
     resetInstance: function (id) {
+      if (this.lifecycle.pending[id]) return
       this.confirm(
         `Reset ${id}`,
         'Are you sure you want to reset?' +
@@ -2526,11 +2549,13 @@ export default defineComponent({
       })
     },
     disableInstance: function (id) {
+      if (this.lifecycle.pending[id]) return
       this.confirm(
         `Disable ${id}`,
         `Disabling will make your ${this.serviceName} unavailable. ` +
           'Paid time will continue to run. Disable it?'
       ).onOk(async () => {
+        if (!this.lifecycle.begin(id)) return
         try {
           this.inProgress = true
           const {data} = await saas.updateInstance(id, 'disable')
@@ -2541,6 +2566,7 @@ export default defineComponent({
           })
           await this.refreshState()
         } catch (error) {
+          if (error.response) this.lifecycle.cancel(id)
           console.warn(error)
           this.q.notify({
             message: `Failed to disable ${this.serviceName} ${id}.`,
@@ -2553,8 +2579,10 @@ export default defineComponent({
       })
     },
     enableInstance: function (id) {
+      if (this.lifecycle.pending[id]) return
       this.confirm(`Enable ${id}`, 'Are you sure you want to enable?').onOk(
         async () => {
+          if (!this.lifecycle.begin(id)) return
           try {
             this.inProgress = true
             const {data} = await saas.updateInstance(id, 'enable')
@@ -2565,6 +2593,7 @@ export default defineComponent({
             })
             await this.refreshState()
           } catch (error) {
+            if (error.response) this.lifecycle.cancel(id)
             console.warn(error)
             this.q.notify({
               message: `Failed to enable ${this.serviceName} ${id}.`,
@@ -2578,6 +2607,7 @@ export default defineComponent({
       )
     },
     destroyInstance: function (id) {
+      if (this.lifecycle.pending[id]) return
       const instance = this.data.find(i => i.id === id)
 
       if (instance?.enabled) {
@@ -2820,6 +2850,7 @@ export default defineComponent({
         )
 
         this.data = tableData
+        this.lifecycle.sync(tableData)
       } catch (error) {
         console.warn(error)
       }
@@ -3191,6 +3222,8 @@ export default defineComponent({
 </script>
 
 <style>
+.instance-lifecycle-processing { cursor: wait; }
+
 .payment-address {
   overflow-wrap: anywhere;
 }
