@@ -692,6 +692,38 @@ body.backend-ui.body--dark.relay-theme {
   letter-spacing: -0.02em;
 }
 
+/* Activity and payments share the same compact table layout. */
+.backend-ui .compact-table .q-table th {
+  height: 32px;
+  padding: 6px 12px;
+  background: var(--backend-surface);
+}
+
+.backend-ui .compact-table .q-table tbody td {
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.backend-ui .compact-table .q-table th:first-child,
+.backend-ui .compact-table .q-table td:first-child { padding-left: 28px; }
+.backend-ui .compact-table .q-table th:last-child,
+.backend-ui .compact-table .q-table td:last-child { padding-right: 28px; }
+.backend-ui .compact-table .q-table tbody tr:hover td { background: var(--backend-hover); }
+.table-instance-filter { width: 260px; }
+
+@media (max-width: 599px) {
+  .table-instance-filter { width: 100%; }
+  .compact-table .q-table__top { align-items: stretch; }
+  .compact-table .q-table__top > .q-table__separator { display: none; }
+  .compact-table .q-table__top > .q-table__control:last-child { width: 100%; }
+  .backend-ui .compact-table .q-table th:first-child,
+  .backend-ui .compact-table .q-table td:first-child { padding-left: 16px; }
+  .backend-ui .compact-table .q-table th:last-child,
+  .backend-ui .compact-table .q-table td:last-child { padding-right: 16px; }
+}
+
 .backend-ui .q-separator {
   background: var(--backend-border);
 }

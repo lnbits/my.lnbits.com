@@ -39,17 +39,14 @@ test('guests can open pricing and terms without the account menu', async ({page}
   await expect(page.locator('body')).not.toHaveClass(/backend-ui/)
 })
 
-test('signed-in pricing and terms keep the account menu and selected theme', async ({page}) => {
+test('signed-in terms keep the account menu and selected theme', async ({page}) => {
   await page.addInitScript(() => {
     localStorage.setItem('email', 'public-pages@example.com')
     if (localStorage.getItem('darkMode') === null) localStorage.setItem('darkMode', 'true')
   })
-  await page.goto('/pricing')
-  await expect(page.getByRole('heading', {name: 'Personal', exact: true})).toBeVisible()
-  await expect(page.getByRole('heading', {name: 'Launch LNbits in minutes'})).toHaveCount(0)
-  await expect(page.locator('footer')).toHaveCount(0)
+  await page.goto('/instances')
   const navigation = page.locator('.app-navigation')
-  await expect(navigation.getByRole('link', {name: 'Pricing', exact: true})).toHaveClass(/q-router-link--exact-active/)
+  await expect(navigation.getByRole('link', {name: 'Pricing', exact: true})).toHaveCount(0)
   await expect(page.locator('.q-header')).toHaveCount(1)
   await expect(page.locator('.q-layout')).toHaveCount(1)
   await page.getByRole('switch').click()
@@ -65,19 +62,18 @@ test('signed-in pricing and terms keep the account menu and selected theme', asy
   await expect(page.locator('body')).toHaveClass(/body--light/)
   await navigation.getByRole('link', {name: 'LNbits Instances'}).click()
   await expect(page).toHaveURL(/\/instances$/)
-  await navigation.getByRole('link', {name: 'Pricing', exact: true}).click()
-  await expect(page.getByRole('heading', {name: 'Personal', exact: true})).toBeVisible()
   await expect(page.locator('body')).toHaveClass(/backend-ui/)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
-test('signed-in mobile users can navigate from terms to pricing with the menu', async ({page}) => {
+test('signed-in mobile users can navigate from terms to instances with the menu', async ({page}) => {
   await page.setViewportSize({width: 390, height: 844})
   await page.addInitScript(() => localStorage.setItem('email', 'public-pages@example.com'))
   await page.goto('/terms-of-service')
   await expect(page.getByRole('heading', {name: 'Terms of Service', exact: true})).toBeVisible()
   await page.getByRole('button', {name: 'Menu', exact: true}).click()
-  await page.locator('.app-navigation').getByRole('link', {name: 'Pricing', exact: true}).click()
-  await expect(page.getByRole('heading', {name: 'Personal', exact: true})).toBeVisible()
+  await expect(page.locator('.app-navigation').getByRole('link', {name: 'Pricing', exact: true})).toHaveCount(0)
+  await page.locator('.app-navigation').getByRole('link', {name: 'LNbits Instances'}).click()
+  await expect(page).toHaveURL(/\/instances$/)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })

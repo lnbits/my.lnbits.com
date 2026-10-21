@@ -54,7 +54,7 @@ test('payments can be filtered and cleared on mobile without page overflow', asy
   await page.getByRole('option', {name: '[instance-1] my-wallet.lnbits.com'}).click()
   await expect(page.locator('.payments-table tbody tr')).toHaveCount(2)
   expect(requests).toContain('/instance/instance-1/payments')
-  await page.locator('.payments-filter .q-field__focusable-action').click()
+  await page.locator('.table-instance-filter .q-field__focusable-action').click()
   await expect(page.locator('.payments-table tbody tr')).toHaveCount(3)
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })

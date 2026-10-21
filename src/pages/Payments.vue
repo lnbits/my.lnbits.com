@@ -4,9 +4,10 @@
       <q-card class="no-shadow" bordered>
         <q-card-section class="q-pa-none">
           <q-table
+            dense
             flat
             row-key="id"
-            class="table-bg payments-table"
+            class="table-bg compact-table payments-table"
             :rows="payments"
             :columns="columns"
             v-model:pagination="pagination"
@@ -22,7 +23,7 @@
                 dense
                 clearable
                 label="Filter by instance or relay"
-                class="payments-filter"
+                class="table-instance-filter"
                 data-testid="payments-filter"
               ></q-select>
             </template>
@@ -40,8 +41,8 @@
             </template>
             <template v-slot:body-cell-paid="props">
               <q-td :props="props">
-                <span class="payment-status" :class="{'payment-status--paid': props.value}">
-                  <q-icon :name="props.value ? 'check_circle' : 'schedule'" size="14px" />
+                <span class="payment-status">
+                  <q-icon :name="props.value ? 'done' : 'schedule'" :color="props.value ? 'green' : 'grey'" size="14px" />
                   {{ props.value ? 'Paid' : 'Unpaid' }}
                 </span>
               </q-td>
@@ -60,14 +61,13 @@
                     <q-tooltip>Quantity: {{ props.row.quantity }}</q-tooltip>
                   </span>
                 </div>
-                <div v-if="props.row.memo" class="payment-memo">{{ props.row.memo }}</div>
+                <span v-if="props.row.memo" class="payment-memo" :title="props.row.memo">{{ props.row.memo }}</span>
               </q-td>
             </template>
             <template v-for="column in ['created', 'paid_at']" :key="column" v-slot:[`body-cell-${column}`]="props">
               <q-td :props="props" class="payment-date">
                 <time v-if="props.value" :datetime="dateIso(props.value)">
-                  <span>{{ formatDate(props.value) }}</span>
-                  <small>{{ formatTime(props.value) }}</small>
+                  {{ formatDate(props.value) }}
                 </time>
                 <span v-else class="payment-empty">—</span>
               </q-td>
@@ -119,12 +119,7 @@ export default defineComponent({
       return new Date(value * 1000).toISOString()
     },
     formatDate(value) {
-      return new Date(value * 1000).toLocaleDateString(undefined, {
-        day: 'numeric', month: 'short', year: 'numeric'
-      })
-    },
-    formatTime(value) {
-      return new Date(value * 1000).toLocaleTimeString()
+      return new Date(value * 1000).toLocaleString()
     },
     showPayments: async function (instance) {
       try {
@@ -221,20 +216,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.payments-filter { width: 260px; }
 .payments-table :deep(.q-table) { min-width: 1040px; }
-.payments-table :deep(.q-table th) { padding-block: 14px; background: var(--backend-page); }
-.payments-table :deep(.q-table tbody td) { padding: 14px 16px; height: 76px; font-size: 13px; }
-.payments-table :deep(.q-table tbody td:first-child) { padding-left: 28px; }
-.payments-table :deep(.q-table tbody td:last-child) { padding-right: 28px; }
-.payments-table :deep(.q-table tbody tr:hover td) { background: var(--backend-hover); }
-.payment-id { color: var(--backend-muted); font-variant-numeric: tabular-nums; }
+.payment-id { font-variant-numeric: tabular-nums; }
 .payment-instance {
   display: block;
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--backend-text);
   text-decoration: none;
 }
@@ -244,32 +233,15 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--backend-muted);
-  background: var(--backend-page);
-  border: 1px solid var(--backend-border);
+  font-size: 13px;
+  color: var(--backend-text);
 }
-.payment-status--paid {
-  color: var(--q-primary);
-  background: var(--backend-tint);
-  border-color: var(--backend-accent-border);
-}
-.payment-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
-.payment-details { min-width: 220px; max-width: 320px; white-space: normal; }
-.payment-plan { font-weight: 600; line-height: 1.5; }
+.payment-amount { font-variant-numeric: tabular-nums; }
+.payment-details { min-width: 220px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payment-plan { display: inline; }
 .payment-quantity { margin-left: 6px; color: var(--backend-muted); font-weight: 400; white-space: nowrap; }
-.payment-memo { margin-top: 4px; color: var(--backend-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-.payment-date time { display: flex; flex-direction: column; gap: 4px; font-variant-numeric: tabular-nums; }
-.payment-date small { color: var(--backend-muted); font-size: 12px; }
+.payment-memo { margin-left: 10px; color: var(--backend-muted); }
+.payment-date time { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .payment-empty { color: var(--backend-muted); }
 
-@media (max-width: 599px) {
-  .payments-filter { width: 100%; }
-  .payments-table :deep(.q-table__top) { align-items: stretch; }
-  .payments-table :deep(.q-table__top > .q-table__separator) { display: none; }
-  .payments-table :deep(.q-table__top > .q-table__control:last-child) { width: 100%; }
-}
 </style>

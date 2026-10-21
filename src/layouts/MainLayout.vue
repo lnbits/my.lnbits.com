@@ -91,14 +91,6 @@
           </q-item-section>
         </q-item>
 
-        <q-item role="link" to="/pricing" active-class="text-primary">
-          <q-item-section avatar>
-            <q-icon name="currency_bitcoin" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Pricing</q-item-label>
-          </q-item-section>
-        </q-item>
         <q-item role="link" to="/terms-of-service" active-class="text-primary">
           <q-item-section avatar>
             <q-icon name="description" />
