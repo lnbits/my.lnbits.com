@@ -1,6 +1,8 @@
 <template>
   <div class="pc" :class="{'pc--featured': featured}">
-    <div v-if="badge" class="pc__badge" :class="badgeClass">{{ badge }}</div>
+    <div class="pc__badge-row">
+      <span v-if="badge" class="pc__badge" :class="badgeClass">{{ badge }}</span>
+    </div>
 
     <div class="pc__header">
       <h3 class="pc__title">{{ title }}</h3>
@@ -33,7 +35,7 @@
           size="xs"
           color="grey-6"
         >
-          <q-tooltip class="bg-indigo" :offset="[10, 10]">
+          <q-tooltip class="bg-primary" :offset="[10, 10]">
             <div class="pc__funding-tooltip">
               {{ selectedFundingDetails.description }}
             </div>
@@ -74,7 +76,6 @@
       no-caps
       unelevated
       class="full-width pc__cta"
-      :class="{'pc__cta--featured': featured}"
     />
 
     <ul class="pc__features">
@@ -197,223 +198,84 @@ watch(
 
 <style scoped>
 .pc {
-  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: visible;
-  padding: 1.7rem 1.35rem 1.5rem;
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(21, 30, 36, 0.12);
-  color: #111827;
-  box-shadow: 0 24px 54px rgba(5, 10, 18, 0.18);
-  transition: box-shadow 220ms ease, border-color 220ms ease;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--backend-surface);
+  border: 1px solid var(--backend-border);
+  color: var(--backend-text);
 }
 
-.pc:hover {
-  box-shadow: 0 28px 68px rgba(5, 10, 18, 0.24);
-  border-color: rgba(89, 74, 255, 0.25);
-}
-
-.pc--featured {
-  border-color: rgba(129, 66, 255, 0.5);
-  box-shadow: 0 30px 80px rgba(88, 40, 182, 0.28);
-}
-
+.pc--featured { border-color: var(--backend-accent-border); }
+.pc__badge-row { min-height: 32px; margin-bottom: 12px; }
 .pc__badge {
-  position: absolute;
-  left: -1px;
-  right: -1px;
-  top: -2.3rem;
-  padding: 0.55rem 1rem;
-  border-radius: 12px 12px 0 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-align: center;
-  z-index: 1;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  background: var(--backend-tint);
+  border: 1px solid var(--backend-accent-border);
+  color: var(--q-primary);
 }
 
-.pc__badge--default {
-  background: #2b3036;
-  color: #fff;
-}
-
-.pc__badge--accent {
-  background: linear-gradient(135deg, #6d28d9, #7c3aed);
-  color: #fff;
-}
-
-.pc__header {
-  min-height: 8.2rem;
-}
-
+.pc__header { min-height: 136px; }
 .pc__title {
   margin: 0;
-  font-size: clamp(1.8rem, 2vw, 2.3rem);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: #101828;
-}
-
-.pc__desc {
-  margin: 0.95rem 0 0;
-  font-size: 0.98rem;
-  line-height: 1.45;
-  color: #445164;
-}
-
-.pc__price-block {
-  margin-top: 1.35rem;
-}
-
-.pc__price-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.18rem;
-  color: #101828;
-}
-
-.pc__currency {
-  margin-top: 0.38rem;
-  font-size: 1.7rem;
-  line-height: 1;
-}
-
-.pc__amount {
-  font-size: 3.15rem;
-  line-height: 0.92;
-  font-weight: 500;
-  letter-spacing: -0.05em;
-}
-
-.pc__suffix {
-  margin-top: 0.75rem;
-  font-size: 1.35rem;
+  font-size: 26px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
 }
 
-.pc__interval {
-  margin-top: 0.55rem;
-  font-size: 0.98rem;
-  color: #4b5563;
-}
-
-.pc__funding-row {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.3rem;
-}
-
-.pc__funding-label {
-  font-size: 0.92rem;
-  color: #4b5563;
-}
-
-.pc__control {
-  margin-top: 1.6rem;
-}
-
-.pc__select :deep(.q-field__control) {
-  min-height: 46px;
-  border-radius: 0;
-  background: #fff;
-}
-
-.pc__select :deep(.q-field__native),
-.pc__select :deep(.q-field__input) {
-  color: #101828;
-  font-size: 0.98rem;
-}
-
-.pc__select :deep(.q-field__marginal) {
-  color: #667085;
-}
-
-.pc__select--stacked {
-  margin-top: 0.75rem;
-}
+.pc__desc { margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: var(--backend-muted); }
+.pc__price-block { margin-top: 24px; }
+.pc__price-line { display: flex; align-items: flex-start; gap: 4px; }
+.pc__currency { margin-top: 6px; font-size: 24px; line-height: 1; }
+.pc__amount { font-size: 44px; line-height: 1; font-weight: 600; letter-spacing: -0.04em; }
+.pc__suffix { margin-top: 16px; font-size: 18px; font-weight: 600; }
+.pc__interval { margin-top: 8px; font-size: 14px; color: var(--backend-muted); }
+.pc__funding-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.pc__funding-label { font-size: 14px; color: var(--backend-muted); }
+.pc__control { margin-top: 24px; }
+.pc__select :deep(.q-field__control) { min-height: 46px; border-radius: 10px; background: var(--backend-page); }
+.pc__select :deep(.q-field__native), .pc__select :deep(.q-field__input) { color: var(--backend-text); font-size: 14px; }
+.pc__select :deep(.q-field__marginal) { color: var(--backend-muted); }
+.pc__select--stacked { margin-top: 12px; }
 
 .pc__cta {
-  margin-top: 1.2rem;
-  min-height: 48px;
-  border-radius: 4px !important;
-  background: #3040c8 !important;
-  color: #fff !important;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.pc__cta--featured {
-  background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
+  margin-top: 16px;
+  min-height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--backend-accent-border);
+  background: var(--backend-tint);
+  color: var(--q-primary);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .pc__features {
   list-style: none;
-  padding: 0;
-  margin: 1.6rem 0 0;
+  padding: 24px 0 0;
+  margin: 24px 0 0;
+  border-top: 1px solid var(--backend-border);
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
-  color: #344054;
+  gap: 16px;
 }
 
-.pc__features li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.55rem;
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-
-.pc__feature-copy {
-  display: flex;
-  flex-direction: column;
-}
-
-.pc__feature-hint {
-  margin-top: 0.08rem;
-  font-size: 0.8rem;
-  line-height: 1.35;
-  color: #667085;
-  white-space: pre-line;
-}
-
-.pc__check {
-  margin-top: 0.18rem;
-  color: #5b34f2;
-}
-
-.pc__funding-tooltip {
-  max-width: 320px;
-  white-space: normal;
-  line-height: 1.45;
-}
+.pc__features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; }
+.pc__feature-copy { display: flex; flex-direction: column; min-width: 0; }
+.pc__feature-hint { margin-top: 4px; font-size: 13px; line-height: 1.5; color: var(--backend-muted); white-space: pre-line; }
+.pc__check { margin-top: 3px; color: var(--q-primary); }
+.pc__funding-tooltip { max-width: 320px; white-space: normal; line-height: 1.45; }
 
 @media (max-width: 599px) {
-  .pc {
-    padding: 1.4rem 1.15rem 1.25rem;
-  }
-
-  .pc__badge {
-    top: -2.15rem;
-  }
-
-  .pc__header {
-    min-height: auto;
-  }
-
-  .pc__title {
-    font-size: 2rem;
-  }
-
-  .pc__amount {
-    font-size: 2.8rem;
-  }
+  .pc { padding: 20px; border-radius: 14px; }
+  .pc__header { min-height: auto; }
+  .pc__badge-row:empty { display: none; }
 }
 </style>

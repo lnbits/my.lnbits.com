@@ -1,7 +1,7 @@
 <template>
   <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
     <q-card-section class="q-pa-none">
-      <div class="row q-col-gutter-sm">
+      <div class="row q-col-gutter-md">
         <div
           v-for="(item, index) in activityStats"
           :key="index"
@@ -21,7 +21,7 @@
     {{ isRelay ? 'Relays' : 'Instances' }} take a few minutes to become available
     after payment.
   </q-banner>
-  <q-card class="no-shadow" bordered>
+  <q-card class="service-card no-shadow" bordered>
     <q-card-section class="q-pa-none">
       <q-table
         class="table-bg"
@@ -38,7 +38,8 @@
             icon="add"
             color="primary"
             :disable="inProgress"
-            class="float-right text-capitalize"
+            class="float-right"
+            no-caps
           />
         </template>
         <template v-slot:body-cell-action="props">
@@ -199,8 +200,8 @@
                 />
                 <q-btn
                   @click="openExtendInstanceDialog(props.row)"
-                  label="extend"
-                  color="green"
+                  label="Extend"
+                  color="primary"
                   size="sm"
                   unelevated
                   dense
@@ -907,7 +908,7 @@
             />
             <q-btn
               :disable="isPlanSubmitDisabled()"
-              color="positive"
+              color="primary"
               no-caps
               @click="submitPlanRequest"
             >
@@ -919,7 +920,7 @@
           v-else-if="planDialog.subscription"
           :disable="isPlanSubmitDisabled()"
           label="Payment"
-          color="positive"
+          color="primary"
           @click="submitPlanRequest"
         ></q-btn>
         <div v-else>
@@ -927,7 +928,7 @@
             v-if="!planDialog.bitcoinOnly"
             :disable="isPlanSubmitDisabled()"
             label="Buy with USD"
-            color="positive"
+            color="primary"
             outline
             @click="submitPlanRequest(true)"
           ></q-btn>
@@ -935,7 +936,7 @@
             v-if="!planDialog.fiatOnly"
             :disable="isPlanSubmitDisabled()"
             label="Buy with BTC"
-            color="positive"
+            color="primary"
             class="q-ml-sm"
             @click="submitPlanRequest"
           ></q-btn>
@@ -1136,7 +1137,7 @@
           v-else
           :disable="isCreateInstanceSubmitDisabled(onDemandDialog.selectedTag)"
           label="Continue"
-          color="positive"
+          color="primary"
           @click="startOnDemandNewInstance"
         ></q-btn>
       </q-card-actions>
@@ -1254,7 +1255,7 @@
         <q-btn
           :disable="!newInstanceDialog.method"
           label="Proceed"
-          color="positive"
+          color="primary"
           @click="proceedNewInstanceMethod"
         ></q-btn>
       </q-card-actions>
@@ -3221,9 +3222,9 @@ export default defineComponent({
 }
 
 .instance-extend-btn {
-  min-height: 16px !important;
-  padding: 1px 8px !important;
-  border-radius: 4px !important;
+  min-height: 26px !important;
+  padding: 3px 10px !important;
+  border-radius: 7px !important;
 }
 
 .instance-extend-btn .q-btn__content {

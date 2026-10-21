@@ -1,7 +1,7 @@
 <template>
   <q-card class="bg-transparent no-shadow no-border q-mb-md" bordered>
     <q-card-section class="q-pa-none">
-      <div class="row q-col-gutter-sm">
+      <div class="row q-col-gutter-md">
         <div
           v-for="(item, index) in activityStats"
           :key="index"

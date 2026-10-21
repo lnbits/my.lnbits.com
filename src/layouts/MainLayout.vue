@@ -14,7 +14,6 @@
           <span class="text-subtitle1 text-italic text-weight-light">my</span>
           <span class="q-ml-xs text-weight-bold">Bits</span>
         </q-toolbar-title>
-        <q-space />
         <div class="q-mr-md">
           <q-icon name="light_mode" size="xs" />
           <q-toggle

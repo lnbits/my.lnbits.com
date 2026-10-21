@@ -1,6 +1,10 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="pricing-shell">
-    <q-header class="bg-transparent" style="color: inherit">
+  <component
+    :is="isLoggedIn ? QPage : QLayout"
+    :class="isLoggedIn ? 'public-info-page' : 'public-info-shell'"
+    v-bind="isLoggedIn ? {} : {view: 'lHh Lpr lFf'}"
+  >
+    <q-header v-if="!isLoggedIn">
       <q-toolbar class="tos-toolbar">
         <router-link to="/login" class="tos-logo">
           <img src="/profile.svg" alt="LNbits" class="tos-logo__img" />
@@ -14,12 +18,12 @@
         <nav class="tos-nav">
           <router-link to="/pricing" class="tos-nav__link gt-xs">Pricing</router-link>
           <router-link to="/login" class="tos-nav__link gt-xs">Sign in</router-link>
-          <q-btn to="/" label="Home" no-caps unelevated size="sm" icon="dashboard" class="tos-nav__btn" />
+          <q-btn to="/" label="Home" no-caps unelevated size="md" icon="dashboard" class="tos-nav__btn" />
         </nav>
       </q-toolbar>
     </q-header>
 
-    <q-page-container>
+    <component :is="isLoggedIn ? 'div' : QPageContainer">
       <section class="tos-section">
         <div class="tos-card">
           <div class="tos-card__header">
@@ -30,7 +34,7 @@
         </div>
       </section>
 
-      <div class="tos-back">
+      <div v-if="!isLoggedIn" class="tos-back">
         <q-btn
           to="/login"
           label="Back to Sign in"
@@ -41,7 +45,7 @@
         />
       </div>
 
-      <footer class="tos-foot">
+      <footer v-if="!isLoggedIn" class="tos-foot">
         <div class="tos-foot__inner">
           <span class="tos-foot__brand">
             <span class="text-italic" style="font-weight: 300; font-size: 0.82rem">my</span><span class="q-ml-xs" style="font-weight: 700">LNbits</span>
@@ -53,17 +57,19 @@
           </nav>
         </div>
       </footer>
-    </q-page-container>
-  </q-layout>
+    </component>
+  </component>
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue'
-import {useQuasar} from 'quasar'
+import {computed} from 'vue'
+import {QLayout, QPage, QPageContainer} from 'quasar'
+import {saas} from 'boot/saas'
+import {usePublicTheme} from 'src/composables/usePublicTheme'
 import termsOfServiceMarkdown from '../../terms_of_service.md?raw'
 
-const q = useQuasar()
-const darkMode = ref(false)
+usePublicTheme()
+const isLoggedIn = computed(() => !!saas.email)
 
 const escapeHtml = value =>
   value
@@ -131,17 +137,13 @@ const markdownToHtml = markdown => {
 const termsOfServiceHtml = computed(() =>
   markdownToHtml(termsOfServiceMarkdown)
 )
-
-onMounted(() => {
-  darkMode.value = localStorage.getItem('darkMode') === 'true'
-  q.dark.set(darkMode.value)
-})
 </script>
 
 <style scoped>
 /* ── Toolbar ── */
 .tos-toolbar {
-  padding: 0.75rem 1.5rem;
+  min-height: 68px;
+  padding: 12px 24px;
 }
 .tos-logo {
   display: flex;
@@ -161,77 +163,77 @@ onMounted(() => {
   gap: 1rem;
 }
 .tos-nav__link {
-  color: rgba(244, 238, 255, 0.5);
+  color: var(--backend-muted);
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 500;
   transition: color 150ms;
 }
 .tos-nav__link:hover {
-  color: #fff;
+  color: var(--backend-text);
 }
 .tos-nav__btn {
-  border-radius: 10px !important;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--backend-tint);
+  color: var(--q-primary);
+  border: 1px solid var(--backend-accent-border);
 }
 
 /* ── Content ── */
 .tos-section {
-  padding: 6rem 2rem 4rem;
-  max-width: 820px;
+  padding: 48px 32px 32px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
 .tos-card {
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
+  background: var(--backend-surface);
+  border: 1px solid var(--backend-border);
   overflow: hidden;
 }
 
 .tos-card__header {
-  padding: 2rem 2.5rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 32px 40px;
+  background: var(--backend-tint);
+  border-bottom: 1px solid var(--backend-border);
 }
 
 .tos-card__title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--backend-text);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .tos-card__sub {
-  margin: 0.35rem 0 0;
-  font-size: 0.82rem;
-  color: rgba(244, 238, 255, 0.4);
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--backend-muted);
 }
 
 .tos-content {
   padding: 2rem 2.5rem 2.5rem;
-  color: rgba(244, 238, 255, 0.85);
-  font-size: 0.92rem;
+  color: var(--backend-muted);
+  font-size: 16px;
   line-height: 1.75;
 }
 
 .tos-content :deep(h1) {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 600;
   line-height: 1.25;
   margin: 2.5rem 0 1rem;
-  color: #fff;
+  color: var(--backend-text);
 }
 
 .tos-content :deep(h2) {
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
   margin: 2rem 0 0.75rem;
-  color: #fff;
+  color: var(--backend-text);
 }
 
 .tos-content :deep(h3),
@@ -241,16 +243,16 @@ onMounted(() => {
   font-size: 1.05rem;
   font-weight: 600;
   margin: 1.5rem 0 0.65rem;
-  color: #fff;
+  color: var(--backend-text);
 }
 
 .tos-content :deep(p) {
   margin: 0.65rem 0;
-  color: rgba(244, 238, 255, 0.7);
+  color: var(--backend-muted);
 }
 
 .tos-content :deep(strong) {
-  color: rgba(244, 238, 255, 0.9);
+  color: var(--backend-text);
   font-weight: 600;
 }
 
@@ -261,75 +263,74 @@ onMounted(() => {
 
 .tos-content :deep(li) {
   margin: 0.4rem 0;
-  color: rgba(244, 238, 255, 0.65);
+  color: var(--backend-muted);
 }
 
 .tos-content :deep(li::marker) {
-  color: var(--q-primary, #b238ff);
+  color: var(--q-primary);
 }
 
 .tos-content :deep(hr) {
   border: none;
   height: 1px;
   margin: 1.75rem 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
+  background: var(--backend-border);
+}
+
+.tos-content :deep(> :first-child) {
+  margin-top: 0;
 }
 
 /* ── Back link ── */
 .tos-back {
-  max-width: 820px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 2rem 2rem;
   text-align: center;
 }
 .tos-back__btn {
-  color: rgba(244, 238, 255, 0.5) !important;
+  color: var(--backend-muted) !important;
   font-weight: 600;
   font-size: 0.88rem;
   border-radius: 10px !important;
 }
 .tos-back__btn:hover {
-  color: #fff !important;
+  color: var(--backend-text) !important;
 }
 
 /* ── Footer ── */
 .tos-foot {
   padding: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--backend-border);
 }
 .tos-foot__inner {
-  max-width: 820px;
+  max-width: 960px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 .tos-foot__brand {
-  color: rgba(244, 238, 255, 0.5);
+  color: var(--backend-muted);
 }
 .tos-foot__nav {
   display: flex;
   gap: 1.5rem;
 }
 .tos-foot__nav a {
-  font-size: 0.82rem;
-  color: rgba(244, 238, 255, 0.35);
+  font-size: 14px;
+  color: var(--backend-muted);
   text-decoration: none;
   transition: color 150ms;
 }
 .tos-foot__nav a:hover {
-  color: rgba(244, 238, 255, 0.75);
+  color: var(--q-primary);
 }
 
 /* ── Tablet ── */
 @media (max-width: 1023px) {
   .tos-section {
-    padding: 5.5rem 1.5rem 3rem;
+    padding: 32px 24px;
   }
   .tos-card__header {
     padding: 1.75rem 2rem 1.25rem;
@@ -342,10 +343,11 @@ onMounted(() => {
 /* ── Mobile ── */
 @media (max-width: 599px) {
   .tos-toolbar {
-    padding: 0.5rem 1rem;
+    min-height: 56px;
+    padding: 8px 16px;
   }
   .tos-section {
-    padding: 4.5rem 1rem 2rem;
+    padding: 24px 16px;
   }
   .tos-card {
     border-radius: 14px;
@@ -358,7 +360,7 @@ onMounted(() => {
   }
   .tos-content {
     padding: 1.25rem 1.25rem 1.75rem;
-    font-size: 0.88rem;
+    font-size: 15px;
   }
   .tos-foot__inner {
     flex-direction: column;

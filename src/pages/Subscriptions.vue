@@ -7,12 +7,12 @@
             grid
             flat
             bordered
-            card-class="gradient-bg--primary text-white"
             hide-header
-            class="table-bg"
-            :rows="subscriptions"
+            class="table-bg subscriptions-table"
+            :rows="sortedSubscriptions"
+            row-key="subscription_request_id"
             :columns="columns"
-            :pagination.sync="pagination"
+            v-model:pagination="pagination"
             title="Subscriptions"
             :loading="inProgress"
           >
@@ -30,69 +30,56 @@
               </q-btn>
             </template>
             <template v-slot:item="props">
-              <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card class="my-card" flat bordered>
-                  <q-list dense>
-                    <q-item
-                      v-for="col in props.cols.filter(
-                        col => col.name !== 'desc'
-                      )"
-                      :key="col.name"
+              <div class="subscription-cell">
+                <q-card
+                  class="subscription-card"
+                  :class="{'subscription-card--active': props.row.is_enabled}"
+                  :data-subscription-id="props.row.subscription_request_id"
+                  flat
+                  bordered
+                >
+                  <div class="subscription-card__header">
+                    <q-icon name="subscriptions" class="subscription-card__icon" size="20px" />
+                    <div class="subscription-card__identity">
+                      <router-link
+                        :to="{path: '/activity', query: {instance_id: props.row.instance_id}}"
+                        :title="props.row.instance_name"
+                        class="subscription-card__name"
+                      >
+                        {{ props.row.instance_name }}
+                      </router-link>
+                      <div class="subscription-card__plan">
+                        {{ formatPlan(props.row.payment_plan_name) }}
+                      </div>
+                    </div>
+                    <span
+                      class="subscription-card__status"
+                      :class="{'subscription-card__status--active': props.row.is_enabled}"
                     >
-                      <q-item-section>
-                        <q-item-label>
-                          <span v-text="col.label"></span>
-                        </q-item-label>
-                      </q-item-section>
-                      <q-item-section side>
-                        <q-item-label caption>
-                          <q-btn
-                            v-if="col.field === 'instance_name'"
-                            type="a"
-                            :href="`/activity?instance_id=${props.row.instance_id}`"
-                            :label="props.row.instance_name"
-                            no-caps
-                            flat
-                            dense
-                          >
-                            <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                              <span
-                                v-text="
-                                  `Show activity for ${props.row.instance_name}`
-                                "
-                              >
-                              </span>
-                            </q-tooltip>
-                          </q-btn>
-
-                          <span v-else v-text="col.value"></span
-                        ></q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                  <q-separator />
-                  <q-card-section
-                    class="flex flex-center"
-                    :style="{fontSize: props.row.calories / 2 + 'px'}"
-                  >
+                      {{ props.row.is_enabled ? 'Active' : 'Inactive' }}
+                    </span>
+                  </div>
+                  <dl class="subscription-card__dates">
+                    <div>
+                      <dt>Created</dt>
+                      <dd>{{ props.row.created_at }}</dd>
+                    </div>
+                    <div v-if="props.row.ended_at !== '--'">
+                      <dt>Ended</dt>
+                      <dd>{{ props.row.ended_at }}</dd>
+                    </div>
+                  </dl>
+                  <div v-if="props.row.is_enabled" class="subscription-card__actions">
                     <q-btn
-                      v-if="props.row.is_enabled"
-                      @click="
-                        requestUnsubscribe(
-                          props.row.instance_id,
-                          props.row.subscription_request_id
-                        )
-                      "
-                      label="End Subscription"
+                      @click="requestUnsubscribe(props.row.instance_id, props.row.subscription_request_id)"
+                      label="End subscription"
                       color="negative"
-                      outline
-                    >
-                      <q-tooltip class="bg-indigo" :offset="[10, 10]">
-                        <span> Unsubscribe. </span>
-                      </q-tooltip>
-                    </q-btn>
-                    <q-btn v-else flat> </q-btn>
-                  </q-card-section>
+                      flat
+                      dense
+                      no-caps
+                      :disable="inProgress"
+                    />
+                  </div>
                 </q-card>
               </div>
             </template>
@@ -135,38 +122,22 @@ export default defineComponent({
         rowsPerPage: 20,
         page: 1
       },
-      columns: [
-        {
-          name: 'instance_name',
-          label: 'Instance / Relay',
-          field: 'instance_name',
-          sortable: true
-        },
-        {
-          name: 'is_enabled',
-          label: 'Enabled',
-          field: 'is_enabled',
-          sortable: true
-        },
-
-        {
-          name: 'payment_plan_name',
-          label: 'Payment Plan',
-          field: 'payment_plan_name',
-          sortable: true
-        },
-
-        {
-          name: 'created',
-          label: 'Created At',
-          field: 'created_at',
-          sortable: true
-        },
-        {name: 'ended_at', label: 'Ended At', field: 'ended_at', sortable: true}
-      ]
+      columns: []
+    }
+  },
+  computed: {
+    sortedSubscriptions() {
+      return [...this.subscriptions].sort(
+        (a, b) => Number(Boolean(b.is_enabled)) - Number(Boolean(a.is_enabled))
+      )
     }
   },
   methods: {
+    formatPlan(name) {
+      return name
+        ? name.replace(/[_-]+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())
+        : 'No payment plan'
+    },
     requestUnsubscribe: async function (instanceId, subscriptionRequestId) {
       this.confirm('You are about to end this subscription.').onOk(async () => {
         await this.unsubscribe(instanceId, subscriptionRequestId)
@@ -181,7 +152,7 @@ export default defineComponent({
           color: 'positive',
           icon: 'check_circle'
         })
-        this.showSubscriptions(this.selectedInstance)
+        await this.showSubscriptions(this.selectedInstance)
       } catch (error) {
         console.warn(error)
         this.$q.notify({
@@ -267,10 +238,10 @@ export default defineComponent({
     },
     instanceNameFromId: function (id) {
       const instance = this.instances.find(i => i.value === id)
-      if (instance) {
+      if (instance?.name) {
         return instance.name
       }
-      return '?'
+      return id ? `Instance ${id}` : 'Unavailable instance'
     }
   },
   async created() {
@@ -282,8 +253,7 @@ export default defineComponent({
       this.selectedInstance = this.instances.find(
         i => `${i.value}` === urlParams.get('instance_id')
       )
-      //  || this.instances[0]
-      this.showSubscriptions(this.selectedInstance)
+      await this.showSubscriptions(this.selectedInstance)
     } catch (error) {
     } finally {
       this.inProgress = false
@@ -293,7 +263,72 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.bg-custom {
-  background: var(--q-primary);
+.subscriptions-table :deep(.q-table__grid-content) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  align-items: start;
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
+.subscription-cell { min-width: 0; }
+.subscription-card { padding: 16px; border-radius: 14px; }
+.subscription-card.subscription-card--active { border-color: var(--backend-accent-border); }
+.subscription-card__header { display: flex; align-items: flex-start; gap: 10px; }
+.subscription-card__icon {
+  flex: 0 0 auto;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--q-primary);
+  background: var(--backend-tint);
+}
+.subscription-card__identity { min-width: 0; flex: 1; }
+.subscription-card__name {
+  display: block;
+  color: var(--backend-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subscription-card__name:hover { color: var(--q-primary); }
+.subscription-card__name:focus-visible { outline: 2px solid var(--q-primary); outline-offset: 3px; }
+.subscription-card__plan { margin-top: 4px; color: var(--backend-muted); font-size: 13px; line-height: 1.4; }
+.subscription-card__status {
+  flex-shrink: 0;
+  border: 1px solid var(--backend-border);
+  border-radius: 6px;
+  padding: 3px 7px;
+  color: var(--backend-muted);
+  background: var(--backend-page);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.subscription-card__status--active {
+  border-color: var(--backend-accent-border);
+  background: var(--backend-tint);
+  color: var(--q-primary);
+}
+.subscription-card__dates { margin: 16px 0 0; font-size: 12px; line-height: 1.5; }
+.subscription-card__dates > div { display: flex; justify-content: space-between; gap: 12px; }
+.subscription-card__dates > div + div { margin-top: 6px; }
+.subscription-card__dates dt { color: var(--backend-muted); }
+.subscription-card__dates dd { margin: 0; text-align: right; }
+.subscription-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--backend-border);
+  margin-top: 12px;
+  padding-top: 8px;
+}
+.subscription-card__actions .q-btn { font-size: 12px; padding: 4px 8px; }
+
+@media (max-width: 599px) {
+  .subscriptions-table :deep(.q-table__grid-content) { padding: 0 12px 16px; }
+  .subscription-card { padding: 14px; }
 }
 </style>

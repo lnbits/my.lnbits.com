@@ -1,7 +1,7 @@
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('layouts/AccountLayout.vue'),
     children: [
       {path: '', component: () => import('pages/Instances.vue')},
       {
@@ -19,20 +19,14 @@ const routes = [
       {path: '/activity', component: () => import('pages/Activity.vue')},
       {path: '/subscriptions', component: () => import('pages/Subscriptions.vue')},
       {path: '/payments', component: () => import('pages/Payments.vue')},
+      {path: '/pricing', component: () => import('pages/Pricing.vue')},
+      {path: '/terms-of-service', component: () => import('pages/TermsOfService.vue')},
 
       // Not completed yet
       // {path: '/Taskboard', component: () => import('pages/TaskBoard.vue')},
     ]
   },
 
-  {
-    path: '/pricing',
-    component: () => import('pages/Pricing.vue')
-  },
-  {
-    path: '/terms-of-service',
-    component: () => import('pages/TermsOfService.vue')
-  },
   {
     path: '/login',
     component: () => import('pages/Login.vue')
