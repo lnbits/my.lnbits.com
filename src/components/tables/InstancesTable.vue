@@ -191,19 +191,15 @@
 
         <template v-slot:body-cell-progress="props">
           <q-td :props="props">
-            <q-tooltip
-              ><span v-text="props.row.progress + '%'"></span
-            ></q-tooltip>
             <div>
               <div
-                v-text="
-                  props.row.timeLeft > 0 ? props.row.timeLeftFormatted : '\u00a0'
-                "
+                v-text="props.row.timeLeftFormatted"
                 class="text-right"
                 :data-testid="`instance-time-left-${props.row.id}`"
               ></div>
               <div class="row no-wrap items-center q-gutter-x-xs q-mt-xs">
                 <q-linear-progress
+                  v-if="props.row.progress !== null"
                   :color="getColor(props.row.progress)"
                   :value="props.row.progress / 100"
                   class="col instance-progress-bar cursor-pointer"
@@ -214,7 +210,9 @@
                   @click="openExtendInstanceDialog(props.row)"
                   @keydown.enter="openExtendInstanceDialog(props.row)"
                   @keydown.space.prevent="openExtendInstanceDialog(props.row)"
-                />
+                >
+                  <q-tooltip>{{ props.row.progressLabel }}</q-tooltip>
+                </q-linear-progress>
                 <q-btn
                   @click="openExtendInstanceDialog(props.row)"
                   label="Extend"
@@ -1524,16 +1522,9 @@ export default defineComponent({
         })
       },
       getColor(val) {
-        if (val > 95 && val <= 100) {
-          return 'red'
-        }
-        if (val > 70 && val <= 95) {
-          return 'orange'
-        }
-        if (val > 50 && val <= 70) {
-          return 'blue'
-        }
-        return 'green'
+        if (val < 5) return 'negative'
+        if (val < 30) return 'warning'
+        return 'primary'
       }
     }
   },

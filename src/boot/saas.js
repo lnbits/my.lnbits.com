@@ -292,19 +292,6 @@ var saas = {
   },
 
   mapInstance: function (instance) {
-    const progress = (start, stop, serverTime) => {
-      if (!serverTime) {
-        return 0
-      }
-      if (stop - start <= 0 || stop - serverTime <= 0) {
-        return 100
-      }
-
-      const percentage = (1 - (stop - serverTime) / (stop - start)) * 100
-
-      return Math.floor(percentage)
-    }
-
     const status = (active, enabled) => {
       if (!active) {
         return 'Not Paid'
@@ -318,6 +305,17 @@ var saas = {
     const timeLeft = Math.floor(
       Math.max(instance.timestamp_stop - this.serverTime, 0)
     )
+    const duration =
+      instance.timestamp_stop - (instance.timestamp_start || instance.timestamp)
+    // Keep the bar and the duration on the same basis: paid time remaining.
+    const progress = timeLeft === 0
+      ? 0
+      : duration > 0 ? Math.min(100, Math.max(0, timeLeft / duration * 100)) : null
+    const progressLabel = progress === null
+      ? null
+      : progress > 0 && progress < 1
+        ? 'Less than 1% remaining'
+        : `${Math.floor(progress)}% remaining`
 
     return {
       id: instance.id,
@@ -327,7 +325,7 @@ var saas = {
       backupLink: `https://${instance.domain}/admin/api/v1/backup`,
       enabled: instance.is_enabled,
       active: instance.is_active,
-      expired: instance.timestamp_stop < this.serverTime,
+      expired: instance.timestamp_stop <= this.serverTime,
       name: instance.relay_url || instance.domain,
       createdDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
@@ -341,13 +339,12 @@ var saas = {
       paymentPlanTier: instance.payment_plan_tier,
       paymentPlanInterval: instance.payment_plan_interval,
       timeLeft: timeLeft,
-      timeLeftFormatted: secondsToDhm(timeLeft),
+      timeLeftFormatted: timeLeft === 0
+        ? 'Expired'
+        : timeLeft < 60 ? '<1m' : secondsToDhm(timeLeft),
       statusText: status(instance.is_active, instance.is_enabled),
-      progress: progress(
-        instance.timestamp_start || instance.timestamp,
-        instance.timestamp_stop,
-        this.serverTime
-      )
+      progress,
+      progressLabel
     }
   },
   mapErrorToString(error) {
