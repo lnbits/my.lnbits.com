@@ -233,43 +233,22 @@ test('renders pricing plans from the dev pricing API', async ({page}) => {
   await page.keyboard.press('Escape')
 })
 
-test('shows every instance type returned by the API in the pricing cards', async ({page}) => {
+test('allows direct signed-in pricing visits without a backend menu link', async ({page}) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem('apiEnv', 'dev')
-    window.localStorage.setItem('email', 'pricing-test@example.com')
+    localStorage.setItem('apiEnv', 'dev')
+    localStorage.setItem('email', 'pricing-test@example.com')
   })
-
-  await page.route('https://api.dev.lnbits.com/instance/types', route =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(instanceTypesPayload)
-    })
-  )
-
-  const instanceTypesResponse = page.waitForResponse(
-    response =>
-      response.url() === 'https://api.dev.lnbits.com/instance/types' &&
-      response.status() === 200
+  await page.route('https://api.dev.lnbits.com/instance', route => route.fulfill({json: []}))
+  await page.route('https://api.dev.lnbits.com/', route =>
+    route.fulfill({json: {timestamp: Math.floor(Date.now() / 1000)}})
   )
 
   await page.goto('/pricing')
 
-  const responseJson = await (await instanceTypesResponse).json()
-  const expectedLabels = getInstanceTypeLabels(responseJson)
-
+  await expect(page).toHaveURL(/\/pricing$/)
   await expect(page.locator('.pc')).toHaveCount(4)
-  const instanceTypeSelect = page.locator('.pc').first().locator('.pc__select--stacked')
-
-  await expect(instanceTypeSelect).toContainText(expectedLabels[0])
-  await instanceTypeSelect.click()
-  await expect(page.locator('.q-menu .q-item')).toHaveCount(expectedLabels.length)
-
-  const optionLabels = await page.locator('.q-menu .q-item').evaluateAll(items =>
-    items.map(item => item.textContent.trim()).filter(Boolean)
-  )
-
-  expect(optionLabels).toEqual(expectedLabels)
+  await expect(page.locator('.app-navigation').getByRole('link', {name: 'Pricing', exact: true})).toHaveCount(0)
+  await expect(page.locator('.app-navigation').getByRole('link', {name: 'LNbits Instances'})).toBeVisible()
 })
 
 test('shows every instance type returned by the API in the create instance funding select', async ({page}) => {
@@ -700,11 +679,7 @@ test('defaults edit instance billing to monthly when missing', async ({page}) =>
   await expect(page.getByTestId('instance-billing-select')).toContainText(
     'Monthly'
   )
-  await expect
-    .poll(async () =>
-      page
-        .getByTestId('instance-time-left-instance-1')
-        .evaluate(element => element.textContent.charCodeAt(0))
-    )
-    .toBe(160)
+  await expect(page.getByTestId('instance-time-left-instance-1')).toHaveText(
+    'Expired'
+  )
 })

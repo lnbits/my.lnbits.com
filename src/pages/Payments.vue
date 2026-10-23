@@ -5,10 +5,12 @@
         <q-card-section class="q-pa-none">
           <q-table
             dense
-            class="table-bg"
+            flat
+            row-key="id"
+            class="table-bg compact-table payments-table"
             :rows="payments"
             :columns="columns"
-            :pagination.sync="pagination"
+            v-model:pagination="pagination"
             title="Payments"
             :loading="inProgress"
           >
@@ -20,17 +22,54 @@
                 outlined
                 dense
                 clearable
-                label="Select instance or relay"
+                label="Filter by instance or relay"
+                class="table-instance-filter"
+                data-testid="payments-filter"
               ></q-select>
             </template>
-            <template v-slot:body-cell-success="props">
+            <template v-slot:body-cell-id="props">
+              <q-td :props="props" class="payment-id">#{{ props.value }}</q-td>
+            </template>
+            <template v-slot:body-cell-instance_name="props">
               <q-td :props="props">
-                <q-icon
-                  v-if="props.row.success === true"
-                  name="done"
-                  color="green"
-                />
-                <q-icon v-else name="warning" color="yellow" />
+                <router-link
+                  :to="{path: '/activity', query: {instance_id: props.row.instance_id}}"
+                  class="payment-instance"
+                  :title="props.value"
+                >{{ props.value }}</router-link>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-paid="props">
+              <q-td :props="props">
+                <span class="payment-status">
+                  <q-icon :name="props.value ? 'done' : 'schedule'" :color="props.value ? 'green' : 'grey'" size="14px" />
+                  {{ props.value ? 'Paid' : 'Unpaid' }}
+                </span>
+              </q-td>
+            </template>
+            <template v-slot:body-cell-amount_sats="props">
+              <q-td :props="props" class="payment-amount">
+                {{ formatAmount(props.value) }}
+              </q-td>
+            </template>
+            <template v-slot:body-cell-payment_plan_name="props">
+              <q-td :props="props" class="payment-details">
+                <div class="payment-plan">
+                  {{ formatPlan(props.value) }}
+                  <span v-if="props.row.quantity != null" class="payment-quantity">
+                    × {{ props.row.quantity }}
+                    <q-tooltip>Quantity: {{ props.row.quantity }}</q-tooltip>
+                  </span>
+                </div>
+                <span v-if="props.row.memo" class="payment-memo" :title="props.row.memo">{{ props.row.memo }}</span>
+              </q-td>
+            </template>
+            <template v-for="column in ['created', 'paid_at']" :key="column" v-slot:[`body-cell-${column}`]="props">
+              <q-td :props="props" class="payment-date">
+                <time v-if="props.value" :datetime="dateIso(props.value)">
+                  {{ formatDate(props.value) }}
+                </time>
+                <span v-else class="payment-empty">—</span>
               </q-td>
             </template>
           </q-table>
@@ -58,50 +97,36 @@ export default defineComponent({
         page: 1
       },
       columns: [
-        {name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true},
-        {
-          name: 'instance_name',
-          label: 'Instance / Relay',
-          field: 'instance_name',
-          sortable: true
-        },
-        {name: 'paid', label: 'Paid', field: 'paid', sortable: true},
-        {
-          name: 'amount_sats',
-          label: 'Amount Sats',
-          field: 'amount_sats',
-          sortable: true
-        },
-        {name: 'memo', label: 'Memo', field: 'memo', sortable: true},
-        {
-          name: 'payment_plan_name',
-          label: 'Payment Plan',
-          field: 'payment_plan_name',
-          sortable: true
-        },
-        {
-          name: 'quantity',
-          label: 'Quantity',
-          field: 'quantity',
-          sortable: true
-        },
-        {
-          name: 'created',
-          label: 'Created At',
-          field: 'created_at',
-          sortable: true
-        },
-        {name: 'paid', label: 'Paid At', field: 'paid_at', sortable: true}
+        {name: 'id', label: 'Payment', field: 'id', align: 'left', sortable: true},
+        {name: 'instance_name', label: 'Instance / Relay', field: 'instance_name', align: 'left', sortable: true},
+        {name: 'paid', label: 'Status', field: 'paid', align: 'left', sortable: true},
+        {name: 'amount_sats', label: 'Amount (sats)', field: 'amount_sats', align: 'right', sortable: true},
+        {name: 'payment_plan_name', label: 'Details', field: 'payment_plan_name', align: 'left', sortable: true},
+        {name: 'created', label: 'Created', field: 'created_at', align: 'left', sortable: true},
+        {name: 'paid_at', label: 'Paid at', field: 'paid_at', align: 'left', sortable: true}
       ]
     }
   },
   methods: {
+    formatAmount(value) {
+      return Number(value).toLocaleString()
+    },
+    formatPlan(value) {
+      return value
+        ? value.replace(/[_-]+/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())
+        : 'No payment plan'
+    },
+    dateIso(value) {
+      return new Date(value * 1000).toISOString()
+    },
+    formatDate(value) {
+      return new Date(value * 1000).toLocaleString()
+    },
     showPayments: async function (instance) {
       try {
-        console.log('### show payments', instance)
         this.inProgress = true
+        this.pagination.page = 1
         if (!instance) {
-          console.log('### fetch user payments 1000')
           await this.fetchUserPayments()
         } else {
           await this.fetchInstancePayments(instance.value)
@@ -121,7 +146,7 @@ export default defineComponent({
         }))
       } catch (error) {
         console.warn(error)
-        this.q.notify({
+        this.$q.notify({
           message: 'Failed to fetch instances!',
           caption: saas.mapErrorToString(error),
           color: 'negative'
@@ -134,16 +159,14 @@ export default defineComponent({
         this.payments = data.map(i => ({
           ...i,
           instance_name: this.instanceNameFromId(i.instance_id),
-          created_at: new Date(i.created_at * 1000).toLocaleString(),
-          paid_at: +i.paid_at
-            ? new Date(i.paid_at * 1000).toLocaleString()
-            : '--'
+          created_at: Number(i.created_at) || null,
+          paid_at: Number(i.paid_at) || null
         }))
       } catch (error) {
         console.warn(error)
         this.$q.notify({
           message: 'Failed to fetch payments!',
-          caption: this.saas.mapErrorToString(error),
+          caption: saas.mapErrorToString(error),
           color: 'negative',
           icon: 'warning'
         })
@@ -155,15 +178,13 @@ export default defineComponent({
         this.payments = data.map(i => ({
           ...i,
           instance_name: this.instanceNameFromId(i.instance_id),
-          created_at: new Date(i.created_at * 1000).toLocaleString(),
-          paid_at: +i.paid_at
-            ? new Date(i.paid_at * 1000).toLocaleString()
-            : '--'
+          created_at: Number(i.created_at) || null,
+          paid_at: Number(i.paid_at) || null
         }))
       } catch (error) {
         this.$q.notify({
           message: 'Failed to fetch instance payments!',
-          caption: this.saas.mapErrorToString(error),
+          caption: saas.mapErrorToString(error),
           color: 'negative',
           icon: 'warning'
         })
@@ -171,10 +192,10 @@ export default defineComponent({
     },
     instanceNameFromId: function (id) {
       const instance = this.instances.find(i => i.value === id)
-      if (instance) {
+      if (instance?.name) {
         return instance.name
       }
-      return '?'
+      return id ? `Instance ${id}` : 'Unavailable instance'
     }
   },
   async created() {
@@ -186,8 +207,7 @@ export default defineComponent({
       this.selectedInstance = this.instances.find(
         i => `${i.value}` === urlParams.get('instance_id')
       )
-      //  || this.instances[0]
-      this.showPayments(this.selectedInstance)
+      await this.showPayments(this.selectedInstance)
     } catch (error) {
     } finally {
       this.inProgress = false
@@ -195,3 +215,34 @@ export default defineComponent({
   }
 })
 </script>
+
+<style scoped>
+.payments-table :deep(.q-table) { min-width: 1040px; }
+.payment-id { font-variant-numeric: tabular-nums; }
+.payment-instance {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  color: var(--backend-text);
+  text-decoration: none;
+}
+.payment-instance:hover { color: var(--q-primary); }
+.payment-instance:focus-visible { outline: 2px solid var(--q-primary); outline-offset: 3px; }
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--backend-text);
+}
+.payment-amount { font-variant-numeric: tabular-nums; }
+.payment-details { min-width: 220px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payment-plan { display: inline; }
+.payment-quantity { margin-left: 6px; color: var(--backend-muted); font-weight: 400; white-space: nowrap; }
+.payment-memo { margin-left: 10px; color: var(--backend-muted); }
+.payment-date time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.payment-empty { color: var(--backend-muted); }
+
+</style>

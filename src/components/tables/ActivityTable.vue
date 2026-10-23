@@ -20,7 +20,7 @@
     <q-card-section class="q-pa-none">
       <q-table
         dense
-        class="table-bg"
+        class="table-bg compact-table"
         :rows="data"
         :columns="columns"
         :pagination.sync="pagination"
@@ -35,7 +35,8 @@
             outlined
             dense
             clearable
-            label="Select instance or relay"
+            label="Filter by instance or relay"
+            class="table-instance-filter"
           ></q-select>
         </template>
         <template v-slot:body-cell-success="props">

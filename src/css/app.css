@@ -647,6 +647,38 @@ body.backend-ui.body--dark.relay-theme {
   border-radius: 8px;
 }
 
+/* Tooltips and notifications are teleported to body, like dialogs. */
+.backend-ui .q-tooltip,
+.backend-ui .q-notification {
+  background: var(--backend-surface) !important;
+  color: var(--backend-text) !important;
+  border: 1px solid var(--backend-border);
+  box-shadow: 0 8px 24px #00000024;
+  font-family: inherit;
+}
+
+.backend-ui .q-tooltip {
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.backend-ui .q-notification {
+  --notification-accent: var(--q-primary);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.backend-ui .q-notification.bg-positive { --notification-accent: var(--q-positive); }
+.backend-ui .q-notification.bg-negative { --notification-accent: var(--q-negative); }
+.backend-ui .q-notification.bg-warning { --notification-accent: var(--q-warning); }
+.backend-ui .q-notification.bg-info { --notification-accent: var(--q-info); }
+.backend-ui .q-notification__icon { color: var(--notification-accent); }
+.backend-ui .q-notification__caption { color: var(--backend-muted); opacity: 1; }
+.backend-ui .q-notification__progress { background: var(--notification-accent); opacity: 0.3; }
+
 .backend-ui .q-table th,
 .backend-ui .q-table td,
 .backend-ui .q-table__bottom {
@@ -690,6 +722,38 @@ body.backend-ui.body--dark.relay-theme {
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+/* Activity and payments share the same compact table layout. */
+.backend-ui .compact-table .q-table th {
+  height: 32px;
+  padding: 6px 12px;
+  background: var(--backend-surface);
+}
+
+.backend-ui .compact-table .q-table tbody td {
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.backend-ui .compact-table .q-table th:first-child,
+.backend-ui .compact-table .q-table td:first-child { padding-left: 28px; }
+.backend-ui .compact-table .q-table th:last-child,
+.backend-ui .compact-table .q-table td:last-child { padding-right: 28px; }
+.backend-ui .compact-table .q-table tbody tr:hover td { background: var(--backend-hover); }
+.table-instance-filter { width: 260px; }
+
+@media (max-width: 599px) {
+  .table-instance-filter { width: 100%; }
+  .compact-table .q-table__top { align-items: stretch; }
+  .compact-table .q-table__top > .q-table__separator { display: none; }
+  .compact-table .q-table__top > .q-table__control:last-child { width: 100%; }
+  .backend-ui .compact-table .q-table th:first-child,
+  .backend-ui .compact-table .q-table td:first-child { padding-left: 16px; }
+  .backend-ui .compact-table .q-table th:last-child,
+  .backend-ui .compact-table .q-table td:last-child { padding-right: 16px; }
 }
 
 .backend-ui .q-separator {
