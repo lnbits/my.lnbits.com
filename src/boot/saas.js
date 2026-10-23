@@ -1,4 +1,5 @@
 import axios from 'axios'
+import {getServiceAddress} from 'src/utils/relays'
 import {secondsToDhm} from 'src/boot/utils'
 
 const normalizeApiEnv = env => {
@@ -135,11 +136,20 @@ var saas = {
 
     return response
   },
-  getPricing: async function () {
+  getPricing: async function (instanceType) {
     return axios({
       method: 'GET',
       url: this.url('/pricing'),
+      params: instanceType ? {instance_type: instanceType} : undefined,
       withCredentials: true
+    })
+  },
+  getHourlyLnurl: function (instanceId) {
+    return axios({
+      method: 'PUT',
+      url: this.url('/instance/hourly'),
+      withCredentials: true,
+      data: {instance_id: instanceId}
     })
   },
   getUserPreferences: function () {
@@ -328,7 +338,7 @@ var saas = {
       enabled: instance.is_enabled,
       active: instance.is_active,
       expired: instance.timestamp_stop < this.serverTime,
-      name: instance.relay_url || instance.domain,
+      name: getServiceAddress(instance),
       createdDate: new Date(instance.timestamp * 1000).toLocaleString(),
       stopDate: new Date(instance.timestamp_stop * 1000).toLocaleString(),
       timestamp: instance.timestamp,

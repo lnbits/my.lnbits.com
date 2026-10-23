@@ -324,8 +324,8 @@ export const mapPricingResponseToPlans = payload => {
   })
 }
 
-export const getPricingPlans = async () => {
-  const response = await saas.getPricing()
+export const getPricingPlans = async instanceType => {
+  const response = await saas.getPricing(instanceType)
   const payload = response?.data ?? response
 
   return mapPricingResponseToPlans(payload)

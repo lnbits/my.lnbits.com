@@ -54,6 +54,7 @@
 </template>
 
 <script>
+import {getServiceAddress} from 'src/utils/relays'
 import {defineComponent} from 'vue'
 
 import {useQuasar} from 'quasar'
@@ -217,8 +218,8 @@ export default defineComponent({
         this.activityStats[0].value = data.length
         this.instances = data.map(i => ({
           value: i.id,
-          label: `[${i.id}] ${i.relay_url || i.domain}`,
-          name: i.relay_url || i.domain
+          label: `[${i.id}] ${getServiceAddress(i)}`,
+          name: getServiceAddress(i)
         }))
       } catch (error) {
         console.warn(error)

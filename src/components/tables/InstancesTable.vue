@@ -1612,7 +1612,9 @@ export default defineComponent({
     },
     async loadPricingData() {
       try {
-        const plans = await getPricingPlans()
+        const plans = await getPricingPlans(
+          this.isRelay ? RELAY_TYPES[0].value : undefined
+        )
         this.pricingPlans = this.isRelay ? buildRelayPlans(plans) : plans
       } catch (error) {
         console.warn(error)
@@ -2195,19 +2197,24 @@ export default defineComponent({
       return this.isCreateInstanceSubmitDisabled(this.planDialog.selectedTag)
     },
     async loadInstanceTypeOptions() {
-      if (this.isRelay) {
-        this.newInstanceDialog.options = RELAY_TYPES
-        this.fundingSourceOptions = RELAY_TYPES
-        return
-      }
       const requestId = ++this.instanceTypesRequestId
       this.newInstanceDialog.loading = true
       this.newInstanceDialog.error = null
 
       try {
         const {data} = await saas.getInstanceTypes()
-        const options = mapInstanceTypesToImageOptions(data)
-        const fundingOptions = mapInstanceTypesToFundingOptions(data)
+        const images = Array.isArray(data) ? data : data?.images || []
+        const options = this.isRelay
+          ? images
+              .map(image => {
+                const type = getRelayType({instance_type: image.tag})
+                return type ? {...type, description: image.description} : null
+              })
+              .filter(Boolean)
+          : mapInstanceTypesToImageOptions(data)
+        const fundingOptions = this.isRelay
+          ? options
+          : mapInstanceTypesToFundingOptions(data)
 
         if (requestId !== this.instanceTypesRequestId) {
           return
@@ -2372,7 +2379,7 @@ export default defineComponent({
 
         if (this.planDialog.billing === 'hourly') {
           this.planDialog.show = false
-          this.extendInstance(instance, instance.lnurl)
+          await this.openHourlyPayment(instance)
           return
         }
 
@@ -2398,11 +2405,24 @@ export default defineComponent({
 
       if (this.isPricingMatrixFlow && this.planDialog.billing === 'hourly') {
         this.planDialog.show = false
-        this.extendInstance(instance, instance.lnurl)
+        await this.openHourlyPayment(instance)
         return
       }
 
       await this.submitPlan(instance.id)
+    },
+    async openHourlyPayment(instance) {
+      try {
+        const {data} = await saas.getHourlyLnurl(instance.id)
+        instance.lnurl = data.lnurl
+        this.extendInstance(instance, data.lnurl)
+      } catch (error) {
+        this.q.notify({
+          message: 'Failed to load hourly payment',
+          caption: saas.mapErrorToString(error),
+          color: 'negative'
+        })
+      }
     },
     async submitPlan(instanceId) {
       if (this.planDialog.subscription) {
